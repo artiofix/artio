@@ -329,6 +329,7 @@ class DecoderGenerator extends Generator
         return String.format(
             "\n" +
             GENERATED_ANNOTATION +
+            SUPPRESS_THIS_ESCAPE_ANNOTATION +
             "public %3$s%4$sclass %1$s extends %5$s%2$s\n" +
             "{\n",
             className,
