@@ -1879,7 +1879,11 @@ class DecoderGenerator extends Generator
     {
         if (allowEmptyTags)
         {
-            return "";
+            return "                else if (valueLength == 0 && position < (endOfField + 1))\n" +
+                   "                {\n" +
+                   "                    position = endOfField + 1;\n" +
+                   "                    continue;\n" +
+                   "                }\n";
         }
         else
         {
