@@ -11,6 +11,7 @@ import org.agrona.collections.MutableLong;
 import org.agrona.concurrent.NoOpIdleStrategy;
 import org.agrona.concurrent.SystemEpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.real_logic.artio.messages.DisconnectReason;
@@ -38,6 +39,7 @@ class GatewayPublicationTest
         );
     }
 
+    @Timeout(2)
     @ParameterizedTest
     @MethodSource("bodyLengthRange")
     void testSavingMessagesOverTermBoundary(final int bodyLength)
@@ -74,8 +76,7 @@ class GatewayPublicationTest
             ThreadLocalRandom.current().nextBytes(body);
             final DirectBuffer srcBuffer = new UnsafeBuffer(body);
 
-            int attempt = 1;
-            do
+            while (true)
             {
                 final long result = gatewayPublication.saveMessage(
                     srcBuffer,
@@ -93,13 +94,11 @@ class GatewayPublicationTest
                 {
                     break;
                 }
-                if (attempt >= 2)
+                if (Thread.currentThread().isInterrupted())
                 {
                     fail("failed to save message: " + result);
                 }
-                attempt++;
             }
-            while (true);
 
             final MessageCapturingProtocolHandler protocolHandler = new MessageCapturingProtocolHandler();
             final ProtocolSubscription protocolSubscription = ProtocolSubscription.of(protocolHandler);
