@@ -132,7 +132,7 @@ public abstract class AbstractDecoderGeneratorTest
             MESSAGE_EXAMPLE, 1, TEST_PACKAGE, TEST_PARENT_PACKAGE, TEST_PACKAGE,
             outputManager, validationClass, rejectUnknownField,
             rejectUnknownEnumValue, flyweightStringsEnabled, wrapEmptyBuffer,
-            String.valueOf(rejectingUnknownEnumValue), true);
+            String.valueOf(rejectingUnknownEnumValue), true, null);
         final EncoderGenerator encoderGenerator = new EncoderGenerator(MESSAGE_EXAMPLE, TEST_PACKAGE,
             TEST_PARENT_PACKAGE, outputManager, ValidationOn.class, RejectUnknownFieldOn.class,
             RejectUnknownEnumValueOn.class, RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true);

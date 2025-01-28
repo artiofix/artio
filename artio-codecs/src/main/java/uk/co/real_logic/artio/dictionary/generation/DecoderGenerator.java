@@ -133,10 +133,21 @@ class DecoderGenerator extends Generator
         final boolean flyweightsEnabled,
         final boolean wrapEmptyBuffer,
         final String codecRejectUnknownEnumValueEnabled,
-        final boolean fixTagsInJavadoc)
+        final boolean fixTagsInJavadoc,
+        final String decimalFloatOverflowHandler)
     {
-        super(dictionary, thisPackage, commonPackage, outputManager, validationClass, rejectUnknownFieldClass,
-            rejectUnknownEnumValueClass, flyweightsEnabled, codecRejectUnknownEnumValueEnabled, fixTagsInJavadoc);
+        super(
+            dictionary,
+            thisPackage,
+            commonPackage,
+            outputManager,
+            validationClass,
+            rejectUnknownFieldClass,
+            rejectUnknownEnumValueClass,
+            flyweightsEnabled,
+            codecRejectUnknownEnumValueEnabled,
+            fixTagsInJavadoc,
+            decimalFloatOverflowHandler);
         this.initialBufferSize = initialBufferSize;
         this.encoderPackage = encoderPackage;
         this.wrapEmptyBuffer = wrapEmptyBuffer;
@@ -255,6 +266,13 @@ class DecoderGenerator extends Generator
         }
 
         out.append(classDeclaration(className, interfaces, false, aggregate.isInParent(), isGroup));
+        if (decimalFloatOverflowHandler != null && type != HEADER)
+        {
+            out.append(String.format("    public %s() {\n\n", className));
+            out.append(String.format("        decimalFloatOverflowHandler = new %s",
+                decimalFloatOverflowHandler + "();\n\n"));
+            out.append("    }\n\n");
+        }
         generateValidation(out, aggregate, type);
         if (isMessage)
         {
@@ -2025,7 +2043,8 @@ class DecoderGenerator extends Generator
                     return "";
                 }
                 decodeMethod = String.format(
-                    "getFloat(buffer, %s, valueOffset, valueLength, %d, " + CODEC_VALIDATION_ENABLED + ")",
+                    "getFloat(buffer, %s, valueOffset, valueLength, %d, " + CODEC_VALIDATION_ENABLED +
+                      ", decimalFloatOverflowHandler)",
                     fieldName, field.number());
                 break;
             case CHAR:

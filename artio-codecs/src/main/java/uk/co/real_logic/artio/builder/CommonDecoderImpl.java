@@ -17,6 +17,7 @@ package uk.co.real_logic.artio.builder;
 
 import uk.co.real_logic.artio.fields.DecimalFloat;
 import uk.co.real_logic.artio.util.AsciiBuffer;
+import uk.co.real_logic.artio.util.float_parsing.DecimalFloatOverflowHandler;
 
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_INT;
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_LONG;
@@ -31,6 +32,7 @@ public abstract class CommonDecoderImpl
     protected int invalidTagId = Decoder.NO_ERROR;
     protected int rejectReason = Decoder.NO_ERROR;
     protected AsciiBuffer buffer;
+    protected DecimalFloatOverflowHandler decimalFloatOverflowHandler;
 
     public int invalidTagId()
     {
@@ -82,11 +84,16 @@ public abstract class CommonDecoderImpl
 
     public DecimalFloat getFloat(
         final AsciiBuffer buffer,
-        final DecimalFloat number, final int offset, final int length, final int tag, final boolean validation)
+        final DecimalFloat number,
+        final int offset,
+        final int length,
+        final int tag,
+        final boolean validation,
+        final DecimalFloatOverflowHandler decimalFloatOverflowHandler)
     {
         try
         {
-            return buffer.getFloat(number, offset, length);
+            return buffer.getFloat(number, offset, length, tag, decimalFloatOverflowHandler);
         }
         catch (final NumberFormatException | ArithmeticException e)
         {
@@ -103,6 +110,14 @@ public abstract class CommonDecoderImpl
             }
         }
     }
+
+    public DecimalFloat getFloat(
+        final AsciiBuffer buffer,
+        final DecimalFloat number, final int offset, final int length, final int tag, final boolean validation)
+    {
+        return getFloat(buffer, number, offset, length, tag, validation, null);
+    }
+
 
     public int getIntFlyweight(
         final AsciiBuffer buffer, final int offset, final int length, final int tag, final boolean validation)
@@ -168,11 +183,12 @@ public abstract class CommonDecoderImpl
         final int offset,
         final int length,
         final int tag,
-        final boolean codecValidationEnabled)
+        final boolean codecValidationEnabled,
+        final DecimalFloatOverflowHandler decimalFloatOverflowHandler)
     {
         try
         {
-            return buffer.getFloat(number, offset, length);
+            return buffer.getFloat(number, offset, length, tag, decimalFloatOverflowHandler);
         }
         catch (final NumberFormatException e)
         {
@@ -186,5 +202,16 @@ public abstract class CommonDecoderImpl
                 return number;
             }
         }
+    }
+
+    public DecimalFloat getFloatFlyweight(
+        final AsciiBuffer buffer,
+        final DecimalFloat number,
+        final int offset,
+        final int length,
+        final int tag,
+        final boolean codecValidationEnabled)
+    {
+        return getFloatFlyweight(buffer, number, offset, length, tag, codecValidationEnabled, null);
     }
 }

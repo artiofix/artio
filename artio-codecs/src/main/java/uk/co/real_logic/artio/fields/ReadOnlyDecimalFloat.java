@@ -41,7 +41,7 @@ public class ReadOnlyDecimalFloat implements Comparable<ReadOnlyDecimalFloat>
     private static final long VALUE_NAN_VALUE = Long.MIN_VALUE;
     private static final double DOUBLE_NAN_VALUE = Double.NaN;
 
-    private static final long VALUE_MAX_VAL = 999_999_999_999_999_999L;
+    public static final long VALUE_MAX_VAL = 999_999_999_999_999_999L;
     private static final long VALUE_MIN_VAL = -VALUE_MAX_VAL;
     private static final int SCALE_MAX_VAL = 127;
     private static final int SCALE_MIN_VAL = 0;

@@ -97,6 +97,7 @@ public abstract class Generator
     protected final boolean flyweightsEnabled;
     protected final String codecRejectUnknownEnumValueEnabled;
     protected final String scope;
+    protected final String decimalFloatOverflowHandler;
     protected final boolean fixTagsInJavadoc;
 
     protected final Deque<Aggregate> aggregateStack = new ArrayDeque<>();
@@ -111,7 +112,8 @@ public abstract class Generator
         final Class<?> rejectUnknownEnumValueClass,
         final boolean flyweightsEnabled,
         final String codecRejectUnknownEnumValueEnabled,
-        final boolean fixTagsInJavadoc)
+        final boolean fixTagsInJavadoc,
+        final String decimalFloatOverflowHandler)
     {
         this.dictionary = dictionary;
         this.thisPackage = thisPackage;
@@ -125,6 +127,7 @@ public abstract class Generator
         this.fixTagsInJavadoc = fixTagsInJavadoc;
 
         scope = dictionary.shared() ? "protected" : "private";
+        this.decimalFloatOverflowHandler = decimalFloatOverflowHandler;
     }
 
     public void generate()

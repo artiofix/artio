@@ -181,7 +181,8 @@ public final class CodecGenerator
             false,
             configuration.wrapEmptyBuffer(),
             codecRejectUnknownEnumValueEnabled,
-            configuration.fixTagsInJavadoc()).generate();
+            configuration.fixTagsInJavadoc(),
+            configuration.getDecimalFloatOverflowHandler()).generate();
 
         new PrinterGenerator(dictionary, decoderPackage, decoderOutput).generate();
         new AcceptorGenerator(dictionary, decoderPackage, decoderOutput).generate();
@@ -203,7 +204,8 @@ public final class CodecGenerator
                 true,
                 configuration.wrapEmptyBuffer(),
                 codecRejectUnknownEnumValueEnabled,
-                configuration.fixTagsInJavadoc()).generate();
+                configuration.fixTagsInJavadoc(),
+                configuration.getDecimalFloatOverflowHandler()).generate();
         }
     }
 }

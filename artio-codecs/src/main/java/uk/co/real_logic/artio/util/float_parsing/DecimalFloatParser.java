@@ -1,8 +1,24 @@
+/*
+ * Copyright 2015-2025 Real Logic Limited.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package uk.co.real_logic.artio.util.float_parsing;
 
 
 import uk.co.real_logic.artio.fields.DecimalFloat;
 
+import static uk.co.real_logic.artio.fields.ReadOnlyDecimalFloat.VALUE_MAX_VAL;
 import static uk.co.real_logic.artio.util.PowerOf10.pow10;
 
 public final class DecimalFloatParser
@@ -19,6 +35,18 @@ public final class DecimalFloatParser
         final Data data,
         final int offset,
         final int length)
+    {
+        return extract(number, charReader, data, offset, length, -1, null);
+    }
+
+    public static <Data> DecimalFloat extract(
+        final DecimalFloat number,
+        final CharReader<Data> charReader,
+        final Data data,
+        final int offset,
+        final int length,
+        final int tagId,
+        final DecimalFloatOverflowHandler overflowHandler)
     {
         // Throw away trailing spaces
         int workingOffset = offset;
@@ -61,6 +89,8 @@ public final class DecimalFloatParser
 
         int workingScale = 0;
         long value = 0;
+        final int timesNeg = 0;
+        int dotIndex = 0;
         for (int index = workingOffset; index < endOfSignificand; index++)
         {
             final char charValue = charReader.charAt(data, index);
@@ -68,15 +98,32 @@ public final class DecimalFloatParser
             {
                 // number of digits after the dot
                 workingScale = endOfSignificand - (index + 1);
+                dotIndex = index;
             }
             else
             {
                 final int digit = charReader.getDigit(data, index, charValue);
                 value = value * 10 + digit;
-                if (value < 0)
+                if (value < 0 || value > VALUE_MAX_VAL)
                 {
-                    throw new ArithmeticException(
-                        "Out of range: when parsing " + charReader.asString(data, offset, length));
+                    if (overflowHandler != null)
+                    {
+                        overflowHandler.handleOverflow(
+                            number,
+                            charReader,
+                            data,
+                            offset,
+                            length,
+                            index - offset,
+                            dotIndex - offset,
+                            tagId);
+                        return number;
+                    }
+                    else
+                    {
+                        throw new ArithmeticException(
+                          "Out of range: when parsing " + charReader.asString(data, offset, length));
+                    }
                 }
             }
         }
@@ -93,11 +140,22 @@ public final class DecimalFloatParser
             throw new NumberFormatException(charReader.asString(data, offset, length).toString());
         }
 
-        final int scale = workingScale - exponent;
+        return updateValue(number, workingScale, exponent, timesNeg, negative, value);
+    }
+
+    private static DecimalFloat updateValue(
+        final DecimalFloat number,
+        final int workingScale,
+        final int exponent,
+        final int timesNeg,
+        final boolean negative,
+        final long value)
+    {
+        final int scale = workingScale - exponent - timesNeg;
         final long signedValue = negative ? -1 * value : value;
         return number.set(
-            (scale >= 0) ? signedValue : signedValue * pow10(-scale),
-            Math.max(scale, 0)
+          (scale >= 0) ? signedValue : signedValue * pow10(-scale),
+          Math.max(scale, 0)
         );
     }
 

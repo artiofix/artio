@@ -21,6 +21,7 @@ import org.agrona.generation.PackageOutputManager;
 import java.io.InputStream;
 import java.util.function.BiFunction;
 
+
 public final class CodecConfiguration
 {
     /**
@@ -55,6 +56,7 @@ public final class CodecConfiguration
     public static final String PARENT_PACKAGE_PROPERTY = "fix.codecs.parent_package";
     public static final String FLYWEIGHTS_ENABLED_PROPERTY = "fix.codecs.flyweight";
     public static final String REJECT_UNKNOWN_ENUM_VALUE_PROPERTY = "reject.unknown.enum.value";
+    public static final String FLOAT_OVERFLOW_HANDLER_PROPERTY = "float.overflow.handler";
     public static final String FIX_TAGS_IN_JAVADOC = "fix.codecs.tags_in_javadoc";
 
     public static final String DEFAULT_PARENT_PACKAGE = "uk.co.real_logic.artio";
@@ -74,6 +76,7 @@ public final class CodecConfiguration
     private final GeneratorDictionaryConfiguration nonSharedDictionary =
         new GeneratorDictionaryConfiguration(null, null, null,
         Boolean.getBoolean(FIX_CODECS_ALLOW_DUPLICATE_FIELDS_PROPERTY));
+    private String decimalFloatOverflowHandler = null;
 
     public CodecConfiguration()
     {
@@ -92,6 +95,24 @@ public final class CodecConfiguration
     {
         this.outputPath = outputPath;
         return this;
+    }
+
+    /**
+     * Sets the full qualified class name of a <code>{@link uk.co.real_logic.artio.util.float_parsing.DecimalFloatOverflowHandler}</code> implementation.
+     * If not set, the default behaviour is executed when there's an overflow.
+     * @param decimalFloatOverflowHandler full qualified class name of a DecimalFloat overflow handler
+     * @return this
+     */
+    public CodecConfiguration decimalFloatOverflowHandler(
+        final String decimalFloatOverflowHandler)
+    {
+        this.decimalFloatOverflowHandler = decimalFloatOverflowHandler;
+        return this;
+    }
+
+    public String getDecimalFloatOverflowHandler()
+    {
+        return decimalFloatOverflowHandler;
     }
 
     /**
@@ -304,6 +325,11 @@ public final class CodecConfiguration
                 throw new IllegalArgumentException(
                     "Please provide a path to the XML files either through the fileNames() or fileStreams() option.");
             }
+        }
+        if (decimalFloatOverflowHandler == null)
+        {
+
+            decimalFloatOverflowHandler = System.getProperty(FLOAT_OVERFLOW_HANDLER_PROPERTY);
         }
     }
 }

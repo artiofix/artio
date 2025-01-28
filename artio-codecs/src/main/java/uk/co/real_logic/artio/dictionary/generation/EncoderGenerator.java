@@ -169,7 +169,7 @@ class EncoderGenerator extends Generator
         final boolean fixTagsInJavadoc)
     {
         super(dictionary, builderPackage, builderCommonPackage, outputManager, validationClass, rejectUnknownFieldClass,
-            rejectUnknownEnumValueClass, false, codecRejectUnknownEnumValueEnabled, fixTagsInJavadoc);
+            rejectUnknownEnumValueClass, false, codecRejectUnknownEnumValueEnabled, fixTagsInJavadoc, null);
 
         final Component header = dictionary.header();
         validateHasField(header, BEGIN_STRING);

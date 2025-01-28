@@ -94,7 +94,7 @@ public class ToEncoderDecoderGeneratorTest
             MESSAGE_EXAMPLE, 1, TEST_PACKAGE,
             TEST_PARENT_PACKAGE, TEST_PACKAGE, outputManager, ValidationOn.class,
             RejectUnknownFieldOn.class, RejectUnknownEnumValueOn.class, flyweightStringsEnabled, false,
-            RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true);
+            RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true, null);
         final EncoderGenerator encoderGenerator = new EncoderGenerator(MESSAGE_EXAMPLE, TEST_PACKAGE,
             TEST_PARENT_PACKAGE, outputManager, ValidationOn.class, RejectUnknownFieldOn.class,
             RejectUnknownEnumValueOn.class, RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true);

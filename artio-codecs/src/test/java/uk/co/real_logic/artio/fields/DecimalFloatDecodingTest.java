@@ -29,11 +29,15 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class DecimalFloatDecodingTest
 {
+
+
     @Parameters(name = "{index}: {0} => {1},{2}")
     public static Iterable<Object[]> decimalFloatCodecData()
     {
         return Arrays.asList(new Object[][]
         {
+            {"9.99999999999999999", ReadOnlyDecimalFloat.VALUE_MAX_VAL, 17},
+            {"99999999999999999.9", ReadOnlyDecimalFloat.VALUE_MAX_VAL, 1},
             {"55.36", 5536L, 2},
             {"5.536e0", 5536L, 3},
             {"5.536e1", 5536L, 2},
