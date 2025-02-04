@@ -56,7 +56,7 @@ public final class CodecConfiguration
     public static final String PARENT_PACKAGE_PROPERTY = "fix.codecs.parent_package";
     public static final String FLYWEIGHTS_ENABLED_PROPERTY = "fix.codecs.flyweight";
     public static final String REJECT_UNKNOWN_ENUM_VALUE_PROPERTY = "reject.unknown.enum.value";
-    public static final String FLOAT_OVERFLOW_HANDLER_PROPERTY = "float.overflow.handler";
+    public static final String FLOAT_OVERFLOW_HANDLER_PROPERTY = "fix.codecs.float_overflow_handler";
     public static final String FIX_TAGS_IN_JAVADOC = "fix.codecs.tags_in_javadoc";
 
     public static final String DEFAULT_PARENT_PACKAGE = "uk.co.real_logic.artio";

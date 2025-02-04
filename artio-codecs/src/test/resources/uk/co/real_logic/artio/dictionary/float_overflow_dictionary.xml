@@ -26,8 +26,20 @@
         </message>
         <message name="NewOrderSingle" msgtype="D" msgcat="app">
             <field name="Price" required="Y"/>
+            <component name="Instrument" required="N"/>
         </message>
     </messages>
+    <components>
+        <component name="Instrument">
+            <field name="Symbol" required="Y"/>
+            <group name="NoGroupInComp" required="N">
+                <field name="GroupInCompField" required="N" />
+                <group name="NoSubGroupInComp" required="N">
+                    <field name="SubGroupInCompField" required="N" />
+                </group>
+            </group>
+        </component>
+    </components>
     <fields>
         <field number="8" name="BeginString" type="STRING"/>
         <field number="9" name="BodyLength" type="LENGTH"/>
@@ -165,6 +177,8 @@
         <field number="382" name="NoContraBrokers" type="INT" />
         <field number="376" name="GroupInCompField" type="STRING" />
         <field number="383" name="NoGroupInComp" type="INT" />
+        <field number="408" name="SubGroupInCompField" type="STRING" />
+        <field number="409" name="NoSubGroupInComp" type="INT" />
         <field number="400" name="NoOuterNestedGroup" type="NUMINGROUP" />
         <field number="401" name="OuterNestedGroupField" type="STRING" />
         <field number="402" name="NoInnerNestedGroup" type="NUMINGROUP" />

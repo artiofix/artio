@@ -266,7 +266,7 @@ class DecoderGenerator extends Generator
         }
 
         out.append(classDeclaration(className, interfaces, false, aggregate.isInParent(), isGroup));
-        if (decimalFloatOverflowHandler != null && type != HEADER)
+        if (decimalFloatOverflowHandler != null && type != HEADER && type != GROUP)
         {
             out.append(String.format("    public %s() {\n\n", className));
             out.append(String.format("        decimalFloatOverflowHandler = new %s",
@@ -999,13 +999,23 @@ class DecoderGenerator extends Generator
         out.append(String.format(
             "    private final TrailerDecoder trailer;\n" +
             "    private final IntHashSet %1$s;\n" +
-            "    public %2$s(final TrailerDecoder trailer, final IntHashSet %1$s)\n" +
-            "    {\n" +
-            "        this.trailer = trailer;\n" +
-            "        this.%1$s = %1$s;\n" +
-            "    }\n\n",
+            "    public %2$s(final TrailerDecoder trailer, final IntHashSet %1$s)\n",
             MESSAGE_FIELDS,
             decoderClassName(aggregate)));
+
+        out.append(String.format(
+            "    {\n" +
+            "        this.trailer = trailer;\n" +
+            "        this.%1$s = %1$s;\n",
+            MESSAGE_FIELDS));
+
+        if (decimalFloatOverflowHandler != null)
+        {
+            out.append(String.format("        decimalFloatOverflowHandler = new %s",
+                decimalFloatOverflowHandler + "();\n\n"));
+        }
+
+        out.append("    }\n\n");
     }
 
     private void wrapTrailerInConstructor(final Writer out, final Aggregate aggregate) throws IOException

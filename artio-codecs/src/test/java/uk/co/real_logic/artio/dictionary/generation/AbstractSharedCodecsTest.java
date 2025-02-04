@@ -16,8 +16,13 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import uk.co.real_logic.artio.builder.Decoder;
 import uk.co.real_logic.artio.builder.Encoder;
 import uk.co.real_logic.artio.builder.SessionHeaderEncoder;
@@ -41,67 +46,77 @@ import static uk.co.real_logic.artio.dictionary.generation.CodecGenerationWrappe
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_CHAR;
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_INT;
 import static uk.co.real_logic.artio.dictionary.generation.EnumGeneratorTest.assertRepresentation;
+import static uk.co.real_logic.artio.fields.ReadOnlyDecimalFloat.VALUE_MAX_VAL;
 import static uk.co.real_logic.artio.util.Reflection.*;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
-public class SharedCodecsTest
+public abstract class AbstractSharedCodecsTest
 {
-    private static final String DICT_1 = "shared.dictionary.1";
-    private static final String DICT_2 = "shared_dictionary_2";
-    private static final String DICT_3 = "shared_dictionary.3";
-    private static final String DICT_3_FIXT = "shared_dictionary_fixt.3";
+    protected static final String DICT_1 = "shared.dictionary.1";
+    protected static final String DICT_2 = "shared_dictionary_2";
+    protected static final String DICT_3 = "shared_dictionary.3";
+    protected static final String DICT_3_FIXT = "shared_dictionary_fixt.3";
 
-    private static final String DICT_1_NORM = "shared_dictionary_1";
-    private static final String DICT_2_NORM = "shared_dictionary_2";
-    private static final String DICT_3_NORM = "shared_dictionary_3";
+    protected static final String DICT_1_NORM = "shared_dictionary_1";
+    protected static final String DICT_2_NORM = "shared_dictionary_2";
+    protected static final String DICT_3_NORM = "shared_dictionary_3";
 
-    private static final String ORDER_ID = "orderID";
-    private static final String RESET_ORDER_ID = "resetOrderID";
-    private static final String ORDER_ID_LENGTH = "orderIDLength";
+    protected static final String ORDER_ID = "orderID";
+    protected static final String RESET_ORDER_ID = "resetOrderID";
+    protected static final String ORDER_ID_LENGTH = "orderIDLength";
 
-    private static final CodecGenerationWrapper WRAPPER = new CodecGenerationWrapper();
-    private static final String EXECUTION_REPORT = "ExecutionReport";
+    protected static final CodecGenerationWrapper WRAPPER = new CodecGenerationWrapper();
+    protected static final String EXECUTION_REPORT = "ExecutionReport";
 
-    private static final String ALL_FIELDS_MSG =
+    protected static final String ALL_FIELDS_MSG =
         "8=FIX.4.4\0019=198\00135=8\00149=sender\00156=target\00134=1\00152= \00137=1\001198=2" +
         "\00117=3\001150=0\00139=2\00155=MSFT\001383=1\001376=GroupInComp\001925=pwd\00154=1\00160= " +
-        "\001151=2\001152=1\001154=Y\001404=2\001382=1\001375=aContraBroker\001400=1\001401=value\001402=1" +
-        "\001403=inner\001405=ABC\00110=123\001";
+        "\001151=2\001152=1\001154=Y\001404=2\001382=1\001375=aContraBroker\001400=1" +
+        "\001401=value\001402=1\001403=inner\001405=ABC\00110=123\001";
 
-    private static final String NO_OPTIONAL_SHARED_FIELDS_MSG =
+    protected static final String ALL_FIELDS_WITH_OVERFLOW_MSG =
+        "8=FIX.4.4\0019=198\00135=8\00149=sender\00156=target\00134=1\00152= \00137=1\001198=2" +
+        "\00117=3\001150=0\00139=2\00155=MSFT\001383=1\001376=GroupInComp\001925=pwd\00154=1\00160= " +
+        "\001151=2\001152=1\001154=Y\001153=" + (VALUE_MAX_VAL + 1) +
+        "\001404=2\001382=1\001375=aContraBroker\001400=1" +
+        "\001401=value\001402=1\001403=inner\001405=ABC\00110=123\001";
+
+    protected static final String NO_OPTIONAL_SHARED_FIELDS_MSG =
         "8=FIX.4.4\0019=185\00135=8\00149=sender\00156=target\00134=1\00152= \00137=1\001198=2" +
         "\00117=3\001150=0\001383=1\001376=GroupInComp\001925=pwd\00154=1\00160= " +
         "\001151=2\001152=1\001154=Y\001404=2\001382=1\001375=aContraBroker\001400=1\001401=value\001402=1" +
         "\001403=inner\001405=ABC\00110=185\001";
 
-    private static final String FIELD_SOMETIMES_IN_COMPONENT = "fieldSometimesInComponent";
-    private static final String RESET_FIELD_SOMETIMES_IN_COMPONENT = "resetFieldSometimesInComponent";
-    private static final String FIELD_SOMETIMES_IN_COMPONENT_LENGTH = "fieldSometimesInComponentLength";
+    protected static final String FIELD_SOMETIMES_IN_COMPONENT = "fieldSometimesInComponent";
+    protected static final String RESET_FIELD_SOMETIMES_IN_COMPONENT = "resetFieldSometimesInComponent";
+    protected static final String FIELD_SOMETIMES_IN_COMPONENT_LENGTH = "fieldSometimesInComponentLength";
     public static final String SOMETIMES_COMPONENT = "SometimesComponent";
 
-    private static Class<?> executionReportEncoderShared;
+    protected static Class<?> executionReportEncoderShared;
 
-    private static Class<?> logonEncoder1;
-    private static Class<?> logonDecoder1;
+    protected static Class<?> logonEncoder1;
+    protected static Class<?> logonDecoder1;
 
-    private static Class<?> executionReportEncoder1;
-    private static Class<?> executionReportEncoder2;
-    private static Class<?> executionReportEncoder3;
+    protected static Class<?> executionReportEncoder1;
+    protected static Class<?> executionReportEncoder2;
+    protected static Class<?> executionReportEncoder3;
 
-    private static Class<?> executionReportDecoderShared;
-    private static Class<?> executionReportDecoder1;
-    private static Class<?> executionReportDecoder2;
+    protected static Class<?> executionReportDecoderShared;
+    protected static Class<?> executionReportDecoder1;
+    protected static Class<?> executionReportDecoder2;
 
-    private static Class<?> headerEncoder1;
-    private static Class<?> headerEncoder2;
-    private static Class<?> headerEncoderShared;
+    protected static Class<?> headerEncoder1;
+    protected static Class<?> headerEncoder2;
+    protected static Class<?> headerEncoderShared;
 
-    @BeforeClass
-    public static void generate() throws Exception
+    public static void generate(final String decimalFloatOverflowHandler) throws Exception
     {
         WRAPPER.generate(config ->
         {
-            config.sharedCodecsEnabled()
+            config
+                .decimalFloatOverflowHandler(
+                  decimalFloatOverflowHandler)
+                .sharedCodecsEnabled()
                 .withDictionary(DICT_1, dictionaryStream(DICT_1))
                 .withDictionary(DICT_2, dictionaryStream(DICT_2))
                 .withDictionary(DICT_3, dictionaryStream(DICT_3_FIXT), dictionaryStream(DICT_3));
@@ -124,163 +139,163 @@ public class SharedCodecsTest
         logonDecoder1 = loadClass(logonDecoder(DICT_1_NORM));
     }
 
-    private static String executionReportEncoder(final String dictNorm)
+    protected static String executionReportEncoder(final String dictNorm)
     {
         return encoder(dictNorm, EXECUTION_REPORT);
     }
 
-    private static String executionReportDecoder(final String dictNorm)
+    protected static String executionReportDecoder(final String dictNorm)
     {
         return decoder(dictNorm, EXECUTION_REPORT);
     }
 
-    private static String headerEncoder(final String dictNorm)
+    protected static String headerEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "Header");
     }
 
-    private static String logonEncoder(final String dictNorm)
+    protected static String logonEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "Logon");
     }
 
-    private static String logonDecoder(final String dictNorm)
+    protected static String logonDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "Logon");
     }
 
-    private static String newOrderSingleEncoder(final String dictNorm)
+    protected static String newOrderSingleEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "NewOrderSingle");
     }
 
-    private static String anyFieldsOneEncoder(final String dictNorm)
+    protected static String anyFieldsOneEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "AnyFieldsOne");
     }
 
-    private static String anyFieldsTwoEncoder(final String dictNorm)
+    protected static String anyFieldsTwoEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "AnyFieldsTwo");
     }
 
-    private static String constants(final String dictNorm)
+    protected static String constants(final String dictNorm)
     {
         return className(dictNorm, (dictNorm == null ? "Shared" : "") + "Constants", "", "");
     }
 
-    private static String newOrderSingleDecoder(final String dictNorm)
+    protected static String newOrderSingleDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "NewOrderSingle");
     }
 
-    private static String instrumentEncoder(final String dictNorm)
+    protected static String instrumentEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "Instrument");
     }
 
-    private static String instrumentDecoder(final String dictNorm)
+    protected static String instrumentDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "Instrument");
     }
 
-    private static String contraBrokersGroupEncoder(final String dictNorm)
+    protected static String contraBrokersGroupEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "ExecutionReportEncoder$ContraBrokersGroup");
     }
 
-    private static String contraBrokersGroupDecoder(final String dictNorm)
+    protected static String contraBrokersGroupDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "ExecutionReportDecoder$" + groupDecoderPrefix(dictNorm) + "ContraBrokersGroup");
     }
 
-    private static String outerNestedGroupGroupEncoder(final String dictNorm)
+    protected static String outerNestedGroupGroupEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "ExecutionReportEncoder$OuterNestedGroupGroup");
     }
 
-    private static String outerNestedGroupGroupDecoder(final String dictNorm)
+    protected static String outerNestedGroupGroupDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "ExecutionReportDecoder$" + groupDecoderPrefix(dictNorm) + "OuterNestedGroupGroup");
     }
 
-    private static String innerNestedGroupGroupEncoder(final String dictNorm)
+    protected static String innerNestedGroupGroupEncoder(final String dictNorm)
     {
         return outerNestedGroupGroupEncoder(dictNorm) + "$InnerNestedGroupGroupEncoder";
     }
 
-    private static String innerNestedGroupGroupDecoder(final String dictNorm)
+    protected static String innerNestedGroupGroupDecoder(final String dictNorm)
     {
         return outerNestedGroupGroupDecoder(dictNorm) + "$" + groupDecoderPrefix(dictNorm) +
             "InnerNestedGroupGroupDecoder";
     }
 
-    private static String groupInCompEncoder(final String dictNorm)
+    protected static String groupInCompEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "InstrumentEncoder$GroupInCompGroup");
     }
 
-    private static String groupInCompDecoder(final String dictNorm)
+    protected static String groupInCompDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "InstrumentDecoder$" + groupDecoderPrefix(dictNorm) + "GroupInCompGroup");
     }
 
-    private static String groupDecoderPrefix(final String dictNorm)
+    protected static String groupDecoderPrefix(final String dictNorm)
     {
         return dictNorm == null ? "Abstract" : "";
     }
 
-    private static String iterator(final String dictNorm, final String groupName)
+    protected static String iterator(final String dictNorm, final String groupName)
     {
         return className(dictNorm, groupName, "Iterator", "decoder.");
     }
 
-    private static String nonSharedComponentEncoder(final String dictNorm)
+    protected static String nonSharedComponentEncoder(final String dictNorm)
     {
         return encoder(dictNorm, "NonSharedComponent");
     }
 
-    private static String nonSharedComponentDecoder(final String dictNorm)
+    protected static String nonSharedComponentDecoder(final String dictNorm)
     {
         return decoder(dictNorm, "NonSharedComponent");
     }
 
-    private static String execType(final String dictNorm)
+    protected static String execType(final String dictNorm)
     {
         return enumOf(dictNorm, "ExecType");
     }
 
-    private static String collisionEnum(final String dictNorm)
+    protected static String collisionEnum(final String dictNorm)
     {
         return enumOf(dictNorm, "CollisionEnum");
     }
 
-    private static String equalCountEnum(final String dictNorm)
+    protected static String equalCountEnum(final String dictNorm)
     {
         return enumOf(dictNorm, "EqualCountEnum");
     }
 
-    private static String missingEnum(final String dictNorm)
+    protected static String missingEnum(final String dictNorm)
     {
         return enumOf(dictNorm, "MissingEnum");
     }
 
-    private static String enumOf(final String dictNorm, final String messageName)
+    protected static String enumOf(final String dictNorm, final String messageName)
     {
         return className(dictNorm, messageName, "", "");
     }
 
-    private static String encoder(final String dictNorm, final String messageName)
+    protected static String encoder(final String dictNorm, final String messageName)
     {
         return WRAPPER.encoder(dictNorm, messageName);
     }
 
-    private static String decoder(final String dictNorm, final String messageName)
+    protected static String decoder(final String dictNorm, final String messageName)
     {
         return WRAPPER.decoder(dictNorm, messageName);
     }
 
-    private static String className(
+    protected static String className(
         final String dictNorm,
         final String messageName,
         final String suffix,
@@ -328,14 +343,14 @@ public class SharedCodecsTest
         executionReportEncoderShared.getDeclaredMethod("messageType");
     }
 
-    private void assertAbstract(final Class<?> cls)
+    protected void assertAbstract(final Class<?> cls)
     {
-        assertTrue(cls + " not abstract", isAbstract(cls.getModifiers()));
+        assertTrue(isAbstract(cls.getModifiers()), cls + " not abstract");
     }
 
-    private void assertNotAbstract(final Class<?> cls)
+    protected void assertNotAbstract(final Class<?> cls)
     {
-        assertFalse(cls + " abstract", isAbstract(cls.getModifiers()));
+        assertFalse(isAbstract(cls.getModifiers()), cls + " abstract");
     }
 
     @Test
@@ -378,12 +393,12 @@ public class SharedCodecsTest
 
         encoder.reset();
 
-        assertFalse(encoder.toString(), getBoolean(encoder, "hasOrderID"));
-        assertEquals(encoder.toString(), MISSING_CHAR, getChar(encoder, "side"));
+        assertFalse(getBoolean(encoder, "hasOrderID"), encoder.toString());
+        assertEquals(MISSING_CHAR, getChar(encoder, "side"), encoder.toString());
 
         final SessionHeaderEncoder header = encoder.header();
-        assertFalse(header.toString(), header.hasMsgSeqNum());
-        assertFalse(header.toString(), header.hasSenderCompID());
+        assertFalse(header.hasMsgSeqNum(), header.toString());
+        assertFalse(header.hasSenderCompID(), header.toString());
 
         // Also test that we don't hit UOE issues with required fields
         final Encoder logonEncoder = (Encoder)newInstance(logonEncoder1);
@@ -398,12 +413,12 @@ public class SharedCodecsTest
 
         decoder.reset();
 
-        assertEquals(decoder.toString(), 0, getInt(decoder, ORDER_ID_LENGTH));
-        assertEquals(decoder.toString(), MISSING_CHAR, getChar(decoder, "side"));
+        assertEquals(0, getInt(decoder, ORDER_ID_LENGTH), decoder.toString());
+        assertEquals(MISSING_CHAR, getChar(decoder, "side"), decoder.toString());
 
         final SessionHeaderDecoder header = decoder.header();
-        assertEquals(header.toString(), MISSING_INT, header.msgSeqNum());
-        assertEquals(header.toString(), 0, header.senderCompIDLength());
+        assertEquals(MISSING_INT, header.msgSeqNum(), header.toString());
+        assertEquals(0, header.senderCompIDLength(), header.toString());
 
         // Also test that we don't hit UOE issues with required fields
         final Decoder logonDecoder = (Decoder)newInstance(logonDecoder1);
@@ -483,16 +498,16 @@ public class SharedCodecsTest
             "contraBroker",
             "ExecutionReportDecoder$ContraBrokersGroup",
             "ExecutionReportDecoder$AbstractContraBrokersGroup",
-            SharedCodecsTest::contraBrokersGroupEncoder,
-            SharedCodecsTest::contraBrokersGroupDecoder);
+            AbstractSharedCodecsTest::contraBrokersGroupEncoder,
+            AbstractSharedCodecsTest::contraBrokersGroupDecoder);
 
         // group inside component
         assertSharedGroup(
             "groupInCompField",
             "InstrumentDecoder$GroupInCompGroup",
             "InstrumentDecoder$AbstractGroupInCompGroup",
-            SharedCodecsTest::groupInCompEncoder,
-            SharedCodecsTest::groupInCompDecoder);
+            AbstractSharedCodecsTest::groupInCompEncoder,
+            AbstractSharedCodecsTest::groupInCompDecoder);
 
         // NB: NOS has no parent but inherits from the generic interface
     }
@@ -504,18 +519,18 @@ public class SharedCodecsTest
             "outerNestedGroupField",
             "ExecutionReportDecoder$OuterNestedGroupGroup",
             "ExecutionReportDecoder$AbstractOuterNestedGroupGroup",
-            SharedCodecsTest::outerNestedGroupGroupEncoder,
-            SharedCodecsTest::outerNestedGroupGroupDecoder);
+            AbstractSharedCodecsTest::outerNestedGroupGroupEncoder,
+            AbstractSharedCodecsTest::outerNestedGroupGroupDecoder);
 
         assertSharedGroup(
             "innerNestedGroupField",
             "ExecutionReportDecoder$OuterNestedGroupGroupDecoder$InnerNestedGroupGroup",
             "ExecutionReportDecoder$AbstractOuterNestedGroupGroupDecoder$AbstractInnerNestedGroupGroup",
-            SharedCodecsTest::innerNestedGroupGroupEncoder,
-            SharedCodecsTest::innerNestedGroupGroupDecoder);
+            AbstractSharedCodecsTest::innerNestedGroupGroupEncoder,
+            AbstractSharedCodecsTest::innerNestedGroupGroupDecoder);
     }
 
-    private void assertSharedGroup(
+    protected void assertSharedGroup(
         final String methodName,
         final String iterator1,
         final String sharedIterator,
@@ -576,7 +591,7 @@ public class SharedCodecsTest
         assertRepresentation('C', enumValue(collisionEnum, "CANCELED_C"));
     }
 
-    private void assertSourceContains(final String className, final String substring)
+    protected void assertSourceContains(final String className, final String substring)
     {
         final CharSequence enumSource = WRAPPER.sources().get(className);
         MatcherAssert.assertThat(enumSource.toString(), containsString(substring));
@@ -591,8 +606,10 @@ public class SharedCodecsTest
         final Class<T> stringAndCharEnum = WRAPPER.loadClass(stringAndCharEnumName);
         assertTrue(stringAndCharEnum.isEnum());
 
-        assertEquals(Arrays.toString(stringAndCharEnum.getEnumConstants()),
-            5, stringAndCharEnum.getEnumConstants().length);
+        assertEquals(
+            5,
+            stringAndCharEnum.getEnumConstants().length,
+            Arrays.toString(stringAndCharEnum.getEnumConstants()));
         enumValue(stringAndCharEnum, "NEW");
         enumValue(stringAndCharEnum, "FILL");
         enumValue(stringAndCharEnum, "CANCELED");
@@ -635,7 +652,7 @@ public class SharedCodecsTest
         assertSourceContains(equalCountEnumName, "/** Altnames: ORDCXLREPREQ */ ORDER_CANCEL_REPLACE_REQUEST");
     }
 
-    private <T extends Enum<T>> T enumValue(final Class<T> collisionEnum, final String name)
+    protected <T extends Enum<T>> T enumValue(final Class<T> collisionEnum, final String name)
     {
         try
         {
@@ -648,7 +665,7 @@ public class SharedCodecsTest
         }
     }
 
-    private <T extends Enum<T>> void noEnum(final Class<T> enumClass, final String name)
+    protected <T extends Enum<T>> void noEnum(final Class<T> enumClass, final String name)
     {
         try
         {
@@ -684,28 +701,28 @@ public class SharedCodecsTest
         assertDecoderNotShared(reset);
     }
 
-    private void assertEncoderShared(final String methodName, final Class<?>... parameterTypes)
+    protected void assertEncoderShared(final String methodName, final Class<?>... parameterTypes)
         throws NoSuchMethodException
     {
         executionReportEncoderShared.getDeclaredMethod(methodName, parameterTypes);
         assertNotOnEncoderChildren(methodName, parameterTypes);
     }
 
-    private void assertNotOnEncoderChildren(final String methodName, final Class<?>... parameterTypes)
+    protected void assertNotOnEncoderChildren(final String methodName, final Class<?>... parameterTypes)
     {
         noMethod(executionReportEncoder1, methodName, parameterTypes);
         noMethod(executionReportEncoder2, methodName, parameterTypes);
         noMethod(executionReportEncoder3, methodName, parameterTypes);
     }
 
-    private void assertDecoderShared(final String methodName, final Class<?>... parameterTypes)
+    protected void assertDecoderShared(final String methodName, final Class<?>... parameterTypes)
         throws NoSuchMethodException
     {
         executionReportDecoderShared.getDeclaredMethod(methodName, parameterTypes);
         noMethod(executionReportDecoder2, methodName, parameterTypes);
     }
 
-    private void assertEncoderNotShared(final String methodName, final Class<?>... parameterTypes)
+    protected void assertEncoderNotShared(final String methodName, final Class<?>... parameterTypes)
         throws NoSuchMethodException
     {
         noMethod(executionReportEncoderShared, methodName, parameterTypes);
@@ -714,7 +731,7 @@ public class SharedCodecsTest
         executionReportEncoder3.getDeclaredMethod(methodName, parameterTypes);
     }
 
-    private void assertDecoderNotShared(final String methodName, final Class<?>... parameterTypes)
+    protected void assertDecoderNotShared(final String methodName, final Class<?>... parameterTypes)
         throws NoSuchMethodException
     {
         noMethod(executionReportDecoderShared, methodName, parameterTypes);
@@ -810,22 +827,22 @@ public class SharedCodecsTest
         noField(anyFieldsTwoEncoderShared, trailingAnyFields);
     }
 
-    private String sometimesComponentDecoder(final String dictNorm)
+    protected String sometimesComponentDecoder(final String dictNorm)
     {
         return decoder(dictNorm, SOMETIMES_COMPONENT);
     }
 
-    private String sometimesComponentEncoder(final String dictNorm)
+    protected String sometimesComponentEncoder(final String dictNorm)
     {
         return encoder(dictNorm, SOMETIMES_COMPONENT);
     }
 
-    private static Class<Object> loadClass(final String className) throws ClassNotFoundException
+    protected static Class<Object> loadClass(final String className) throws ClassNotFoundException
     {
         return WRAPPER.loadClass(className);
     }
 
-    private void noMethod(final Class<?> cls, final String name, final Class<?>... paramTypes)
+    protected void noMethod(final Class<?> cls, final String name, final Class<?>... paramTypes)
     {
         try
         {
@@ -838,7 +855,7 @@ public class SharedCodecsTest
         }
     }
 
-    private void noField(final Class<?> cls, final String name)
+    protected void noField(final Class<?> cls, final String name)
     {
         try
         {
@@ -851,7 +868,7 @@ public class SharedCodecsTest
         }
     }
 
-    private void setupEncoder(final Encoder encoder, final boolean optionalFields) throws Exception
+    protected void setupEncoder(final Encoder encoder, final boolean optionalFields) throws Exception
     {
         setCharSequence(encoder, ORDER_ID, "1");
         setCharSequence(encoder, "secondaryOrderID", "2");
@@ -893,22 +910,22 @@ public class SharedCodecsTest
         setCharSequence(semiSharedComponent, "semiSharedField", "ABC");
     }
 
-    private Decoder executionReportDecoder1() throws Exception
+    protected Decoder executionReportDecoder1() throws Exception
     {
         return (Decoder)newInstance(executionReportDecoder1);
     }
 
-    private Object newInstance(final Class<?> cls) throws Exception
+    protected Object newInstance(final Class<?> cls) throws Exception
     {
         return cls.getConstructor().newInstance();
     }
 
-    private Encoder executionReportEncoder1() throws Exception
+    protected Encoder executionReportEncoder1() throws Exception
     {
         return (Encoder)newInstance(executionReportEncoder1);
     }
 
-    private void noClass(final String className)
+    protected void noClass(final String className)
     {
         WRAPPER.noClass(className);
     }
