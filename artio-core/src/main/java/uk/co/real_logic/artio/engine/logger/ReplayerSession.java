@@ -26,7 +26,7 @@ import static uk.co.real_logic.artio.LogTag.REPLAY;
 
 abstract class ReplayerSession implements ControlledFragmentHandler
 {
-    static int UNKNOWN_SEQUENCE_NUMBER = -1;
+    static final int UNKNOWN_SEQUENCE_NUMBER = -1;
 
     private final int maxClaimAttempts;
     private final IdleStrategy idleStrategy;
