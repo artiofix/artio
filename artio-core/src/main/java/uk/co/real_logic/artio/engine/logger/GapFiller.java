@@ -115,6 +115,7 @@ public class GapFiller extends AbstractReplayer
             final int endSeqNo = (int)validResendRequest.endSequenceNumber();
             final int sequenceIndex = validResendRequest.sequenceIndex();
             final long correlationId = validResendRequest.correlationId();
+            final int overriddenBeginSeqNo = (int)validResendRequest.overriddenBeginSequenceNumber();
             validResendRequest.wrapBody(asciiBuffer);
 
             return onResendRequest(

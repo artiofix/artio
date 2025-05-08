@@ -26,6 +26,8 @@ import static uk.co.real_logic.artio.LogTag.REPLAY;
 
 abstract class ReplayerSession implements ControlledFragmentHandler
 {
+    static int UNKNOWN_SEQUENCE_NUMBER = -1;
+
     private final int maxClaimAttempts;
     private final IdleStrategy idleStrategy;
 
@@ -39,6 +41,7 @@ abstract class ReplayerSession implements ControlledFragmentHandler
     final int endSeqNo;
     final long sessionId;
     final int sequenceIndex;
+    final int overriddenBeginSeqNo;
     final Replayer replayer;
     final AtomicCounter bytesInBuffer;
     final int maxBytesInBuffer;
@@ -57,6 +60,7 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         final int endSeqNo,
         final long sessionId,
         final int sequenceIndex,
+        final int overriddenBeginSeqNo,
         final Replayer replayer,
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer)
@@ -72,6 +76,7 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         this.endSeqNo = endSeqNo;
         this.sessionId = sessionId;
         this.sequenceIndex = sequenceIndex;
+        this.overriddenBeginSeqNo = overriddenBeginSeqNo;
         this.replayer = replayer;
         this.maxBytesInBuffer = maxBytesInBuffer;
         this.bytesInBuffer = bytesInBuffer;
@@ -81,7 +86,7 @@ abstract class ReplayerSession implements ControlledFragmentHandler
     {
         replayOperation = replayQuery.query(
             sessionId,
-            beginSeqNo,
+            overriddenBeginSeqNo != UNKNOWN_SEQUENCE_NUMBER ? overriddenBeginSeqNo : beginSeqNo,
             sequenceIndex,
             endSeqNo,
             sequenceIndex,

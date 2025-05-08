@@ -73,6 +73,7 @@ public class FixPReplayerSession extends ReplayerSession
         final int beginSeqNo,
         final int endSeqNo,
         final long sessionId,
+        final int overriddenBeginSeqNo,
         final Replayer replayer,
         final IntHashSet gapfillOnRetransmitILinkTemplateIds,
         final FixPMessageEncoder fixPMessageEncoder,
@@ -85,7 +86,7 @@ public class FixPReplayerSession extends ReplayerSession
     {
         super(connectionId, correlationId, bufferClaim, idleStrategy, maxClaimAttempts, publication, replayQuery,
             beginSeqNo, endSeqNo,
-            sessionId, 0, replayer, bytesInBuffer, maxBytesInBuffer);
+            sessionId, 0, overriddenBeginSeqNo, replayer, bytesInBuffer, maxBytesInBuffer);
 
         this.gapfillOnRetransmitILinkTemplateIds = gapfillOnRetransmitILinkTemplateIds;
         this.fixPMessageEncoder = fixPMessageEncoder;

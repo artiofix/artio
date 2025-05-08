@@ -2,7 +2,7 @@
 <sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
                    package="uk.co.real_logic.artio.messages"
                    id="666"
-                   version="26"
+                   version="27"
                    semanticVersion="0.2"
                    description="Internal messaging format used by the FIX Gateway"
                    byteOrder="littleEndian">
@@ -680,6 +680,7 @@
         <field name="endSequenceNumber" id="4" type="uint32"/>
         <field name="SequenceIndex" id="5" type="int32"/>
         <field name="correlationId" id="7" type="CorrelationId" sinceVersion="23"/>
+        <field name="overriddenBeginSequenceNumber" id="8" type="uint32" sinceVersion="27"/>
         <data name="body" id="6" type="AsciiString"/>
     </sbe:message>
 

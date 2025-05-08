@@ -1366,6 +1366,7 @@ public class GatewayPublication extends ClaimablePublication
         final long endSequenceNumber,
         final int sequenceIndex,
         final long correlationId,
+        final long overriddenBeginSequenceNumber,
         final DirectBuffer bodyBuffer,
         final int bodyOffset,
         final int bodyLength)
@@ -1387,6 +1388,7 @@ public class GatewayPublication extends ClaimablePublication
             .endSequenceNumber(endSequenceNumber)
             .sequenceIndex(sequenceIndex)
             .correlationId(correlationId)
+            .overriddenBeginSequenceNumber(overriddenBeginSequenceNumber)
             .putBody(bodyBuffer, bodyOffset, bodyLength);
 
         bufferClaim.commit();

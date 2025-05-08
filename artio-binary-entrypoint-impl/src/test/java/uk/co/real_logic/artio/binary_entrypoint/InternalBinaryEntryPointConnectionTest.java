@@ -78,6 +78,7 @@ public class InternalBinaryEntryPointConnectionTest
             anyLong(),
             eq(SESSION_VER_ID),
             eq(0),
+            anyInt(),
             any(),
             anyInt(),
             anyInt())).thenReturn(1000L);

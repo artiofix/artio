@@ -787,8 +787,8 @@ public class ReplayerTest extends AbstractLogTest
         buffer.wrap(this.buffer, offset, length);
 
         setupClaim(START_REPLAY_LENGTH);
-        final Action action = replayer.onResendRequest(
-            sessionId, connectionId, CORRELATION_ID, beginSeqNo, endSeqNo, SEQUENCE_INDEX, buffer);
+        final Action action = replayer.onResendRequest(sessionId, connectionId, CORRELATION_ID,
+            beginSeqNo, endSeqNo, SEQUENCE_INDEX, UNKNOWN_SEQ_NO, buffer);
         if (sendsStartReplay)
         {
             verifyStartReplyClaim();

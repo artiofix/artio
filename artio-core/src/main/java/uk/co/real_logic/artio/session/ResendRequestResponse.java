@@ -21,6 +21,7 @@ public class ResendRequestResponse
 {
     private boolean result;
 
+    private int overriddenBeginSequenceNUmber;
     private int refTagId;
     private AbstractRejectEncoder rejectEncoder;
 
@@ -30,6 +31,16 @@ public class ResendRequestResponse
     public void resend()
     {
         result = true;
+    }
+
+    /**
+     * Invoke when you want to respond to the resend request, from an overridden beginSeqNum, gapfilling prior messages
+     * @param overriddenBeginSequenceNumber indicates messages before this are gapfilled
+     */
+    public void resendFrom(final int overriddenBeginSequenceNumber)
+    {
+        this.overriddenBeginSequenceNUmber = overriddenBeginSequenceNumber;
+        this.result = true;
     }
 
     /**
@@ -51,6 +62,14 @@ public class ResendRequestResponse
         result = false;
     }
 
+    void reset()
+    {
+        result = false;
+        overriddenBeginSequenceNUmber = Session.UNKNOWN;
+        refTagId = Session.UNKNOWN;
+        rejectEncoder = null;
+    }
+
     AbstractRejectEncoder rejectEncoder()
     {
         return rejectEncoder;
@@ -59,6 +78,11 @@ public class ResendRequestResponse
     boolean result()
     {
         return result;
+    }
+
+    int overriddenBeginSequenceNumber()
+    {
+        return overriddenBeginSequenceNUmber;
     }
 
     int refTagId()
