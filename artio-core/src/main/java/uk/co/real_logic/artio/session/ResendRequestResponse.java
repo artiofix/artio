@@ -16,12 +16,13 @@
 package uk.co.real_logic.artio.session;
 
 import uk.co.real_logic.artio.builder.AbstractRejectEncoder;
+import uk.co.real_logic.artio.dictionary.generation.CodecUtil;
 
 public class ResendRequestResponse
 {
     private boolean result;
 
-    private int overriddenBeginSequenceNUmber;
+    private int overriddenBeginSequenceNumber;
     private int refTagId;
     private AbstractRejectEncoder rejectEncoder;
 
@@ -30,6 +31,10 @@ public class ResendRequestResponse
      */
     public void resend()
     {
+        overriddenBeginSequenceNumber = Session.UNKNOWN;
+        refTagId = CodecUtil.MISSING_INT;
+        rejectEncoder = null;
+
         result = true;
     }
 
@@ -39,8 +44,11 @@ public class ResendRequestResponse
      */
     public void resendFrom(final int overriddenBeginSequenceNumber)
     {
-        this.overriddenBeginSequenceNUmber = overriddenBeginSequenceNumber;
-        this.result = true;
+        this.overriddenBeginSequenceNumber = overriddenBeginSequenceNumber;
+        refTagId = CodecUtil.MISSING_INT;
+        rejectEncoder = null;
+
+        result = true;
     }
 
     /**
@@ -50,24 +58,20 @@ public class ResendRequestResponse
      */
     public void reject(final int refTagId)
     {
+        overriddenBeginSequenceNumber = Session.UNKNOWN;
         this.refTagId = refTagId;
+        rejectEncoder = null;
 
         result = false;
     }
 
     public void reject(final AbstractRejectEncoder rejectEncoder)
     {
+        overriddenBeginSequenceNumber = Session.UNKNOWN;
+        refTagId = CodecUtil.MISSING_INT;
         this.rejectEncoder = rejectEncoder;
 
         result = false;
-    }
-
-    void reset()
-    {
-        result = false;
-        overriddenBeginSequenceNUmber = Session.UNKNOWN;
-        refTagId = Session.UNKNOWN;
-        rejectEncoder = null;
     }
 
     AbstractRejectEncoder rejectEncoder()
@@ -82,7 +86,7 @@ public class ResendRequestResponse
 
     int overriddenBeginSequenceNumber()
     {
-        return overriddenBeginSequenceNUmber;
+        return overriddenBeginSequenceNumber;
     }
 
     int refTagId()

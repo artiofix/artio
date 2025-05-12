@@ -2097,7 +2097,6 @@ public class Session
         final ResendRequestResponse resendRequestResponse = this.resendRequestResponse;
         if (!backpressuredResendRequestResponse)
         {
-            resendRequestResponse.reset();
             resendRequestController.onResend(this, resendRequest, correctedEndSeqNo, resendRequestResponse);
         }
 
