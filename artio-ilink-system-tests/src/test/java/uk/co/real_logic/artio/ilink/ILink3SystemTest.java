@@ -282,7 +282,7 @@ public class ILink3SystemTest
             .avgPxGroupID(0, PartyDetailsDefinitionRequest518Encoder.avgPxGroupIDNullValue())
             .selfMatchPreventionID(PartyDetailsDefinitionRequest518Encoder.selfMatchPreventionIDNullValue())
             .cmtaGiveupCD(CmtaGiveUpCD.GiveUp)
-            .custOrderCapacity(CustOrderCapacity.Clearingfirmtradingforitsproprietaryaccount)
+            .custOrderCapacity(CustOrderCapacity.Memberfirmtradingforitsproprietaryaccount)
             .clearingAccountType(ClearingAcctType.Firm)
             .selfMatchPreventionInstruction(SMPI.CancelOldest)
             .avgPxIndicator(AvgPxInd.NoAveragePricing)
