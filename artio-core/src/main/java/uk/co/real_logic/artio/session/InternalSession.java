@@ -283,7 +283,7 @@ public class InternalSession extends Session implements AutoCloseable
         connectionId(connectionId);
         state(sessionState);
         heartbeatIntervalInS(heartbeatIntervalInS);
-        sequenceIndex(sequenceIndex);
+        setCorrectedSequenceIndex(sessionState, sequenceIndex);
         enableLastMsgSeqNumProcessed(enableLastMsgSeqNumProcessed);
         fixDictionary(fixDictionary);
         address(address);

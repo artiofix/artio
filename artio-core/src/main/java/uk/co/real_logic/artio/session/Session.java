@@ -266,16 +266,7 @@ public class Session
         this.formatters = formatters;
 
         connectionId(connectionId);
-        // If we're an offline session that has never been corrected then we need to set the initial sequence index.
-        if (state == DISCONNECTED && sequenceIndex == UNKNOWN_SEQUENCE_INDEX)
-        {
-            sequenceIndex(0);
-        }
-        else
-        {
-            sequenceIndex(sequenceIndex);
-        }
-
+        setCorrectedSequenceIndex(state, sequenceIndex);
         state(state);
         heartbeatIntervalInS(heartbeatIntervalInS);
         lastMsgSeqNumProcessed = this.enableLastMsgSeqNumProcessed ? 0 : NO_LAST_MSG_SEQ_NUM_PROCESSED;
@@ -2764,5 +2755,18 @@ public class Session
     private void text(final byte[] logoutText)
     {
         this.logoutText = logoutText;
+    }
+
+    void setCorrectedSequenceIndex(final SessionState state, final int sequenceIndex)
+    {
+        // If we're an offline session that has never been corrected then we need to set the initial sequence index.
+        if (state == DISCONNECTED && sequenceIndex == UNKNOWN_SEQUENCE_INDEX)
+        {
+            sequenceIndex(0);
+        }
+        else
+        {
+            sequenceIndex(sequenceIndex);
+        }
     }
 }

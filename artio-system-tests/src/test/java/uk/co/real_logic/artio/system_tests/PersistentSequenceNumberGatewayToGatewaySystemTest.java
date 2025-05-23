@@ -648,6 +648,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         final long sessionId = sessionWriter.id();
 
         acceptingSession = SystemTestUtil.acquireSession(acceptingHandler, acceptingLibrary, sessionId, testSystem);
+        assertEquals(0, acceptingSession.sequenceIndex());
 
         final Reply<SessionReplyStatus> reply = acceptingLibrary.releaseToGateway(
             acceptingSession, TEST_TIMEOUT_IN_MS);
@@ -655,8 +656,11 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
 
         // check that after release it can be re-acquired and logon.
         acceptingSession = SystemTestUtil.acquireSession(acceptingHandler, acceptingLibrary, sessionId, testSystem);
+        assertEquals(0, acceptingSession.sequenceIndex());
+
         connectPersistingSessionsWithoutAcquiring();
         assertConnected(acceptingSession);
+        assertEquals(0, acceptingSession.sequenceIndex());
     }
 
     @Test(timeout = TEST_TIMEOUT_IN_MS)
