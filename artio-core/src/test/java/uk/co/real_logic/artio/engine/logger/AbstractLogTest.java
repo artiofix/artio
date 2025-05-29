@@ -58,7 +58,6 @@ public class AbstractLogTest
     protected static final int LIBRARY_ID = 7;
     protected static final int BEGIN_SEQ_NO = 2;
     protected static final int END_SEQ_NO = 2;
-    protected static final int UNKNOWN_SEQ_NO = -1;
     protected static final int SEQUENCE_INDEX = 1;
     private static final int ENCODE_OFFSET = 1;
     static final String BUFFER_SENDER = "sender";

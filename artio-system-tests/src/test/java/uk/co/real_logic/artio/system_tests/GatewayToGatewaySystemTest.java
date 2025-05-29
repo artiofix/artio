@@ -373,6 +373,51 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(2, fakeResendRequestController.callCount());
     }
 
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldControlResendRequestsWithOverriddenBeginSeqNo()
+    {
+        fakeResendRequestController.maxResends(1);
+        fakeResendRequestController.resend(true);
+        fakeResendRequestController.overriddenBeginSeqNo(10);
+
+        acquireAcceptingSession();
+
+        for (int i = 0; i < 10; i++)
+        {
+            exchangeExecutionReport(initiatingSession, acceptingOtfAcceptor);
+        }
+
+        testSystem.await("Failed to receive messages", () ->
+        {
+            final long totalReplayedMessages = acceptingOtfAcceptor.messages().size();
+            return totalReplayedMessages >= 10;
+        });
+
+        acceptingOtfAcceptor.messages().clear();
+
+        acceptorSendsResendRequest(1, 0);
+
+        testSystem.await("Failed to receive resent messages", () ->
+        {
+            final long totalReplayedMessages = acceptingOtfAcceptor.messages().size();
+
+            if (totalReplayedMessages < 3)
+            {
+                return false;
+            }
+            else
+            {
+                final List<FixMessage> fixMessageList = acceptingOtfAcceptor.messages();
+                assertEquals(SEQUENCE_RESET_MESSAGE, fixMessageList.get(0).messageType());
+                assertEquals(EXECUTION_REPORT_MESSAGE, fixMessageList.get(1).messageType());
+                assertEquals(EXECUTION_REPORT_MESSAGE, fixMessageList.get(2).messageType());
+                return true;
+            }
+        });
+
+        assertEquals(1, fakeResendRequestController.callCount());
+    }
+
     // Test exists to replicate a faily complex bug involving a sequence number issue after a library timeout.
     @Test(timeout = TEST_TIMEOUT_IN_MS)
     public void shouldNotSendDuplicateSequenceNumbersAfterTimeout()

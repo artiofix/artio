@@ -441,13 +441,15 @@ class FixReplayerSession extends ReplayerSession
             // If we have missing messages for some reason then just gap fill them.
 
             // We know precisely what number to gap fill up to.
-            final int expectedCount = endSeqNo - beginSeqNo + 1;
+            final int adjustedBeginSeqNo = adjustBeginningSequenceNo(beginSeqNo, overriddenBeginSeqNo);
+            final int expectedCount = endSeqNo - adjustedBeginSeqNo + 1;
 
             if (IS_REPLAY_LOG_TAG_ENABLED)
             {
                 DebugLogger.log(
                     REPLAY,
-                    replayer.completeNotRecentFormatter.clear().with(replayedMessages).with(endSeqNo).with(beginSeqNo)
+                    replayer.completeNotRecentFormatter.clear().with(replayedMessages)
+                    .with(endSeqNo).with(beginSeqNo).with(overriddenBeginSeqNo)
                     .with(expectedCount).with(connectionId));
             }
 
@@ -491,6 +493,7 @@ class FixReplayerSession extends ReplayerSession
             ", connectionId=" + connectionId +
             ", beginSeqNo=" + beginSeqNo +
             ", endSeqNo=" + endSeqNo +
+            ", overriddenBeginSeqNo=" + overriddenBeginSeqNo +
             ", sessionId=" + sessionId +
             ", sequenceIndex=" + sequenceIndex +
             '}';

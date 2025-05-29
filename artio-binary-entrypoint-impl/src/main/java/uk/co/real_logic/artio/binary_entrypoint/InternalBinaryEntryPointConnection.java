@@ -1051,7 +1051,6 @@ class InternalBinaryEntryPointConnection
             endSequenceNumber,
             (int)sessionVerId,
             correlationId,
-            -1L,
             EMPTY_BUFFER,
             0,
             0);

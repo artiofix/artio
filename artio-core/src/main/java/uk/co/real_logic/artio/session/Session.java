@@ -2094,7 +2094,7 @@ public class Session
         if (resendRequestResponse.result())
         {
             int overriddenBeginSeqNum = resendRequestResponse.overriddenBeginSequenceNumber();
-            if (overriddenBeginSeqNum != UNKNOWN)
+            if (overriddenBeginSeqNum != ResendRequestResponse.USE_BEGIN_SEQ_NO)
             {
                 overriddenBeginSeqNum = Math.max(overriddenBeginSeqNum, beginSeqNum);
                 overriddenBeginSeqNum = Math.min(overriddenBeginSeqNum, correctedEndSeqNo);

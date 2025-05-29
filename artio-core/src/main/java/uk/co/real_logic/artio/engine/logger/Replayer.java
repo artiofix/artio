@@ -78,7 +78,7 @@ public class Replayer extends AbstractReplayer
     // For FixReplayerSession, safe to share rather than allocate for each FixReplayerSession
     final CharFormatter completeNotRecentFormatter = new CharFormatter(
         "ReplayerSession: completeReplay-!upToMostRecent replayedMessages=%s " +
-        "endSeqNo=%s beginSeqNo=%s expectedCount=%s connId=%s");
+        "endSeqNo=%s beginSeqNo=%s overriddenBeginSeqNo=%s expectedCount=%s connId=%s");
     final FixMessageEncoder fixMessageEncoder = new FixMessageEncoder();
     final FixMessageDecoder fixMessageDecoder = new FixMessageDecoder();
     final ThrottleRejectDecoder throttleRejectDecoder = new ThrottleRejectDecoder();
@@ -198,7 +198,7 @@ public class Replayer extends AbstractReplayer
                 final long endSeqNo = validResendRequest.endSequenceNumber();
                 final int sequenceIndex = validResendRequest.sequenceIndex();
                 final long correlationId = validResendRequest.correlationId();
-                final long overriddenBeginSeqNo = (int)validResendRequest.overriddenBeginSequenceNumber();
+                final long overriddenBeginSeqNo = validResendRequest.overriddenBeginSequenceNumber();
                 validResendRequest.wrapBody(asciiBuffer);
 
                 if (IS_REPLAY_LOG_TAG_ENABLED)

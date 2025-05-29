@@ -17,9 +17,12 @@ package uk.co.real_logic.artio.session;
 
 import uk.co.real_logic.artio.builder.AbstractRejectEncoder;
 import uk.co.real_logic.artio.dictionary.generation.CodecUtil;
+import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 
 public class ResendRequestResponse
 {
+    static final int USE_BEGIN_SEQ_NO = (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue();
+
     private boolean result;
 
     private int overriddenBeginSequenceNumber;
@@ -31,7 +34,7 @@ public class ResendRequestResponse
      */
     public void resend()
     {
-        overriddenBeginSequenceNumber = Session.UNKNOWN;
+        overriddenBeginSequenceNumber = USE_BEGIN_SEQ_NO;
         refTagId = CodecUtil.MISSING_INT;
         rejectEncoder = null;
 
@@ -58,7 +61,7 @@ public class ResendRequestResponse
      */
     public void reject(final int refTagId)
     {
-        overriddenBeginSequenceNumber = Session.UNKNOWN;
+        overriddenBeginSequenceNumber = USE_BEGIN_SEQ_NO;
         this.refTagId = refTagId;
         rejectEncoder = null;
 
@@ -67,7 +70,7 @@ public class ResendRequestResponse
 
     public void reject(final AbstractRejectEncoder rejectEncoder)
     {
-        overriddenBeginSequenceNumber = Session.UNKNOWN;
+        overriddenBeginSequenceNumber = USE_BEGIN_SEQ_NO;
         refTagId = CodecUtil.MISSING_INT;
         this.rejectEncoder = rejectEncoder;
 

@@ -50,6 +50,7 @@ import uk.co.real_logic.artio.fields.UtcTimestampDecoder;
 import uk.co.real_logic.artio.messages.FixPProtocolType;
 import uk.co.real_logic.artio.messages.MessageHeaderDecoder;
 import uk.co.real_logic.artio.messages.ReplayCompleteDecoder;
+import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
@@ -788,7 +789,8 @@ public class ReplayerTest extends AbstractLogTest
 
         setupClaim(START_REPLAY_LENGTH);
         final Action action = replayer.onResendRequest(sessionId, connectionId, CORRELATION_ID,
-            beginSeqNo, endSeqNo, SEQUENCE_INDEX, UNKNOWN_SEQ_NO, buffer);
+            beginSeqNo, endSeqNo, SEQUENCE_INDEX,
+            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), buffer);
         if (sendsStartReplay)
         {
             verifyStartReplyClaim();

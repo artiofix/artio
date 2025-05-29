@@ -1366,6 +1366,31 @@ public class GatewayPublication extends ClaimablePublication
         final long endSequenceNumber,
         final int sequenceIndex,
         final long correlationId,
+        final DirectBuffer bodyBuffer,
+        final int bodyOffset,
+        final int bodyLength)
+    {
+        return saveValidResendRequest(
+            sessionId,
+            connectionId,
+            beginSequenceNumber,
+            endSequenceNumber,
+            sequenceIndex,
+            correlationId,
+            ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(),
+            bodyBuffer,
+            bodyOffset,
+            bodyLength
+        );
+    }
+
+    public long saveValidResendRequest(
+        final long sessionId,
+        final long connectionId,
+        final long beginSequenceNumber,
+        final long endSequenceNumber,
+        final int sequenceIndex,
+        final long correlationId,
         final long overriddenBeginSequenceNumber,
         final DirectBuffer bodyBuffer,
         final int bodyOffset,

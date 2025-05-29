@@ -21,13 +21,12 @@ import io.aeron.logbuffer.ControlledFragmentHandler;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.Pressure;
+import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 
 import static uk.co.real_logic.artio.LogTag.REPLAY;
 
 abstract class ReplayerSession implements ControlledFragmentHandler
 {
-    static final int UNKNOWN_SEQUENCE_NUMBER = -1;
-
     private final int maxClaimAttempts;
     private final IdleStrategy idleStrategy;
 
@@ -84,9 +83,10 @@ abstract class ReplayerSession implements ControlledFragmentHandler
 
     void query()
     {
+        final int adjustedBeginSeqNo = adjustBeginningSequenceNo(beginSeqNo, overriddenBeginSeqNo);
         replayOperation = replayQuery.query(
             sessionId,
-            overriddenBeginSeqNo != UNKNOWN_SEQUENCE_NUMBER ? overriddenBeginSeqNo : beginSeqNo,
+            adjustedBeginSeqNo,
             sequenceIndex,
             endSeqNo,
             sequenceIndex,
@@ -150,5 +150,11 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         {
             replayOperation.startClose();
         }
+    }
+
+    static int adjustBeginningSequenceNo(final int beginSeqNo, final int overriddenBeginSeqNo)
+    {
+        return overriddenBeginSeqNo != (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue() ?
+            overriddenBeginSeqNo : beginSeqNo;
     }
 }
