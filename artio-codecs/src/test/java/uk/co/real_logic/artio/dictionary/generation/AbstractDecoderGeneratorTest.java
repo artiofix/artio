@@ -1410,7 +1410,7 @@ public abstract class AbstractDecoderGeneratorTest
     {
         final Decoder decoder = decodeHeartbeatWithoutValidation(INCORRECT_BOOLEAN_VALUE_MESSAGE);
         assertEquals(true, getBooleanField(decoder));
-        assertArrayEquals(new char[]{'Y', 'Y'}, getChars(decoder, "booleanFieldAsChars"));
+        assertEquals(2, getInt(decoder, "booleanFieldLength"));
 
         assertValid(decoder);
     }
@@ -1420,7 +1420,7 @@ public abstract class AbstractDecoderGeneratorTest
     {
         final Decoder decoder = decodeHeartbeat(INCORRECT_BOOLEAN_VALUE_MESSAGE);
         assertEquals(true, getBooleanField(decoder));
-        assertArrayEquals(new char[]{'Y', 'Y'}, getChars(decoder, "booleanFieldAsChars"));
+        assertEquals(2, getInt(decoder, "booleanFieldLength"));
 
         assertInvalid(decoder, 5, 118);
     }
@@ -1430,7 +1430,7 @@ public abstract class AbstractDecoderGeneratorTest
     {
         final Decoder decoder = decodeHeartbeat(INCORRECT_SIZE_NO_ENUM_CHAR_VALUE_MESSAGE);
         assertEquals('a', getChar(decoder, "charNoEnumField"));
-        assertArrayEquals(new char[]{'a', 'b'}, getChars(decoder, "charNoEnumFieldAsChars"));
+        assertEquals(2, getInt(decoder, "charNoEnumFieldLength"));
 
         assertInvalid(decoder, 5, 144);
     }
@@ -1440,7 +1440,7 @@ public abstract class AbstractDecoderGeneratorTest
     {
         final Decoder decoder = decodeHeartbeat(INCORRECT_SIZE_CHAR_VALUE_MESSAGE);
         assertEquals('a', getCharField(decoder));
-        assertArrayEquals(new char[]{'a', 'b'}, getChars(decoder, "charFieldAsChars"));
+        assertEquals(2, getInt(decoder, "charFieldLength"));
 
         assertInvalid(decoder, 5, 128);
     }
@@ -1450,7 +1450,7 @@ public abstract class AbstractDecoderGeneratorTest
     {
         final Decoder decoder = decodeHeartbeat(INCORRECT_SIZE_2_CHAR_VALUE_MESSAGE);
         assertEquals('z', getCharField(decoder));
-        assertArrayEquals(new char[]{'z'}, getChars(decoder, "charFieldAsChars"));
+        assertEquals(1, getInt(decoder, "charFieldLength"));
 
         assertInvalid(decoder, 5, 128);
     }
