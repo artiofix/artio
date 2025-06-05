@@ -771,7 +771,7 @@ class DecoderGenerator extends Generator
         {
 
             charsValidation = String.format(
-                "        if (%3$s && %1$sAsChars.length > 1)\n" +
+                "        if (%3$s && %1$sLength > 1)\n" +
                 "        {\n" +
                 "            invalidTagId = %2$s;\n" +
                 "            rejectReason = " + VALUE_IS_INCORRECT + ";\n" +
@@ -1459,10 +1459,10 @@ class DecoderGenerator extends Generator
 
         return String.format(
             "    %10$s %1$s %2$s%3$s;\n\n" +
-              (type.isCharOrBooleanBased() ? "    %10$s char[] %2$sAsChars = new char[1];\n" +
-                "    public char[] %2$sAsChars()" +
+              (type.isCharOrBooleanBased() ? "    %10$s int %2$sLength = 0;\n" +
+                "    public int %2$sLength()" +
                 "    {\n" +
-                "       return %2$sAsChars;\n" +
+                "       return %2$sLength;\n" +
                 "    }\n" : "") +
             "%4$s" +
             "    %11$spublic %1$s %2$s()\n" +
@@ -2072,7 +2072,7 @@ class DecoderGenerator extends Generator
             constantName(name),
             optionalAssign(entry),
             fieldDecodeMethod(field, fieldName),
-            readCharsFromBuffer(field, fieldName),
+            getCharOrBooleanLength(field, fieldName),
             storeOffsetForVariableLengthFields(field.type(), fieldName),
             storeLengthForVariableLengthFields(field.type(), fieldName),
             suffix);
@@ -2194,15 +2194,14 @@ class DecoderGenerator extends Generator
         return prefix + decodeMethod + ";\n";
     }
 
-    private String readCharsFromBuffer(final Field field, final String fieldName)
+    private String getCharOrBooleanLength(final Field field, final String fieldName)
     {
         if (!field.type().isCharOrBooleanBased())
         {
             return "";
         }
 
-        return String.format("                %1$sAsChars = buffer.getChars(%1$sAsChars, valueOffset, " +
-          "valueLength);\n", fieldName);
+        return String.format("                %1$sLength = valueLength;\n", fieldName);
     }
 
     protected String stringAppendTo(final String fieldName)
