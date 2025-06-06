@@ -119,6 +119,20 @@ public abstract class AbstractSessionTest
             anyInt(),
             eq(null),
             eq(0))).thenReturn(POSITION);
+        when(mockPublication.saveMessage(
+            bufferCaptor.capture(),
+            offsetCaptor.capture(),
+            lengthCaptor.capture(),
+            anyInt(),
+            anyLong(),
+            anyLong(),
+            anyInt(),
+            anyLong(),
+            any(),
+            anyInt(),
+            anyLong(),
+            eq(null),
+            eq(0))).thenReturn(POSITION);
 
         when(sessionProxy.sendResendRequest(anyInt(), anyInt(), anyInt(), eq(SEQUENCE_INDEX), anyInt()))
             .thenReturn(POSITION);
