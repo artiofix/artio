@@ -651,10 +651,15 @@ public class Session
      */
     public int prepare(final SessionHeaderEncoder header)
     {
+        return prepare(header, clock.nanoTime());
+    }
+
+    private int prepare(final SessionHeaderEncoder header, final long sendingTimeNanos)
+    {
         final int sentSeqNum = newSentSeqNum();
         header
             .msgSeqNum(sentSeqNum)
-            .sendingTime(timestampEncoder.buffer(), timestampEncoder.encode(epochFractionClock.epochFractionTime()));
+            .sendingTime(timestampEncoder.buffer(), timestampEncoder.updateFrom(sendingTimeNanos, NANOSECONDS));
 
         if (enableLastMsgSeqNumProcessed)
         {
@@ -713,14 +718,16 @@ public class Session
         final DirectBuffer metaDataBuffer,
         final int metaDataUpdateOffset)
     {
-        final int sentSeqNum = prepare(encoder.header());
+        final long sendingTime = clock.nanoTime();
+        final int sentSeqNum = prepare(encoder.header(), sendingTime);
 
         final long result = encoder.encode(asciiBuffer, 0);
         final int length = Encoder.length(result);
         final int offset = Encoder.offset(result);
         final long type = encoder.messageType();
 
-        return trySend(asciiBuffer, offset, length, sentSeqNum, type, metaDataBuffer, metaDataUpdateOffset);
+        return trySend(asciiBuffer, offset, length, sentSeqNum, type, sendingTime,
+            metaDataBuffer, metaDataUpdateOffset);
     }
 
     /**
@@ -767,12 +774,39 @@ public class Session
         final DirectBuffer metaDataBuffer,
         final int metaDataUpdateOffset)
     {
+        return trySend(messageBuffer, offset, length, seqNum, messageType, clock.nanoTime(),
+            metaDataBuffer, metaDataUpdateOffset);
+    }
+
+    private long trySend(
+        final DirectBuffer messageBuffer,
+        final int offset,
+        final int length,
+        final int seqNum,
+        final long messageType,
+        final long timestamp,
+        final DirectBuffer metaDataBuffer,
+        final int metaDataUpdateOffset)
+    {
         // If someone attempts to send a message during a logon / logout or offline then we should archive the message
         // but not send it.
         final long connectionId = this.state == ACTIVE ? this.connectionId : NO_CONNECTION_ID;
+        final long sessionId = id();
+        final int sequenceIndex1 = sequenceIndex();
         final long position = outboundPublication.saveMessage(
-            messageBuffer, offset, length, libraryId, messageType, id(), sequenceIndex(), connectionId, OK, seqNum,
-            metaDataBuffer, metaDataUpdateOffset);
+            messageBuffer,
+            offset,
+            length,
+            libraryId,
+            messageType,
+            sessionId,
+            sequenceIndex1,
+            connectionId,
+            OK,
+            seqNum,
+            timestamp,
+            metaDataBuffer,
+            metaDataUpdateOffset);
 
         if (position > 0)
         {
