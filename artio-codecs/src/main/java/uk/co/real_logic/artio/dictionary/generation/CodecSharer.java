@@ -577,7 +577,7 @@ class CodecSharer
                         final String commonRepr = findCommonName(reprToCount);
                         final Stream<Value> commonValues =
                             LongStream.range(0, reprToCount.get(commonRepr)).mapToObj(i ->
-                            new Value(commonRepr, name));
+                                new Value(commonRepr, name));
 
                         final HashSet<String> otherReprs = new HashSet<>(reprToCount.keySet());
                         otherReprs.remove(commonRepr);

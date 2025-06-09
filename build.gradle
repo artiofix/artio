@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-buildscript {
-    ext {
-        awsAccessKeyId = System.env.AWS_ACCESS_KEY_ID
-        awsSecretAccessKey = System.env.AWS_SECRET_ACCESS_KEY
-    }
-}
-
 plugins {
     alias(libs.plugins.shadow).apply(false)
-    alias(libs.plugins.release)
     alias(libs.plugins.versions)
 }
 
@@ -79,46 +71,34 @@ def projectPom = {
     }
 }
 
-ext {
-    group = artioGroup
-    isReleaseVersion = !version.endsWith("SNAPSHOT")
-    iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
-
-    if (!project.hasProperty('repoUsername')) {
-        repoUsername = ''
+def getConfigProperty(final String projectPropertyName, final String envVarName) {
+    String value = project.findProperty(projectPropertyName)
+    if (!value) {
+        value = System.getenv(envVarName)
+        if (!value) {
+            return null
+        }
     }
 
-    if (!project.hasProperty('repoPassword')) {
-        repoPassword = ''
-    }
+    value = value.trim()
 
-    if (!project.hasProperty('repoUrl')) {
-        repoUrl = ''
-    }
-
-    if (!project.hasProperty('snapshotUrl')) {
-        snapshotUrl = ''
-    }
-
-    if (!project.hasProperty('signingKey')) {
-        signingKey = null
-    }
-
-    if (!project.hasProperty('signingPassword')) {
-        signingPassword = null
-    }
+    return value ? value : null
 }
 
-release {
-    git {
-        requireBranch.set('')
-    }
+ext {
+    isReleaseVersion = !version.endsWith('-SNAPSHOT')
+    iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
+
+    sonatypeCentralPortalReleasesRepoUrl = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
+    sonatypeCentralPortalSnapshotsRepoUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+    sonatypeCentralPortalUsername = getConfigProperty('sonatypeCentralPortalUsername', 'SONATYPE_CENTRAL_PORTAL_USERNAME')
+    sonatypeCentralPortalPassword = getConfigProperty('sonatypeCentralPortalPassword', 'SONATYPE_CENTRAL_PORTAL_PASSWORD')
+
+    signingKey = getConfigProperty('signingKey', 'SIGNING_GPG_SECRET_KEY')         // NOTE: ASCII armored secret key
+    signingPassword = getConfigProperty('signingPassword', 'SIGNING_GPG_PASSWORD') // NOTE: Plain text
 }
 
 allprojects {
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -127,20 +107,15 @@ allprojects {
     configurations.configureEach {
         resolutionStrategy {
             failOnVersionConflict()
-            force libs.agrona,
-                  libs.byteBuddy,
-                  libs.byteBuddy.agent,
-                  // patching conflicting Checkstyle dependencies
-                  "org.codehaus.plexus:plexus-utils:3.3.0",
-                  "org.apache.commons:commons-lang3:3.8.1",
-                  "org.apache.httpcomponents:httpcore:4.4.14",
-                  "commons-codec:commons-codec:1.15"
-        }
-    }
 
-    tasks.withType(Sign).tap {
-        configureEach {
-            onlyIf { isReleaseVersion }
+            force libs.agrona,
+                    libs.byteBuddy,
+                    libs.byteBuddy.agent,
+                    // patching conflicting Checkstyle dependencies
+                    libs.commons.codec,
+                    libs.commons.lang3,
+                    libs.httpcore,
+                    libs.plexus.utils
         }
     }
 }
@@ -168,10 +143,16 @@ subprojects {
         options.deprecation = true
     }
 
+    tasks.withType(Sign).configureEach {
+        onlyIf {
+            isReleaseVersion && gradle.taskGraph.hasTask(tasks.publish)
+        }
+    }
+
     dependencies {
         testImplementation libs.hamcrest
         testImplementation libs.mockito
-        testImplementation platform("org.junit:junit-bom:${libs.versions.junit.get()}")
+        testImplementation platform(libs.junit.bom)
         testImplementation "org.junit.jupiter:junit-jupiter"
         testImplementation libs.junit4
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -281,14 +262,6 @@ subprojects {
         tests testJar
     }
 
-    signing {
-        if (signingKey != null) {
-            useInMemoryPgpKeys(signingKey, signingPassword)
-        }
-        required = { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
-        sign configurations.archives
-    }
-
     java {
         withSourcesJar()
         withJavadocJar()
@@ -299,6 +272,8 @@ def validationXsdPath = project(':artio-codecs').projectDir.toString() + '/src/m
 
 project(':artio-codecs') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     configurations {
         codecGeneration
@@ -372,6 +347,8 @@ project(':artio-codecs') {
 
 project(':artio-ilink3-codecs') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     configurations {
         codecGeneration
@@ -455,6 +432,8 @@ project(':artio-ilink3-codecs') {
 
 project(':artio-binary-entrypoint-codecs') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     configurations {
         codecGeneration
@@ -535,6 +514,8 @@ project(':artio-binary-entrypoint-codecs') {
 
 project(':artio-binary-entrypoint-impl') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     dependencies {
         api project(':artio-binary-entrypoint-codecs')
@@ -561,6 +542,8 @@ project(':artio-binary-entrypoint-impl') {
 
 project(':artio-ilink3-impl') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     dependencies {
         if (iLink3Enabled) {
@@ -594,6 +577,9 @@ project(':artio-ilink3-impl') {
 }
 
 project(':artio-session-codecs') {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
     configurations {
         codecGeneration
     }
@@ -669,6 +655,9 @@ project(':artio-session-codecs') {
 }
 
 project(':artio-session-fixt-codecs') {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
     configurations {
         codecGeneration
     }
@@ -734,6 +723,9 @@ project(':artio-session-fixt-codecs') {
 }
 
 project(':artio-core') {
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
     dependencies {
         api project(':artio-codecs')
         api libs.aeron.client
@@ -769,6 +761,8 @@ project(':artio-core') {
 
 project(':artio-system-tests') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     sourceSets {
         perf
@@ -833,6 +827,8 @@ project(':artio-system-tests') {
 
 project(':artio-ilink-system-tests') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     dependencies {
         testImplementation project(path: ':artio-core', configuration: 'tests')
@@ -871,6 +867,8 @@ project(':artio-ilink-system-tests') {
 
 project(':artio-binary-entrypoint-system-tests') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     dependencies {
         testImplementation project(path: ':artio-core', configuration: 'tests')
@@ -904,6 +902,8 @@ project(':artio-binary-entrypoint-system-tests') {
 
 project(':artio-samples') {
     apply plugin: 'com.gradleup.shadow'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     dependencies {
         api project(':artio-core')
@@ -941,33 +941,14 @@ subprojects {
     publishing {
         repositories {
             maven {
-                name = 'oss'
-                url = !isReleaseVersion ? snapshotUrl : repoUrl
+                url = !isReleaseVersion ? sonatypeCentralPortalSnapshotsRepoUrl : sonatypeCentralPortalReleasesRepoUrl
                 credentials {
-                    username = repoUsername
-                    password = repoPassword
-                }
-            }
-            maven {
-                name = 'private'
-                url = 's3://artio-repository/releases'
-                credentials(AwsCredentials) {
-                    accessKey = awsAccessKeyId
-                    secretKey = awsSecretAccessKey
+                    username = sonatypeCentralPortalUsername
+                    password = sonatypeCentralPortalPassword
                 }
             }
         }
     }
-}
-
-tasks.withType(PublishToMavenRepository).configureEach {
-    onlyIf {
-        isReleaseVersion
-    }
-}
-
-wrapper {
-    distributionType = 'ALL'
 }
 
 tasks.register('copyTestLogs', Copy) {
@@ -995,4 +976,15 @@ tasks.named('dependencyUpdates').configure {
     rejectVersionIf {
         isNonStable(it.candidate.version)
     }
+}
+
+tasks.register('uploadArtifactsToCentralPortal', uk.co.real_logic.artio.build.SonatypeCentralPortalUploadRepositoryTask) {
+    portalUsername.set(sonatypeCentralPortalUsername)
+    portalPassword.set(sonatypeCentralPortalPassword)
+    groupId.set(artioGroup)
+    snapshotRelease.set(!isReleaseVersion)
+}
+
+wrapper {
+    distributionType = 'ALL'
 }
