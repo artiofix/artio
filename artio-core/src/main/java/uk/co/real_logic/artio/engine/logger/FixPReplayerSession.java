@@ -34,6 +34,7 @@ import uk.co.real_logic.artio.messages.FixPMessageDecoder;
 import uk.co.real_logic.artio.messages.FixPMessageEncoder;
 import uk.co.real_logic.artio.messages.MessageHeaderEncoder;
 
+import static uk.co.real_logic.artio.LogTag.REPLAY;
 import static uk.co.real_logic.artio.LogTag.REPLAY_ATTEMPT;
 import static uk.co.real_logic.artio.fixp.AbstractFixPParser.FIXP_MESSAGE_HEADER_LENGTH;
 
@@ -73,7 +74,6 @@ public class FixPReplayerSession extends ReplayerSession
         final int beginSeqNo,
         final int endSeqNo,
         final long sessionId,
-        final int overriddenBeginSeqNo,
         final Replayer replayer,
         final IntHashSet gapfillOnRetransmitILinkTemplateIds,
         final FixPMessageEncoder fixPMessageEncoder,
@@ -86,7 +86,7 @@ public class FixPReplayerSession extends ReplayerSession
     {
         super(connectionId, correlationId, bufferClaim, idleStrategy, maxClaimAttempts, publication, replayQuery,
             beginSeqNo, endSeqNo,
-            sessionId, 0, overriddenBeginSeqNo, replayer, bytesInBuffer, maxBytesInBuffer);
+            sessionId, 0, replayer, bytesInBuffer, maxBytesInBuffer);
 
         this.gapfillOnRetransmitILinkTemplateIds = gapfillOnRetransmitILinkTemplateIds;
         this.fixPMessageEncoder = fixPMessageEncoder;
@@ -98,9 +98,16 @@ public class FixPReplayerSession extends ReplayerSession
         state = State.REPLAYING;
     }
 
-    MessageTracker messageTracker()
+    void query()
     {
-        return new FixPMessageTracker(this, binaryParser, (endSeqNo - beginSeqNo) + 1);
+        replayOperation = replayQuery.query(
+            sessionId,
+            beginSeqNo,
+            sequenceIndex,
+            endSeqNo,
+            sequenceIndex,
+            REPLAY,
+            new FixPMessageTracker(this, binaryParser, (endSeqNo - beginSeqNo) + 1));
     }
 
     public boolean attemptReplay()

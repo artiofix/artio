@@ -377,8 +377,8 @@ public class Replayer extends AbstractReplayer
 
             final FixPReplayerSession session = new FixPReplayerSession(
                 connectionId, correlationId, bufferClaim, idleStrategy, maxClaimAttempts, publication,
-                outboundReplayQuery, (int)beginSeqNo, (int)endSeqNo, sessionId, (int)overriddenBeginSeqNo,
-                this, gapfillOnRetransmitILinkTemplateIds,
+                outboundReplayQuery,
+                (int)beginSeqNo, (int)endSeqNo, sessionId, this, gapfillOnRetransmitILinkTemplateIds,
                 fixPMessageEncoder, binaryFixPParser.get(), binaryFixPProxy.get(), abstractBinaryFixPOffsets.get(),
                 fixPRetransmitHandler, bytesInBuffer, configuration.senderMaxBytesInBuffer());
 

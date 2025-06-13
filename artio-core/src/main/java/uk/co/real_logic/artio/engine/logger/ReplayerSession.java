@@ -21,9 +21,6 @@ import io.aeron.logbuffer.ControlledFragmentHandler;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.Pressure;
-import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
-
-import static uk.co.real_logic.artio.LogTag.REPLAY;
 
 abstract class ReplayerSession implements ControlledFragmentHandler
 {
@@ -40,7 +37,6 @@ abstract class ReplayerSession implements ControlledFragmentHandler
     final int endSeqNo;
     final long sessionId;
     final int sequenceIndex;
-    final int overriddenBeginSeqNo;
     final Replayer replayer;
     final AtomicCounter bytesInBuffer;
     final int maxBytesInBuffer;
@@ -59,7 +55,6 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         final int endSeqNo,
         final long sessionId,
         final int sequenceIndex,
-        final int overriddenBeginSeqNo,
         final Replayer replayer,
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer)
@@ -75,26 +70,12 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         this.endSeqNo = endSeqNo;
         this.sessionId = sessionId;
         this.sequenceIndex = sequenceIndex;
-        this.overriddenBeginSeqNo = overriddenBeginSeqNo;
         this.replayer = replayer;
         this.maxBytesInBuffer = maxBytesInBuffer;
         this.bytesInBuffer = bytesInBuffer;
     }
 
-    void query()
-    {
-        final int adjustedBeginSeqNo = adjustBeginningSequenceNo(beginSeqNo, overriddenBeginSeqNo);
-        replayOperation = replayQuery.query(
-            sessionId,
-            adjustedBeginSeqNo,
-            sequenceIndex,
-            endSeqNo,
-            sequenceIndex,
-            REPLAY,
-            messageTracker());
-    }
-
-    abstract MessageTracker messageTracker();
+    abstract void query();
 
     boolean claimBuffer(final int newLength, final int messageLength)
     {
@@ -150,11 +131,5 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         {
             replayOperation.startClose();
         }
-    }
-
-    static int adjustBeginningSequenceNo(final int beginSeqNo, final int overriddenBeginSeqNo)
-    {
-        return overriddenBeginSeqNo != (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue() ?
-            overriddenBeginSeqNo : beginSeqNo;
     }
 }
