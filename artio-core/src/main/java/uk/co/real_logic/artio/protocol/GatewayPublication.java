@@ -1370,6 +1370,32 @@ public class GatewayPublication extends ClaimablePublication
         final int bodyOffset,
         final int bodyLength)
     {
+        return saveValidResendRequest(
+            sessionId,
+            connectionId,
+            beginSequenceNumber,
+            endSequenceNumber,
+            sequenceIndex,
+            correlationId,
+            ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(),
+            bodyBuffer,
+            bodyOffset,
+            bodyLength
+        );
+    }
+
+    public long saveValidResendRequest(
+        final long sessionId,
+        final long connectionId,
+        final long beginSequenceNumber,
+        final long endSequenceNumber,
+        final int sequenceIndex,
+        final long correlationId,
+        final long overriddenBeginSequenceNumber,
+        final DirectBuffer bodyBuffer,
+        final int bodyOffset,
+        final int bodyLength)
+    {
         final long position = claim(VALID_RESEND_REQUEST_LENGTH + bodyLength);
         if (position < 0)
         {
@@ -1387,6 +1413,7 @@ public class GatewayPublication extends ClaimablePublication
             .endSequenceNumber(endSequenceNumber)
             .sequenceIndex(sequenceIndex)
             .correlationId(correlationId)
+            .overriddenBeginSequenceNumber(overriddenBeginSequenceNumber)
             .putBody(bodyBuffer, bodyOffset, bodyLength);
 
         bufferClaim.commit();

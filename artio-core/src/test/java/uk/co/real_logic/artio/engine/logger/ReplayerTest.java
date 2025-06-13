@@ -50,6 +50,7 @@ import uk.co.real_logic.artio.fields.UtcTimestampDecoder;
 import uk.co.real_logic.artio.messages.FixPProtocolType;
 import uk.co.real_logic.artio.messages.MessageHeaderDecoder;
 import uk.co.real_logic.artio.messages.ReplayCompleteDecoder;
+import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
@@ -588,6 +589,28 @@ public class ReplayerTest extends AbstractLogTest
         });
     }
 
+    @Test
+    public void shouldGapFillMessageIfOverriddenBeginSeqNo()
+    {
+        final int endSeqNo = endSeqNoForTwoMessages();
+
+        setReplayedMessages(1);
+
+        onReplay(endSeqNo, 3, inv ->
+        {
+            final int offset = setupCapturingClaim();
+
+            bufferContainsExampleMessage(true, SESSION_ID, BEGIN_SEQ_NO, SEQUENCE_INDEX);
+            final int srcLength = onExampleMessage(endSeqNo);
+
+            assertResentGapFillThenMessage(endSeqNo, offset, srcLength, times(3));
+
+            return true;
+        });
+
+        replayer.doWork();
+    }
+
     @After
     public void shouldHaveNoMoreErrors()
     {
@@ -646,10 +669,15 @@ public class ReplayerTest extends AbstractLogTest
 
     private void onReplay(final int endSeqNo, final Answer<Boolean> answer)
     {
+        onReplay(endSeqNo, (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), answer);
+    }
+
+    private void onReplay(final int endSeqNo, final int overriddenBeginSeqNo, final Answer<Boolean> answer)
+    {
         whenReplayQueried().then(answer);
 
         final long result = bufferHasResendRequest(endSeqNo);
-        onRequestResendMessage(result, endSeqNo);
+        onRequestResendMessage(result, endSeqNo, overriddenBeginSeqNo);
     }
 
     private void onReplayOtherSession(final int endSeqNo)
@@ -657,7 +685,8 @@ public class ReplayerTest extends AbstractLogTest
         whenReplayQueried().thenReturn(true);
 
         final long result = bufferHasResendRequest(endSeqNo, RESEND_TARGET_2);
-        onRequestResendMessageWithSession(result, COMMIT, SESSION_ID_2, CONNECTION_ID_2, BEGIN_SEQ_NO, endSeqNo);
+        onRequestResendMessageWithSession(result, COMMIT, SESSION_ID_2, CONNECTION_ID_2, BEGIN_SEQ_NO, endSeqNo,
+            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue());
     }
 
     private void onFragment(final int length, final Action expectedAction, final ControlledFragmentHandler handler)
@@ -769,7 +798,14 @@ public class ReplayerTest extends AbstractLogTest
 
     private void onRequestResendMessage(final long result, final int endSeqNo)
     {
-        onRequestResendMessageWithSession(result, Action.COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, endSeqNo);
+        onRequestResendMessage(
+            result, endSeqNo, (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue());
+    }
+
+    private void onRequestResendMessage(final long result, final int endSeqNo, final int overriddenBeginSeqNo)
+    {
+        onRequestResendMessageWithSession(
+            result, Action.COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, endSeqNo, overriddenBeginSeqNo);
     }
 
     private void onRequestResendMessageWithSession(
@@ -778,7 +814,8 @@ public class ReplayerTest extends AbstractLogTest
         final long sessionId,
         final long connectionId,
         final int beginSeqNo,
-        final int endSeqNo)
+        final int endSeqNo,
+        final int overriddenBeginSeqNo)
     {
         final int offset = Encoder.offset(result);
         final int length = Encoder.length(result);
@@ -787,8 +824,8 @@ public class ReplayerTest extends AbstractLogTest
         buffer.wrap(this.buffer, offset, length);
 
         setupClaim(START_REPLAY_LENGTH);
-        final Action action = replayer.onResendRequest(
-            sessionId, connectionId, CORRELATION_ID, beginSeqNo, endSeqNo, SEQUENCE_INDEX, buffer);
+        final Action action = replayer.onResendRequest(sessionId, connectionId, CORRELATION_ID,
+            beginSeqNo, endSeqNo, SEQUENCE_INDEX, overriddenBeginSeqNo, buffer);
         if (sendsStartReplay)
         {
             verifyStartReplyClaim();

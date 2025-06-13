@@ -31,6 +31,7 @@ public class FakeResendRequestController implements ResendRequestController
 {
     public static final String CUSTOM_MESSAGE = "custom message";
     private boolean resend = true;
+    private int overriddenBeginSeqNo = -1;
 
     private int callCount = 0;
     private IntArrayList seenReplaysInFlight = new IntArrayList();
@@ -53,7 +54,14 @@ public class FakeResendRequestController implements ResendRequestController
 
         if (resend)
         {
-            response.resend();
+            if (overriddenBeginSeqNo != -1)
+            {
+                response.resendFrom(overriddenBeginSeqNo);
+            }
+            else
+            {
+                response.resend();
+            }
         }
         else if (customResend)
         {
@@ -80,6 +88,11 @@ public class FakeResendRequestController implements ResendRequestController
     public void resend(final boolean resend)
     {
         this.resend = resend;
+    }
+
+    public void overriddenBeginSeqNo(final int overriddenBeginSeqNo)
+    {
+        this.overriddenBeginSeqNo = overriddenBeginSeqNo;
     }
 
     public void maxResends(final int maxResends)
