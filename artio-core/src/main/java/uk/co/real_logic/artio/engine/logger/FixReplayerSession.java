@@ -115,12 +115,21 @@ class FixReplayerSession extends ReplayerSession
         this.errorHandler = errorHandler;
         this.gapFillEncoder = gapFillEncoder;
 
-        sequenceNumberExtractor = new SequenceNumberExtractor();
+        this.sequenceNumberExtractor = new SequenceNumberExtractor();
 
-        lastSeqNo = beginSeqNo - 1;
+        if (beginSeqNo < overriddenBeginSeqNo)
+        {
+            this.beginGapFillSeqNum = beginSeqNo;
+            this.lastSeqNo = overriddenBeginSeqNo - 1;
+        }
+        else
+        {
+            this.beginGapFillSeqNum = NONE;
+            this.lastSeqNo = beginSeqNo - 1;
+        }
+
         this.throttleRejectBuilder = throttleRejectBuilder;
-
-        possDupEnabler = new PossDupEnabler(
+        this.possDupEnabler = new PossDupEnabler(
             utcTimestampEncoder,
             bufferClaim,
             this::claimBuffer,

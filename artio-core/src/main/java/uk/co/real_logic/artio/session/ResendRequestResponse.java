@@ -21,7 +21,7 @@ import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 
 public class ResendRequestResponse
 {
-    static final int USE_BEGIN_SEQ_NO = (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue();
+    public static final int USE_BEGIN_SEQ_NO = (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue();
 
     private boolean result;
 

@@ -408,9 +408,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             else
             {
                 final List<FixMessage> fixMessageList = acceptingOtfAcceptor.messages();
-                assertEquals(SEQUENCE_RESET_MESSAGE, fixMessageList.get(0).messageType());
-                assertEquals(EXECUTION_REPORT_MESSAGE, fixMessageList.get(1).messageType());
-                assertEquals(EXECUTION_REPORT_MESSAGE, fixMessageList.get(2).messageType());
+                final FixMessage gapFill = fixMessageList.get(0);
+                assertEquals(SEQUENCE_RESET_MESSAGE, gapFill.messageType());
+                assertEquals(1, gapFill.messageSequenceNumber());
+                final FixMessage executionReportNine = fixMessageList.get(1);
+                assertEquals(EXECUTION_REPORT_MESSAGE, executionReportNine.messageType());
+                assertEquals(10, executionReportNine.messageSequenceNumber());
+                final FixMessage executionReportTen = fixMessageList.get(2);
+                assertEquals(EXECUTION_REPORT_MESSAGE, executionReportTen.messageType());
+                assertEquals(11, executionReportTen.messageSequenceNumber());
                 return true;
             }
         });
