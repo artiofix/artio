@@ -25,6 +25,7 @@ public class EnqueuedReplay
     private final long beginSeqNo;
     private final long endSeqNo;
     private final int sequenceIndex;
+    private final long overriddenBeginSeqNo;
     private final AsciiBuffer asciiBuffer;
 
     public EnqueuedReplay(
@@ -33,6 +34,7 @@ public class EnqueuedReplay
         final long correlationId, final long beginSeqNo,
         final long endSeqNo,
         final int sequenceIndex,
+        final long overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer)
     {
 
@@ -42,6 +44,7 @@ public class EnqueuedReplay
         this.beginSeqNo = beginSeqNo;
         this.endSeqNo = endSeqNo;
         this.sequenceIndex = sequenceIndex;
+        this.overriddenBeginSeqNo = overriddenBeginSeqNo;
         this.asciiBuffer = asciiBuffer;
     }
 
@@ -75,6 +78,11 @@ public class EnqueuedReplay
         return correlationId;
     }
 
+    public long overriddenBeginSeqNo()
+    {
+        return overriddenBeginSeqNo;
+    }
+
     public String toString()
     {
         return "EnqueuedReplay{" +
@@ -84,6 +92,7 @@ public class EnqueuedReplay
             ", beginSeqNo=" + beginSeqNo +
             ", endSeqNo=" + endSeqNo +
             ", sequenceIndex=" + sequenceIndex +
+            ", overriddenBeginSeqNo=" + overriddenBeginSeqNo +
             ", asciiBuffer=" + asciiBuffer.getAscii(0, asciiBuffer.capacity()) +
             '}';
     }

@@ -16,11 +16,16 @@
 package uk.co.real_logic.artio.session;
 
 import uk.co.real_logic.artio.builder.AbstractRejectEncoder;
+import uk.co.real_logic.artio.dictionary.generation.CodecUtil;
+import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 
 public class ResendRequestResponse
 {
+    public static final int USE_BEGIN_SEQ_NO = (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue();
+
     private boolean result;
 
+    private int overriddenBeginSequenceNumber;
     private int refTagId;
     private AbstractRejectEncoder rejectEncoder;
 
@@ -29,6 +34,23 @@ public class ResendRequestResponse
      */
     public void resend()
     {
+        overriddenBeginSequenceNumber = USE_BEGIN_SEQ_NO;
+        refTagId = CodecUtil.MISSING_INT;
+        rejectEncoder = null;
+
+        result = true;
+    }
+
+    /**
+     * Invoke when you want to respond to the resend request, from an overridden beginSeqNum, gapfilling prior messages
+     * @param overriddenBeginSequenceNumber indicates messages before this are gapfilled
+     */
+    public void resendFrom(final int overriddenBeginSequenceNumber)
+    {
+        this.overriddenBeginSequenceNumber = overriddenBeginSequenceNumber;
+        refTagId = CodecUtil.MISSING_INT;
+        rejectEncoder = null;
+
         result = true;
     }
 
@@ -39,13 +61,17 @@ public class ResendRequestResponse
      */
     public void reject(final int refTagId)
     {
+        overriddenBeginSequenceNumber = USE_BEGIN_SEQ_NO;
         this.refTagId = refTagId;
+        rejectEncoder = null;
 
         result = false;
     }
 
     public void reject(final AbstractRejectEncoder rejectEncoder)
     {
+        overriddenBeginSequenceNumber = USE_BEGIN_SEQ_NO;
+        refTagId = CodecUtil.MISSING_INT;
         this.rejectEncoder = rejectEncoder;
 
         result = false;
@@ -59,6 +85,11 @@ public class ResendRequestResponse
     boolean result()
     {
         return result;
+    }
+
+    int overriddenBeginSequenceNumber()
+    {
+        return overriddenBeginSequenceNumber;
     }
 
     int refTagId()

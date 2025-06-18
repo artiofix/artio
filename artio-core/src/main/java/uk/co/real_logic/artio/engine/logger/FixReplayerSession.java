@@ -72,6 +72,7 @@ class FixReplayerSession extends ReplayerSession
     private final ErrorHandler errorHandler;
     private final SequenceNumberExtractor sequenceNumberExtractor;
     private final FixThrottleRejectBuilder throttleRejectBuilder;
+    private final int overriddenBeginSeqNo;
 
     private int lastSeqNo;
     private int headerSeqNum;
@@ -94,6 +95,7 @@ class FixReplayerSession extends ReplayerSession
         final long correlationId,
         final long sessionId,
         final int sequenceIndex,
+        final int overriddenBeginSeqNo,
         final ReplayQuery replayQuery,
         final String message,
         final ErrorHandler errorHandler,
@@ -113,13 +115,23 @@ class FixReplayerSession extends ReplayerSession
         this.message = message;
         this.errorHandler = errorHandler;
         this.gapFillEncoder = gapFillEncoder;
+        this.overriddenBeginSeqNo = overriddenBeginSeqNo;
 
-        sequenceNumberExtractor = new SequenceNumberExtractor();
+        this.sequenceNumberExtractor = new SequenceNumberExtractor();
 
-        lastSeqNo = beginSeqNo - 1;
+        if (beginSeqNo < overriddenBeginSeqNo)
+        {
+            this.beginGapFillSeqNum = beginSeqNo;
+            this.lastSeqNo = overriddenBeginSeqNo - 1;
+        }
+        else
+        {
+            this.beginGapFillSeqNum = NONE;
+            this.lastSeqNo = beginSeqNo - 1;
+        }
+
         this.throttleRejectBuilder = throttleRejectBuilder;
-
-        possDupEnabler = new PossDupEnabler(
+        this.possDupEnabler = new PossDupEnabler(
             utcTimestampEncoder,
             bufferClaim,
             this::claimBuffer,
@@ -132,9 +144,17 @@ class FixReplayerSession extends ReplayerSession
         state = State.REPLAYING;
     }
 
-    MessageTracker messageTracker()
+    void query()
     {
-        return new FixMessageTracker(REPLAY_MESSAGE, this, sessionId);
+        final int adjustedBeginSeqNo = adjustBeginningSequenceNo(beginSeqNo, overriddenBeginSeqNo);
+        replayOperation = replayQuery.query(
+            sessionId,
+            adjustedBeginSeqNo,
+            sequenceIndex,
+            endSeqNo,
+            sequenceIndex,
+            REPLAY,
+            new FixMessageTracker(REPLAY_MESSAGE, this, sessionId));
     }
 
     private void onPreCommit(final MutableDirectBuffer buffer, final int offset)
@@ -440,13 +460,15 @@ class FixReplayerSession extends ReplayerSession
             // If we have missing messages for some reason then just gap fill them.
 
             // We know precisely what number to gap fill up to.
-            final int expectedCount = endSeqNo - beginSeqNo + 1;
+            final int adjustedBeginSeqNo = adjustBeginningSequenceNo(beginSeqNo, overriddenBeginSeqNo);
+            final int expectedCount = endSeqNo - adjustedBeginSeqNo + 1;
 
             if (IS_REPLAY_LOG_TAG_ENABLED)
             {
                 DebugLogger.log(
                     REPLAY,
-                    replayer.completeNotRecentFormatter.clear().with(replayedMessages).with(endSeqNo).with(beginSeqNo)
+                    replayer.completeNotRecentFormatter.clear().with(replayedMessages)
+                    .with(endSeqNo).with(beginSeqNo).with(overriddenBeginSeqNo)
                     .with(expectedCount).with(connectionId));
             }
 
@@ -490,6 +512,7 @@ class FixReplayerSession extends ReplayerSession
             ", connectionId=" + connectionId +
             ", beginSeqNo=" + beginSeqNo +
             ", endSeqNo=" + endSeqNo +
+            ", overriddenBeginSeqNo=" + overriddenBeginSeqNo +
             ", sessionId=" + sessionId +
             ", sequenceIndex=" + sequenceIndex +
             '}';
@@ -498,5 +521,12 @@ class FixReplayerSession extends ReplayerSession
     public void beginGapFillSeqNum(final int beginGapFillSeqNum)
     {
         this.beginGapFillSeqNum = beginGapFillSeqNum;
+    }
+
+
+    static int adjustBeginningSequenceNo(final int beginSeqNo, final int overriddenBeginSeqNo)
+    {
+        return overriddenBeginSeqNo != (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue() ?
+                overriddenBeginSeqNo : beginSeqNo;
     }
 }

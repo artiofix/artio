@@ -373,6 +373,63 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(2, fakeResendRequestController.callCount());
     }
 
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldControlResendRequestsWithOverriddenBeginSeqNo()
+    {
+        fakeResendRequestController.maxResends(1);
+        fakeResendRequestController.resend(true);
+        fakeResendRequestController.overriddenBeginSeqNo(10);
+
+        acquireAcceptingSession();
+
+        for (int i = 0; i < 10; i++)
+        {
+            exchangeExecutionReport(initiatingSession, acceptingOtfAcceptor);
+        }
+
+        testSystem.await("Failed to receive messages", () ->
+        {
+            final long totalReceivedMessages = acceptingOtfAcceptor.messages().size();
+            return totalReceivedMessages >= 10;
+        });
+
+        acceptingOtfAcceptor.messages().clear();
+
+        acceptorSendsResendRequest(1, 0);
+
+        testSystem.await("Failed to receive resent messages", () ->
+        {
+            final long totalReceivedMessages = acceptingOtfAcceptor.messages().size();
+
+            if (totalReceivedMessages < 3)
+            {
+                return false;
+            }
+            else
+            {
+                final List<FixMessage> fixMessageList = acceptingOtfAcceptor.messages();
+
+                final FixMessage gapFill = fixMessageList.get(0);
+                assertEquals(SEQUENCE_RESET_MESSAGE, gapFill.messageType());
+                assertEquals(1, gapFill.messageSequenceNumber());
+                assertEquals("Y", gapFill.gapFill());
+                assertEquals(10, gapFill.getInt(Constants.NEW_SEQ_NO));
+
+                final FixMessage executionReportNine = fixMessageList.get(1);
+                assertEquals(EXECUTION_REPORT_MESSAGE, executionReportNine.messageType());
+                assertEquals(10, executionReportNine.messageSequenceNumber());
+
+                final FixMessage executionReportTen = fixMessageList.get(2);
+                assertEquals(EXECUTION_REPORT_MESSAGE, executionReportTen.messageType());
+                assertEquals(11, executionReportTen.messageSequenceNumber());
+
+                return true;
+            }
+        });
+
+        assertEquals(1, fakeResendRequestController.callCount());
+    }
+
     // Test exists to replicate a faily complex bug involving a sequence number issue after a library timeout.
     @Test(timeout = TEST_TIMEOUT_IN_MS)
     public void shouldNotSendDuplicateSequenceNumbersAfterTimeout()

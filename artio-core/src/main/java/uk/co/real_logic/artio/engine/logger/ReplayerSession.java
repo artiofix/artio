@@ -22,8 +22,6 @@ import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.Pressure;
 
-import static uk.co.real_logic.artio.LogTag.REPLAY;
-
 abstract class ReplayerSession implements ControlledFragmentHandler
 {
     private final int maxClaimAttempts;
@@ -77,19 +75,7 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         this.bytesInBuffer = bytesInBuffer;
     }
 
-    void query()
-    {
-        replayOperation = replayQuery.query(
-            sessionId,
-            beginSeqNo,
-            sequenceIndex,
-            endSeqNo,
-            sequenceIndex,
-            REPLAY,
-            messageTracker());
-    }
-
-    abstract MessageTracker messageTracker();
+    abstract void query();
 
     boolean claimBuffer(final int newLength, final int messageLength)
     {

@@ -78,7 +78,7 @@ public class Replayer extends AbstractReplayer
     // For FixReplayerSession, safe to share rather than allocate for each FixReplayerSession
     final CharFormatter completeNotRecentFormatter = new CharFormatter(
         "ReplayerSession: completeReplay-!upToMostRecent replayedMessages=%s " +
-        "endSeqNo=%s beginSeqNo=%s expectedCount=%s connId=%s");
+        "endSeqNo=%s beginSeqNo=%s overriddenBeginSeqNo=%s expectedCount=%s connId=%s");
     final FixMessageEncoder fixMessageEncoder = new FixMessageEncoder();
     final FixMessageDecoder fixMessageDecoder = new FixMessageDecoder();
     final ThrottleRejectDecoder throttleRejectDecoder = new ThrottleRejectDecoder();
@@ -198,6 +198,7 @@ public class Replayer extends AbstractReplayer
                 final long endSeqNo = validResendRequest.endSequenceNumber();
                 final int sequenceIndex = validResendRequest.sequenceIndex();
                 final long correlationId = validResendRequest.correlationId();
+                final long overriddenBeginSeqNo = validResendRequest.overriddenBeginSequenceNumber();
                 validResendRequest.wrapBody(asciiBuffer);
 
                 if (IS_REPLAY_LOG_TAG_ENABLED)
@@ -205,8 +206,8 @@ public class Replayer extends AbstractReplayer
                     DebugLogger.logSbeDecoder(REPLAY, "Replayer:", validResendRequestAppendTo);
                 }
 
-                return onResendRequest(
-                    sessionId, connectionId, correlationId, beginSeqNo, endSeqNo, sequenceIndex, asciiBuffer);
+                return onResendRequest(sessionId, connectionId, correlationId,
+                    beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, asciiBuffer);
             }
 
             case ILinkConnectDecoder.TEMPLATE_ID:
@@ -276,6 +277,7 @@ public class Replayer extends AbstractReplayer
         final long beginSeqNo,
         final long endSeqNo,
         final int sequenceIndex,
+        final long overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer)
     {
         if (checkDisconnected(connectionId))
@@ -302,8 +304,8 @@ public class Replayer extends AbstractReplayer
             final MutableAsciiBuffer copiedBuffer = new MutableAsciiBuffer(new byte[length]);
             copiedBuffer.putBytes(0, asciiBuffer, 0, length);
 
-            replayChannel.enqueueReplay(new EnqueuedReplay(
-                sessionId, connectionId, correlationId, beginSeqNo, endSeqNo, sequenceIndex, copiedBuffer));
+            replayChannel.enqueueReplay(new EnqueuedReplay(sessionId, connectionId, correlationId,
+                beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer));
 
             return COMMIT;
         }
@@ -312,8 +314,8 @@ public class Replayer extends AbstractReplayer
             // New replay
             try
             {
-                final ReplayerSession session = processResendRequest(
-                    sessionId, connectionId, correlationId, beginSeqNo, endSeqNo, sequenceIndex, asciiBuffer);
+                final ReplayerSession session = processResendRequest(sessionId, connectionId, correlationId,
+                    beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, asciiBuffer);
                 if (session == null)
                 {
                     return ABORT;
@@ -341,6 +343,7 @@ public class Replayer extends AbstractReplayer
         final long beginSeqNo,
         final long endSeqNo,
         final int sequenceIndex,
+        final long overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer)
     {
         final FixReplayerCodecs sessionCodecs = fixSessionCodecsFactory.get(sessionId);
@@ -352,8 +355,8 @@ public class Replayer extends AbstractReplayer
             }
 
             final FixReplayerSession fixReplayerSession = processFixResendRequest(
-                sessionId, connectionId, correlationId, (int)beginSeqNo, (int)endSeqNo, sequenceIndex, asciiBuffer,
-                sessionCodecs);
+                sessionId, connectionId, correlationId, (int)beginSeqNo, (int)endSeqNo, sequenceIndex,
+                (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs);
             // Suppress resending of start replay if back-pressure happens here, ie if fixReplayerSession == null.
             sendStartReplay = fixReplayerSession != null;
             return fixReplayerSession;
@@ -396,6 +399,7 @@ public class Replayer extends AbstractReplayer
         final int beginSeqNo,
         final int endSeqNo,
         final int sequenceIndex,
+        final int overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer,
         final FixReplayerCodecs sessionCodecs)
     {
@@ -451,6 +455,7 @@ public class Replayer extends AbstractReplayer
             correlationId,
             sessionId,
             sequenceIndex,
+            overriddenBeginSeqNo,
             outboundReplayQuery,
             message,
             errorHandler,
@@ -507,6 +512,7 @@ public class Replayer extends AbstractReplayer
                             enqueuedReplay.beginSeqNo(),
                             enqueuedReplay.endSeqNo(),
                             enqueuedReplay.sequenceIndex(),
+                            enqueuedReplay.overriddenBeginSeqNo(),
                             enqueuedReplay.asciiBuffer());
 
                         channel.startReplay(session);

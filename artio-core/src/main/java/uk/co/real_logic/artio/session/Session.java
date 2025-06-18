@@ -2102,13 +2102,20 @@ public class Session
 
         if (resendRequestResponse.result())
         {
+            int overriddenBeginSeqNum = resendRequestResponse.overriddenBeginSequenceNumber();
+            if (overriddenBeginSeqNum != ResendRequestResponse.USE_BEGIN_SEQ_NO)
+            {
+                overriddenBeginSeqNum = Math.max(overriddenBeginSeqNum, beginSeqNum);
+                overriddenBeginSeqNum = Math.min(overriddenBeginSeqNum, correctedEndSeqNo);
+            }
+
             final long correlationId = generateReplayCorrelationId();
 
             // Notify the sender end point that a replay is going to happen.
             if (!backpressuredResendRequestResponse || backpressuredOutboundValidResendRequest)
             {
                 if (saveValidResendRequest(beginSeqNum, messageBuffer, messageOffset, messageLength, correctedEndSeqNo,
-                    correlationId, outboundPublication))
+                    correlationId, overriddenBeginSeqNum, outboundPublication))
                 {
                     lastReceivedMsgSeqNum(oldLastReceivedMsgSeqNum);
                     backpressuredResendRequestResponse = true;
@@ -2120,7 +2127,7 @@ public class Session
             }
 
             if (saveValidResendRequest(beginSeqNum, messageBuffer, messageOffset, messageLength, correctedEndSeqNo,
-                correlationId, inboundPublication))
+                correlationId, overriddenBeginSeqNum, inboundPublication))
             {
                 lastReceivedMsgSeqNum(oldLastReceivedMsgSeqNum);
                 backpressuredResendRequestResponse = true;
@@ -2159,7 +2166,8 @@ public class Session
 
     private boolean saveValidResendRequest(
         final int beginSeqNum, final AsciiBuffer messageBuffer, final int messageOffset, final int messageLength,
-        final int correctedEndSeqNo, final long correlationId, final GatewayPublication publication)
+        final int correctedEndSeqNo, final long correlationId, final int overriddenBeginSeqNum,
+        final GatewayPublication publication)
     {
         return Pressure.isBackPressured(publication.saveValidResendRequest(
             id,
@@ -2168,6 +2176,7 @@ public class Session
             correctedEndSeqNo,
             sequenceIndex,
             correlationId,
+            overriddenBeginSeqNum,
             messageBuffer,
             messageOffset,
             messageLength));
