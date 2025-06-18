@@ -389,8 +389,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         testSystem.await("Failed to receive messages", () ->
         {
-            final long totalReplayedMessages = acceptingOtfAcceptor.messages().size();
-            return totalReplayedMessages >= 10;
+            final long totalRececeivedMessages = acceptingOtfAcceptor.messages().size();
+            return totalRececeivedMessages >= 10;
         });
 
         acceptingOtfAcceptor.messages().clear();
@@ -399,24 +399,30 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         testSystem.await("Failed to receive resent messages", () ->
         {
-            final long totalReplayedMessages = acceptingOtfAcceptor.messages().size();
+            final long totalRececeivedMessages = acceptingOtfAcceptor.messages().size();
 
-            if (totalReplayedMessages < 3)
+            if (totalRececeivedMessages < 3)
             {
                 return false;
             }
             else
             {
                 final List<FixMessage> fixMessageList = acceptingOtfAcceptor.messages();
+
                 final FixMessage gapFill = fixMessageList.get(0);
                 assertEquals(SEQUENCE_RESET_MESSAGE, gapFill.messageType());
                 assertEquals(1, gapFill.messageSequenceNumber());
+                assertEquals("Y", gapFill.gapFill());
+                assertEquals(10, gapFill.getInt(Constants.NEW_SEQ_NO));
+
                 final FixMessage executionReportNine = fixMessageList.get(1);
                 assertEquals(EXECUTION_REPORT_MESSAGE, executionReportNine.messageType());
                 assertEquals(10, executionReportNine.messageSequenceNumber());
+
                 final FixMessage executionReportTen = fixMessageList.get(2);
                 assertEquals(EXECUTION_REPORT_MESSAGE, executionReportTen.messageType());
                 assertEquals(11, executionReportTen.messageSequenceNumber());
+
                 return true;
             }
         });
