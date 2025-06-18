@@ -389,8 +389,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         testSystem.await("Failed to receive messages", () ->
         {
-            final long totalRececeivedMessages = acceptingOtfAcceptor.messages().size();
-            return totalRececeivedMessages >= 10;
+            final long totalReceivedMessages = acceptingOtfAcceptor.messages().size();
+            return totalReceivedMessages >= 10;
         });
 
         acceptingOtfAcceptor.messages().clear();
@@ -399,9 +399,9 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         testSystem.await("Failed to receive resent messages", () ->
         {
-            final long totalRececeivedMessages = acceptingOtfAcceptor.messages().size();
+            final long totalReceivedMessages = acceptingOtfAcceptor.messages().size();
 
-            if (totalRececeivedMessages < 3)
+            if (totalReceivedMessages < 3)
             {
                 return false;
             }
