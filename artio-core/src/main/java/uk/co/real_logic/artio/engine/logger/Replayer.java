@@ -73,7 +73,7 @@ public class Replayer extends AbstractReplayer
     private final LongHashSet gapFillMessageTypes;
     private final FixSessionCodecsFactory fixSessionCodecsFactory;
     private final CharFormatter receivedResendFormatter = new CharFormatter(
-        "Received Resend Request for inclusive range: [%s, %s] connId=%s");
+        "Received Resend Request for inclusive range: [%s, %s] gapfillingTo=%s connId=%s");
 
     // For FixReplayerSession, safe to share rather than allocate for each FixReplayerSession
     final CharFormatter completeNotRecentFormatter = new CharFormatter(
@@ -367,6 +367,7 @@ public class Replayer extends AbstractReplayer
                 receivedResendFormatter,
                 beginSeqNo,
                 endSeqNo,
+                overriddenBeginSeqNo,
                 connectionId);
 
             final AtomicCounter bytesInBuffer = senderSequenceNumbers.bytesInBufferCounter(connectionId);
@@ -413,6 +414,7 @@ public class Replayer extends AbstractReplayer
             receivedResendFormatter,
             beginSeqNo,
             endSeqNo,
+            overriddenBeginSeqNo,
             connectionId);
 
         final AbstractResendRequestDecoder resendRequest = sessionCodecs.resendRequest();
