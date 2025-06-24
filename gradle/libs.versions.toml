@@ -4,11 +4,15 @@ agrona = "1.23.1"
 byteBuddy = "1.15.11"
 checkstyle = "10.20.1"
 junit = "5.11.4"
-gradle = "8.11.1"
 jmh = "1.37"
+commons-codec = "1.15"
+commons-lang3 = "3.8.1"
+httpcore = "4.4.14"
+json = "20250517"
+plexus = "3.3.0"
 
 [libraries]
-agrona = { group = "org.agrona", name = "agrona", version = { strictly = "[1.23.1, 2.0[", require = "1.23.1" } }
+agrona = { group = "org.agrona", name = "agrona", version.ref = "agrona" }
 aeron-client = { group = "io.aeron", name = "aeron-client", version.ref = "aeron" }
 aeron-archive = { group = "io.aeron", name = "aeron-archive", version.ref = "aeron" }
 sbe = { group = "uk.co.real-logic", name = "sbe-tool", version = "1.33.2" }
@@ -20,8 +24,13 @@ byteBuddy-agent = { group = "net.bytebuddy", name = "byte-buddy-agent", version.
 hdrHistogram = { group = "org.hdrhistogram", name = "HdrHistogram", version = "2.2.2" }
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-generator-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
+commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commons-codec" }
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
+httpcore = { group = "org.apache.httpcomponents", name = "httpcore", version.ref = "httpcore" }
+json = { group = "org.json", name = "json", version.ref = "json" }
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+plexus-utils = { group = "org.codehaus.plexus", name = "plexus-utils", version.ref = "plexus" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }
-release = { id = "net.researchgate.release", version = "3.0.2" }
 shadow = { id = "com.gradleup.shadow", version = "8.3.5" }
