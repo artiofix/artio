@@ -15,7 +15,6 @@
  */
 package uk.co.real_logic.artio.fields;
 
-import org.agrona.concurrent.UnsafeBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
 import static uk.co.real_logic.artio.fields.CalendricalUtil.*;
@@ -31,12 +30,11 @@ public final class UtcTimeOnlyEncoder
     public static final int LENGTH_WITH_MICROSECONDS = 15;
     public static final int LENGTH_WITH_NANOSECONDS = 18;
 
-    private final UnsafeBuffer buffer = new UnsafeBuffer(0, 0);
-    private final MutableAsciiBuffer flyweight = new MutableAsciiBuffer(buffer);
+    private final MutableAsciiBuffer flyweight = new MutableAsciiBuffer();
 
     public int encode(final long millisecondOfDay, final byte[] bytes)
     {
-        buffer.wrap(bytes);
+        flyweight.wrap(bytes);
         return encode(millisecondOfDay, flyweight, 0);
     }
 
