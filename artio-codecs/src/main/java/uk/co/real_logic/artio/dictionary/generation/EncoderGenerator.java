@@ -42,6 +42,7 @@ import static uk.co.real_logic.artio.dictionary.generation.AggregateType.GROUP;
 import static uk.co.real_logic.artio.dictionary.generation.AggregateType.HEADER;
 import static uk.co.real_logic.artio.dictionary.generation.EnumGenerator.enumName;
 import static uk.co.real_logic.artio.dictionary.generation.GenerationUtil.GENERATED_ANNOTATION;
+import static uk.co.real_logic.artio.dictionary.generation.GenerationUtil.SUPPRESS_THIS_ESCAPE_ANNOTATION;
 import static uk.co.real_logic.artio.dictionary.generation.GenerationUtil.fileHeader;
 import static uk.co.real_logic.artio.dictionary.generation.GenerationUtil.importFor;
 import static uk.co.real_logic.artio.dictionary.generation.OptionalSessionFields.ENCODER_OPTIONAL_SESSION_FIELDS;
@@ -347,6 +348,7 @@ class EncoderGenerator extends Generator
         return String.format(
             "\n" +
             GENERATED_ANNOTATION +
+            SUPPRESS_THIS_ESCAPE_ANNOTATION +
             "public %3$s%4$sclass %1$s%5$s%2$s\n" +
             "{\n",
             className,
