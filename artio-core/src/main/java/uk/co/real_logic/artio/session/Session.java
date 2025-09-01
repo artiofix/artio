@@ -891,7 +891,12 @@ public class Session
             nextReceivedMessageSequenceNumber <= this.lastReceivedMsgSeqNum + 1;
         if (resetsSentSequenceNumbers != resetReceivedSequenceNumbers)
         {
-            throw new IllegalArgumentException("Cannot reset received but not sent sequence numbers");
+            throw new IllegalArgumentException(
+                "Cannot reset only received (" +
+                (lastReceivedMsgSeqNum + 1) + "->" + nextReceivedMessageSequenceNumber +
+                ") or sent (" +
+                (lastSentMsgSeqNum + 1) + "->" + nextSentMessageSequenceNumber +
+                ") sequence numbers");
         }
 
         final long position = trySendSequenceReset(nextSentMessageSequenceNumber);
