@@ -16,7 +16,6 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import io.aeron.logbuffer.Header;
-import io.aeron.protocol.DataHeaderFlyweight;
 import org.agrona.CloseHelper;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
@@ -47,7 +46,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static io.aeron.archive.status.RecordingPos.NULL_RECORDING_ID;
+import static io.aeron.logbuffer.FrameDescriptor.FRAME_ALIGNMENT;
 import static io.aeron.protocol.DataHeaderFlyweight.BEGIN_FLAG;
+import static org.agrona.BitUtil.align;
 import static uk.co.real_logic.artio.CommonConfiguration.RUNNING_ON_WINDOWS;
 import static uk.co.real_logic.artio.engine.SectorFramer.*;
 import static uk.co.real_logic.artio.engine.SequenceNumberExtractor.NO_SEQUENCE_NUMBER;
@@ -111,12 +112,13 @@ public class SequenceNumberIndexWriter implements Index
 
     private MappedFile writableFile;
     private MappedFile indexFile;
-    private long nextRollPosition = UNINITIALISED;
+    private final Long2LongHashMap nextRollPositions = new Long2LongHashMap(UNINITIALISED);
 
     private final EpochClock clock;
     private final SessionOwnershipTracker sessionOwnershipTracker;
     private final long indexFileStateFlushTimeoutInMs;
     private long lastUpdatedFileTimeInMs;
+    private long fileUpdateCount;
     private boolean hasSavedRecordSinceFileUpdate = false;
 
     public SequenceNumberIndexWriter(
@@ -365,7 +367,7 @@ public class SequenceNumberIndexWriter implements Index
             }
         }
 
-        checkTermRoll(buffer, srcOffset, endPosition, length);
+        checkTermRoll(aeronSessionId, buffer, srcOffset, endPosition, length);
         if (positionWriter != null)
         {
             positionWriter.update(aeronSessionId, templateId, endPosition, recordingId);
@@ -707,17 +709,25 @@ public class SequenceNumberIndexWriter implements Index
         }
     }
 
-    private void checkTermRoll(final DirectBuffer buffer, final int offset, final long endPosition, final int length)
+    private void checkTermRoll(
+        final int aeronSessionId,
+        final DirectBuffer buffer,
+        final int offset,
+        final long endPosition,
+        final int length)
     {
         final long termBufferLength = buffer.capacity();
+        long nextRollPosition = nextRollPositions.get(aeronSessionId);
         if (nextRollPosition == UNINITIALISED)
         {
-            final long startPosition = endPosition - (length + DataHeaderFlyweight.HEADER_LENGTH);
+            final long startPosition = endPosition - align(length, FRAME_ALIGNMENT);
             nextRollPosition = startPosition + termBufferLength - offset;
+            nextRollPositions.put(aeronSessionId, nextRollPosition);
         }
         else if (endPosition > nextRollPosition)
         {
             nextRollPosition += termBufferLength;
+            nextRollPositions.put(aeronSessionId, nextRollPosition);
             updateFile();
         }
     }
@@ -733,6 +743,7 @@ public class SequenceNumberIndexWriter implements Index
         flipFiles();
         hasSavedRecordSinceFileUpdate = false;
         lastUpdatedFileTimeInMs = clock.time();
+        fileUpdateCount++;
     }
 
     private void saveFile()
@@ -1108,5 +1119,10 @@ public class SequenceNumberIndexWriter implements Index
     public SequenceNumberIndexReader reader()
     {
         return reader;
+    }
+
+    long fileUpdateCount()
+    {
+        return fileUpdateCount;
     }
 }

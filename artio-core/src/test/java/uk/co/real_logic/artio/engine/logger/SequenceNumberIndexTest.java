@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import io.aeron.Aeron;
+import io.aeron.ChannelUriStringBuilder;
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
 import io.aeron.Subscription;
@@ -42,12 +43,15 @@ import uk.co.real_logic.artio.dictionary.SessionConstants;
 import uk.co.real_logic.artio.engine.MappedFile;
 import uk.co.real_logic.artio.engine.SequenceNumberExtractor;
 import uk.co.real_logic.artio.engine.framer.FakeEpochClock;
+import uk.co.real_logic.artio.messages.ApplicationHeartbeatEncoder;
 import uk.co.real_logic.artio.messages.FixPProtocolType;
+import uk.co.real_logic.artio.messages.MessageHeaderEncoder;
 import uk.co.real_logic.artio.protocol.GatewayPublication;
 
 import java.io.File;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
+import static io.aeron.CommonContext.IPC_MEDIA;
 import static org.agrona.IoUtil.deleteIfExists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -68,6 +72,7 @@ import static uk.co.real_logic.artio.engine.logger.SequenceNumberIndexWriter.SEQ
 
 public class SequenceNumberIndexTest extends AbstractLogTest
 {
+    private static final int EXAMPLE_MESSAGES_IN_TERM = 18724;
     private static final int BUFFER_SIZE = 16 * 1024;
     private static final String INDEX_FILE_PATH = IoUtil.tmpDirName() + "/SequenceNumberIndex";
 
@@ -374,7 +379,7 @@ public class SequenceNumberIndexTest extends AbstractLogTest
     @Test
     public void shouldSaveIndexUponRotate()
     {
-        final int requiredMessagesToRoll = 18724;
+        final int requiredMessagesToRoll = EXAMPLE_MESSAGES_IN_TERM;
         for (int i = 0; i <= requiredMessagesToRoll; i++)
         {
             bufferContainsExampleMessage(true, SESSION_ID, SEQUENCE_NUMBER + i, SEQUENCE_INDEX);
@@ -445,6 +450,63 @@ public class SequenceNumberIndexTest extends AbstractLogTest
         indexFixMessage();
         assertLastKnownSequenceNumberIs(SESSION_ID, SEQUENCE_NUMBER);
         assertLastKnownSequenceNumberIs(SESSION_ID_2, 0);
+    }
+
+    @Test
+    public void shouldHandleMultipleImages()
+    {
+        indexApplicationHeartbeat();
+
+        final ExclusivePublication lowPositionPublication = publication;
+        final String channel = new ChannelUriStringBuilder()
+            .media(IPC_MEDIA)
+            .initialPosition(1024L * 1024 * 1024, 42, lowPositionPublication.termBufferLength())
+            .build();
+        publication = aeron.addExclusivePublication(channel, STREAM_ID);
+
+        int seqNum = SEQUENCE_NUMBER;
+        for (int i = 0; i < EXAMPLE_MESSAGES_IN_TERM; i++)
+        {
+            bufferContainsExampleMessage(true, SESSION_ID, seqNum++, SEQUENCE_INDEX);
+            indexRecord();
+        }
+
+        assertEquals(0, writer.fileUpdateCount());
+
+        bufferContainsExampleMessage(true, SESSION_ID, seqNum++, SEQUENCE_INDEX);
+        indexRecord();
+
+        assertEquals(1, writer.fileUpdateCount());
+
+        publication = lowPositionPublication;
+
+        for (int i = 0; i < EXAMPLE_MESSAGES_IN_TERM; i++)
+        {
+            bufferContainsExampleMessage(true, SESSION_ID, seqNum++, SEQUENCE_INDEX);
+            indexRecord();
+        }
+
+        assertEquals(1, writer.fileUpdateCount());
+
+        bufferContainsExampleMessage(true, SESSION_ID, seqNum++, SEQUENCE_INDEX);
+        indexRecord();
+
+        assertEquals(2, writer.fileUpdateCount());
+    }
+
+    private void indexApplicationHeartbeat()
+    {
+        offset = START;
+
+        final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
+        final ApplicationHeartbeatEncoder encoder = new ApplicationHeartbeatEncoder();
+        encoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+            .libraryId(0)
+            .timestampInNs(1234);
+
+        offset += headerEncoder.encodedLength() + encoder.encodedLength();
+
+        indexRecord();
     }
 
     private void resetSequenceNumber(final long sessionId)
