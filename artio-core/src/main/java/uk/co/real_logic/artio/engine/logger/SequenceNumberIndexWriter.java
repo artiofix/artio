@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
+import io.aeron.Counter;
 import io.aeron.logbuffer.Header;
 import io.aeron.protocol.DataHeaderFlyweight;
 import org.agrona.CloseHelper;
@@ -119,6 +120,8 @@ public class SequenceNumberIndexWriter implements Index
     private long lastUpdatedFileTimeInMs;
     private boolean hasSavedRecordSinceFileUpdate = false;
 
+    private final Counter counter;
+
     public SequenceNumberIndexWriter(
         final SequenceNumberExtractor sequenceNumberExtractor,
         final AtomicBuffer inMemoryBuffer,
@@ -132,7 +135,8 @@ public class SequenceNumberIndexWriter implements Index
         final Long2LongHashMap connectionIdToFixPSessionId,
         final FixPProtocolType fixPProtocolType,
         final boolean indexChecksumEnabled,
-        final boolean logMessages)
+        final boolean logMessages,
+        final Counter counter)
     {
         this.sequenceNumberExtractor = sequenceNumberExtractor;
         this.inMemoryBuffer = inMemoryBuffer;
@@ -150,6 +154,7 @@ public class SequenceNumberIndexWriter implements Index
         writablePath = writeableFile.toPath();
         passingPlacePath = passingFile(indexFilePath).toPath();
         writableFile = MappedFile.map(writeableFile, fileCapacity);
+        this.counter = counter;
 
         // TODO: Fsync parent directory
         indexedPositionsOffset = positionTableOffset(fileCapacity);
@@ -733,6 +738,7 @@ public class SequenceNumberIndexWriter implements Index
         flipFiles();
         hasSavedRecordSinceFileUpdate = false;
         lastUpdatedFileTimeInMs = clock.time();
+        counter.incrementOrdered();
     }
 
     private void saveFile()
@@ -1108,5 +1114,10 @@ public class SequenceNumberIndexWriter implements Index
     public SequenceNumberIndexReader reader()
     {
         return reader;
+    }
+
+    long fileUpdateCount()
+    {
+        return counter.get();
     }
 }

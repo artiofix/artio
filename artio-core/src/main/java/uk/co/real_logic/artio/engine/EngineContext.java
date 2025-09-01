@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine;
 
 import io.aeron.Aeron;
+import io.aeron.Counter;
 import io.aeron.ExclusivePublication;
 import io.aeron.Subscription;
 import io.aeron.UnavailableImageHandler;
@@ -109,6 +110,8 @@ public class EngineContext implements AutoCloseable
             final Long2LongHashMap connectionIdToFixPSessionId = new Long2LongHashMap(UNK_SESSION);
             final FixPProtocolType fixPProtocolType = configuration.supportedFixPProtocolType();
             final boolean indexChecksumEnabled = configuration.indexChecksumEnabled();
+            final Counter inboundCounter = aeron.addCounter(7777, "inbound update files");
+            final Counter outboundCounter = aeron.addCounter(7777, "outbound update files");
             sentSequenceNumberIndex = new SequenceNumberIndexWriter(
                 sentSequenceNumberExtractor,
                 configuration.sentSequenceNumberBuffer(),
@@ -122,7 +125,8 @@ public class EngineContext implements AutoCloseable
                 connectionIdToFixPSessionId,
                 fixPProtocolType,
                 indexChecksumEnabled,
-                configuration.logOutboundMessages());
+                configuration.logOutboundMessages(),
+                outboundCounter);
             receivedSequenceNumberIndex = new SequenceNumberIndexWriter(
                 recvSequenceNumberExtractor,
                 configuration.receivedSequenceNumberBuffer(),
@@ -136,7 +140,8 @@ public class EngineContext implements AutoCloseable
                 connectionIdToFixPSessionId,
                 fixPProtocolType,
                 indexChecksumEnabled,
-                configuration.logInboundMessages());
+                configuration.logInboundMessages(),
+                inboundCounter);
 
             newStreams();
             newArchivingAgent();
