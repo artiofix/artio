@@ -896,7 +896,7 @@ public class Session
                 (lastReceivedMsgSeqNum + 1) + "->" + nextReceivedMessageSequenceNumber +
                 ") or sent (" +
                 (lastSentMsgSeqNum + 1) + "->" + nextSentMessageSequenceNumber +
-                ") sequence numbers");
+                ") sequence numbers for session " + id);
         }
 
         final long position = trySendSequenceReset(nextSentMessageSequenceNumber);
