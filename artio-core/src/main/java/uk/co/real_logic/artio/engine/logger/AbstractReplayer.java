@@ -38,7 +38,7 @@ import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 
 abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
 {
-    static final int POLL_LIMIT = 10;
+    static final int POLL_LIMIT = 20;
 
     private static final int REPLAY_COMPLETE_LEN =
         MessageHeaderEncoder.ENCODED_LENGTH + ReplayCompleteEncoder.BLOCK_LENGTH;
