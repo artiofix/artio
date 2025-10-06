@@ -117,7 +117,7 @@ public class Replayer extends AbstractReplayer
     private final UtcTimestampEncoder utcTimestampEncoder;
     private final boolean acceptsFixP;
 
-    private final RecordingIdLookup outboundRecordingIdLookup;
+    private final RecordingIdLookup recordingIdLookup;
     private final IndexedPositionReader outboundReplayIndexPositionReader;
     private long timeOfLastCheckDisconnectedChannels;
 
@@ -146,7 +146,7 @@ public class Replayer extends AbstractReplayer
         final EngineConfiguration configuration,
         final DutyCycleTracker dutyCycleTracker,
         final boolean acceptsFixP,
-        final RecordingIdLookup outboundRecordingIdLookup,
+        final RecordingIdLookup recordingIdLookup,
         final AtomicBuffer outboundReplayIndexPositionBuffer)
     {
         super(publication, fixSessionCodecsFactory, bufferClaim, senderSequenceNumbers, clock, dutyCycleTracker);
@@ -179,7 +179,7 @@ public class Replayer extends AbstractReplayer
         timestamper = new ReplayTimestamper(publication, clock);
 
         this.acceptsFixP = acceptsFixP;
-        this.outboundRecordingIdLookup = outboundRecordingIdLookup;
+        this.recordingIdLookup = recordingIdLookup;
         this.outboundReplayIndexPositionReader = new  IndexedPositionReader(outboundReplayIndexPositionBuffer);
     }
 
@@ -246,7 +246,7 @@ public class Replayer extends AbstractReplayer
             return CONTINUE;
         }
 
-        final long recordingId = outboundRecordingIdLookup.getRecordingId(header.sessionId());
+        final long recordingId = recordingIdLookup.getRecordingId(header.sessionId());
         final long indexedPosition = outboundReplayIndexPositionReader.indexedPosition(recordingId);
         if (indexedPosition < header.position())
         {
