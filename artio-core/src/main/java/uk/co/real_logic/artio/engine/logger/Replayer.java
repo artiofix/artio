@@ -112,7 +112,7 @@ public class Replayer extends AbstractReplayer
     private final IdleStrategy idleStrategy;
     private final ErrorHandler errorHandler;
     private final int maxClaimAttempts;
-    private final Subscription inboundSubscription;
+    private final Subscription outboundSubscription;
     private final String agentNamePrefix;
     private final ReplayHandler replayHandler;
     private final FixPRetransmitHandler fixPRetransmitHandler;
@@ -125,7 +125,7 @@ public class Replayer extends AbstractReplayer
         final IdleStrategy idleStrategy,
         final ErrorHandler errorHandler,
         final int maxClaimAttempts,
-        final Subscription inboundSubscription,
+        final Subscription outboundSubscription,
         final String agentNamePrefix,
         final Set<String> gapfillOnReplayMessageTypes,
         final IntHashSet gapfillOnRetransmitILinkTemplateIds,
@@ -148,7 +148,7 @@ public class Replayer extends AbstractReplayer
         this.idleStrategy = idleStrategy;
         this.errorHandler = errorHandler;
         this.maxClaimAttempts = maxClaimAttempts;
-        this.inboundSubscription = inboundSubscription;
+        this.outboundSubscription = outboundSubscription;
         this.agentNamePrefix = agentNamePrefix;
         this.gapfillOnRetransmitILinkTemplateIds = gapfillOnRetransmitILinkTemplateIds;
         this.replayHandler = replayHandler;
@@ -482,7 +482,7 @@ public class Replayer extends AbstractReplayer
 
         int work = replayerCommandQueue.poll();
         work += pollReplayerChannels();
-        return work + inboundSubscription.controlledPoll(this, POLL_LIMIT);
+        return work + outboundSubscription.controlledPoll(this, POLL_LIMIT);
     }
 
     private int pollReplayerChannels()
