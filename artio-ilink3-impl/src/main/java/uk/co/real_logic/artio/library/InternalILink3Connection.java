@@ -977,7 +977,7 @@ public final class InternalILink3Connection extends InternalFixPConnection imple
         final long position;
         if (response.shouldRetransmit())
         {
-            position = inboundPublication.saveValidResendRequest(
+            position = outboundPublication.saveValidResendRequest(
                 uUID,
                 connectionId,
                 fromSeqNo,
