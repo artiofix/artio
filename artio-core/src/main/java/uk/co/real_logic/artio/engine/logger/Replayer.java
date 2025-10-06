@@ -298,7 +298,6 @@ public class Replayer extends AbstractReplayer
             catch (final IllegalStateException e)
             {
                 errorHandler.onError(e);
-                sendStartReplay = true;
                 return CONTINUE;
             }
         }
@@ -318,6 +317,11 @@ public class Replayer extends AbstractReplayer
         {
             final AtomicCounter bytesInBuffer = senderSequenceNumbers.bytesInBufferCounter(connectionId);
             if (bytesInBuffer == null)
+            {
+                return null;
+            }
+
+            if (trySendStartReplay(sessionId, connectionId, correlationId))
             {
                 return null;
             }
@@ -346,17 +350,20 @@ public class Replayer extends AbstractReplayer
             final FixReplayerCodecs sessionCodecs = fixSessionCodecsFactory.get(sessionId);
             if (sessionCodecs != null)
             {
+                final AtomicCounter bytesInBuffer = senderSequenceNumbers.bytesInBufferCounter(connectionId);
+                if (bytesInBuffer == null)
+                {
+                    return null;
+                }
+
                 if (trySendStartReplay(sessionId, connectionId, correlationId))
                 {
                     return null;
                 }
 
-                final FixReplayerSession fixReplayerSession = processFixResendRequest(
+                return processFixResendRequest(
                     sessionId, connectionId, correlationId, (int)beginSeqNo, (int)endSeqNo, sequenceIndex,
-                    (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs);
-                // Suppress resending of start replay if back-pressure happens here, ie if fixReplayerSession == null.
-                sendStartReplay = fixReplayerSession != null;
-                return fixReplayerSession;
+                    (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs, bytesInBuffer);
             }
 
             // ManageSession and ValidResendRequest might race each other (different sessions), so it's possible we see
@@ -374,14 +381,9 @@ public class Replayer extends AbstractReplayer
         final int sequenceIndex,
         final int overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer,
-        final FixReplayerCodecs sessionCodecs)
+        final FixReplayerCodecs sessionCodecs,
+        final AtomicCounter bytesInBuffer)
     {
-        final AtomicCounter bytesInBuffer = senderSequenceNumbers.bytesInBufferCounter(connectionId);
-        if (bytesInBuffer == null)
-        {
-            return null;
-        }
-
         DebugLogger.log(REPLAY,
             receivedResendFormatter,
             beginSeqNo,

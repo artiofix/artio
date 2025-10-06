@@ -140,6 +140,4 @@ public interface EngineEndPointHandler
         int libraryId, long correlationId, long session, int throttleWindowInMs, int throttleLimitOfMessages);
 
     Action onSeqIndexSync(int libraryId, long sessionId, int sequenceIndex);
-
-    Action onValidResendRequest(long session, long connection, long correlationId, Header header);
 }

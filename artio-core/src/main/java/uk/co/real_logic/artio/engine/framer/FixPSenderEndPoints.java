@@ -92,12 +92,13 @@ public class FixPSenderEndPoints implements AutoCloseable
         backPressuredEndpoints = ArrayUtil.add(backPressuredEndpoints, endPoint);
     }
 
-    public void onValidResendRequest(final long connection, final long correlationId)
+    public void onStartReplay(
+        final long connection, final long correlationId, final boolean slow)
     {
-        final FixPSenderEndPoint fixSenderEndPoint = connectionIdToSenderEndpoint.get(connection);
-        if (fixSenderEndPoint != null)
+        final FixPSenderEndPoint senderEndPoint = connectionIdToSenderEndpoint.get(connection);
+        if (senderEndPoint != null)
         {
-            fixSenderEndPoint.onValidResendRequest(correlationId);
+            senderEndPoint.onStartReplay(correlationId);
         }
     }
 

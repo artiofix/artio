@@ -64,8 +64,6 @@ class FixSenderEndPoint extends SenderEndPoint
     {
         final CharFormatter replayComplete = new CharFormatter(
             "SEP.replayComplete, connId=%s, corrId=%s");
-        final CharFormatter validResendRequest = new CharFormatter(
-            "SEP.validResendRequest, connId=%s, corrId=%s");
         final CharFormatter checkStartReplay = new CharFormatter(
             "SEP.onStartReplay, connId=%s, corrId=%s");
         final CharFormatter replaying = new CharFormatter(
@@ -706,16 +704,6 @@ class FixSenderEndPoint extends SenderEndPoint
     {
         this.sessionKey = sessionKey;
         this.configuration = configuration;
-    }
-
-    // Received on outbound publication when a replay starts
-    public void onValidResendRequest(final long correlationId)
-    {
-        if (IS_REPLAY_LOG_TAG_ENABLED)
-        {
-            DebugLogger.log(LogTag.REPLAY, formatters.validResendRequest.clear()
-                .with(connectionId).with(correlationId));
-        }
     }
 
     // Receive from replayer

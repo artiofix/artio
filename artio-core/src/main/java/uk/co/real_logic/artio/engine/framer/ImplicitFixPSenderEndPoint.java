@@ -225,7 +225,7 @@ class ImplicitFixPSenderEndPoint extends FixPSenderEndPoint
         return caughtUp;
     }
 
-    public void onValidResendRequest(final long correlationId)
+    public void onStartReplay(final long correlationId)
     {
         // We do a Fake replay of messages to support the next session version id feature
         // This doesn't send a retransmit FIXP message so we internally trigger that state

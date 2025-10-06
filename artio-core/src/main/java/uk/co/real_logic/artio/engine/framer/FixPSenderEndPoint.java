@@ -115,6 +115,4 @@ abstract class FixPSenderEndPoint extends SenderEndPoint
     }
 
     abstract boolean reattempt();
-
-    public abstract void onValidResendRequest(long correlationId);
 }
