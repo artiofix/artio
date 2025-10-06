@@ -26,6 +26,7 @@ import org.agrona.collections.CollectionUtil;
 import org.agrona.collections.IntHashSet;
 import org.agrona.collections.Long2ObjectHashMap;
 import org.agrona.collections.LongHashSet;
+import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
@@ -117,6 +118,10 @@ public class Replayer extends AbstractReplayer
     private final ReplayHandler replayHandler;
     private final FixPRetransmitHandler fixPRetransmitHandler;
     private final UtcTimestampEncoder utcTimestampEncoder;
+    private final boolean acceptsFixP;
+
+    private final RecordingIdLookup outboundRecordingIdLookup;
+    private final IndexedPositionReader outboundReplayIndexPositionReader;
 
     public Replayer(
         final ReplayQuery outboundReplayQuery,
@@ -141,7 +146,10 @@ public class Replayer extends AbstractReplayer
         final EpochNanoClock clock,
         final FixPProtocolType fixPProtocolType,
         final EngineConfiguration configuration,
-        final DutyCycleTracker dutyCycleTracker)
+        final DutyCycleTracker dutyCycleTracker,
+        final boolean acceptsFixP,
+        final RecordingIdLookup outboundRecordingIdLookup,
+        final AtomicBuffer outboundReplayIndexPositionBuffer)
     {
         super(publication, fixSessionCodecsFactory, bufferClaim, senderSequenceNumbers, clock, dutyCycleTracker);
         this.outboundReplayQuery = outboundReplayQuery;
@@ -171,6 +179,10 @@ public class Replayer extends AbstractReplayer
         abstractBinaryFixPOffsets = new Lazy<>(() -> binaryFixPProtocol.get().makeOffsets());
 
         timestamper = new ReplayTimestamper(publication, clock);
+
+        this.acceptsFixP = acceptsFixP;
+        this.outboundRecordingIdLookup = outboundRecordingIdLookup;
+        this.outboundReplayIndexPositionReader = new  IndexedPositionReader(outboundReplayIndexPositionBuffer);
     }
 
     public Action onFragment(

@@ -63,6 +63,8 @@ public class EngineContext implements AutoCloseable
     private final ExclusivePublication replayPublication;
     private final SequenceNumberIndexWriter sentSequenceNumberIndex;
     private final SequenceNumberIndexWriter receivedSequenceNumberIndex;
+    private ReplayIndex inboundReplayIndex;
+    private ReplayIndex outboundReplayIndex;
 
     private final ReplayEvictionHandler inboundEvictionHandler;
     private final ReplayEvictionHandler outboundEvictionHandler;
@@ -253,14 +255,14 @@ public class EngineContext implements AutoCloseable
             clock,
             configuration.supportedFixPProtocolType(),
             configuration,
-            fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()));
+            fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()),
+            configuration.acceptsFixP(),
+            recordingCoordinator.indexerOutboundRecordingIdLookup(),
+            outboundReplayIndex.replayIndexPositionBuffer());
     }
 
     private void newIndexers()
     {
-        ReplayIndex inboundReplayIndex = null;
-        ReplayIndex outboundReplayIndex = null;
-
         try
         {
             final String logFileDir = configuration.logFileDir();

@@ -495,6 +495,11 @@ public class ReplayIndex implements Index
         positionReader.readLastPosition(consumer);
     }
 
+    public AtomicBuffer replayIndexPositionBuffer()
+    {
+        return positionWriter.buffer();
+    }
+
     private final class SessionIndex implements AutoCloseable
     {
         private final long fixSessionId;
