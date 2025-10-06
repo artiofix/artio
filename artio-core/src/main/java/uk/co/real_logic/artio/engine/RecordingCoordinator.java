@@ -110,6 +110,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
     private final RecordingIdLookup framerOutboundLookup;
     private final RecordingIdLookup indexerInboundLookup;
     private final RecordingIdLookup indexerOutboundLookup;
+    private final RecordingIdLookup replayerLookup;
     private final File recordingIdsFile;
     private final ErrorHandler errorHandler;
     private MonitoringAgent monitoringAgent;
@@ -163,6 +164,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
             framerOutboundLookup = new RecordingIdLookup(archive.archiveId(), archiverIdleStrategy, counters);
             indexerInboundLookup = new RecordingIdLookup(archive.archiveId(), archiverIdleStrategy, counters);
             indexerOutboundLookup = new RecordingIdLookup(archive.archiveId(), archiverIdleStrategy, counters);
+            replayerLookup = new RecordingIdLookup(archive.archiveId(), archiverIdleStrategy, counters);
         }
         else
         {
@@ -171,6 +173,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
             framerOutboundLookup = null;
             indexerInboundLookup = null;
             indexerOutboundLookup = null;
+            replayerLookup = null;
         }
     }
 
@@ -712,6 +715,11 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
     RecordingIdLookup indexerOutboundRecordingIdLookup()
     {
         return indexerOutboundLookup;
+    }
+
+    RecordingIdLookup replayerLookup()
+    {
+        return replayerLookup;
     }
 
     public RecordingIdLookup framerInboundLookup()
