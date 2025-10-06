@@ -17,8 +17,6 @@ package uk.co.real_logic.artio.engine;
 
 import org.agrona.concurrent.status.AtomicCounter;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Class to notify replays and gap fills of the latest sent sequence
  * number.

@@ -180,7 +180,7 @@ public class Replayer extends AbstractReplayer
 
         this.acceptsFixP = acceptsFixP;
         this.recordingIdLookup = recordingIdLookup;
-        this.outboundReplayIndexPositionReader = new  IndexedPositionReader(outboundReplayIndexPositionBuffer);
+        this.outboundReplayIndexPositionReader = new IndexedPositionReader(outboundReplayIndexPositionBuffer);
     }
 
     public Action onFragment(
