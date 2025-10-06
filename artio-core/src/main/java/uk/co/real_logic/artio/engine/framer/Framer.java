@@ -1740,16 +1740,6 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
-    public Action onValidResendRequest(
-        final long session, final long connection, final long correlationId, final Header header)
-    {
-        fixSenderEndPoints.onValidResendRequest(connection, correlationId);
-
-        fixPSenderEndPoints.onValidResendRequest(connection, correlationId);
-
-        return CONTINUE;
-    }
-
     private void checkOfflineSequenceReset(final long sessionId, final long messageType, final int sequenceIndex)
     {
         if (messageType == LOGON_MESSAGE_TYPE || messageType == SEQUENCE_RESET_MESSAGE_TYPE)
@@ -3869,8 +3859,8 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         public Action onStartReplay(
             final long session, final long connection, final long correlationId, final long position)
         {
+            fixPSenderEndPoints.onStartReplay(connection, correlationId, slow);
             fixSenderEndPoints.onStartReplay(connection, correlationId, slow);
-
             return CONTINUE;
         }
     }

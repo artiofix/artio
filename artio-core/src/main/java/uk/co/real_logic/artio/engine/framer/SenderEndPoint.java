@@ -125,4 +125,8 @@ public class SenderEndPoint implements AutoCloseable
         bytesInBuffer.close();
         senderSequenceNumber.close();
     }
+
+    public void onStartReplay(final long correlationId)
+    {
+    }
 }
