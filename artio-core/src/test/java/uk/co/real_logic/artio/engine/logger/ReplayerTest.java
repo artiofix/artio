@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
+import io.aeron.Aeron;
 import io.aeron.Subscription;
 import io.aeron.driver.Configuration;
 import io.aeron.driver.DutyCycleTracker;
@@ -22,9 +23,11 @@ import io.aeron.logbuffer.ControlledFragmentHandler;
 import io.aeron.logbuffer.ControlledFragmentHandler.Action;
 import io.aeron.logbuffer.Header;
 import io.aeron.protocol.DataHeaderFlyweight;
+import org.agrona.BitUtil;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.collections.IntHashSet;
+import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
@@ -51,8 +54,10 @@ import uk.co.real_logic.artio.fields.RejectReason;
 import uk.co.real_logic.artio.fields.UtcTimestampDecoder;
 import uk.co.real_logic.artio.messages.FixPProtocolType;
 import uk.co.real_logic.artio.messages.MessageHeaderDecoder;
+import uk.co.real_logic.artio.messages.MessageHeaderEncoder;
 import uk.co.real_logic.artio.messages.ReplayCompleteDecoder;
 import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
+import uk.co.real_logic.artio.storage.messages.IndexedPositionEncoder;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
@@ -61,6 +66,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.*;
+import static io.aeron.logbuffer.FrameDescriptor.FRAME_ALIGNMENT;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -72,6 +78,7 @@ import static uk.co.real_logic.artio.engine.EngineConfiguration.*;
 import static uk.co.real_logic.artio.engine.PossDupEnabler.ORIG_SENDING_TIME_PREFIX_AS_STR;
 import static uk.co.real_logic.artio.engine.logger.Replayer.MESSAGE_FRAME_BLOCK_LENGTH;
 import static uk.co.real_logic.artio.engine.logger.Replayer.START_REPLAY_LENGTH;
+import static uk.co.real_logic.artio.messages.FixMessageDecoder.BYTE_ORDER;
 import static uk.co.real_logic.artio.messages.FixMessageDecoder.metaDataHeaderLength;
 import static uk.co.real_logic.artio.util.CustomMatchers.sequenceEqualsAscii;
 
@@ -88,6 +95,18 @@ public class ReplayerTest extends AbstractLogTest
     private static final int MAX_CLAIM_ATTEMPTS = 100;
     private static final long CORRELATION_ID = 2;
 
+    private static final int REPLAY_SUBSCRIPTION_SESSION_ID = 3152422;
+    private static final int REPLAY_INDEX_BUFFER_SESSION_ID_OFFSET =
+        uk.co.real_logic.artio.storage.messages.MessageHeaderEncoder.ENCODED_LENGTH +
+        IndexedPositionEncoder.recordingIdEncodingOffset();
+    private static final int REPLAY_INDEX_BUFFER_POSITION_OFFSET =
+        uk.co.real_logic.artio.storage.messages.MessageHeaderEncoder.ENCODED_LENGTH +
+        IndexedPositionEncoder.positionEncodingOffset();
+
+    static final int VALID_RESEND_REQUEST_BLOCK_LENGTH =
+        DataHeaderFlyweight.HEADER_LENGTH + MessageHeaderEncoder.ENCODED_LENGTH +
+        ValidResendRequestEncoder.BLOCK_LENGTH + ValidResendRequestEncoder.bodyHeaderLength();
+
     private final ReplayQuery replayQuery = mock(ReplayQuery.class);
     private final Subscription subscription = mock(Subscription.class);
     private final IdleStrategy idleStrategy = mock(IdleStrategy.class);
@@ -95,12 +114,16 @@ public class ReplayerTest extends AbstractLogTest
     private final ArgumentCaptor<MessageTracker> messageTracker =
         ArgumentCaptor.forClass(MessageTracker.class);
     private final EpochNanoClock clock = mock(EpochNanoClock.class);
-    private final Header fragmentHeader = mock(Header.class);
+    private final Header fixMessageTrackerHeader = mock(Header.class);
     private final ReplayHandler replayHandler = mock(ReplayHandler.class);
     private final SenderSequenceNumbers senderSequenceNumbers = mock(SenderSequenceNumbers.class);
     private final ReplayOperation replayOperation = mock(ReplayOperation.class);
     private final AtomicCounter bytesInBufferCounter = mock(AtomicCounter.class);
     private final AtomicCounter currentReplayCounter = mock(AtomicCounter.class);
+
+    private final RecordingIdLookup recordingIdLookup = mock(RecordingIdLookup.class);
+    private final AtomicBuffer outboundReplayIndexPositionBuffer = mock(AtomicBuffer.class);
+    private final Header replayerSubscriptionHeader = mock(Header.class);
 
     private Replayer replayer;
     private boolean sendsStartReplay = true;
@@ -108,7 +131,7 @@ public class ReplayerTest extends AbstractLogTest
     @BeforeEach
     public void setUp()
     {
-        when(fragmentHeader.flags()).thenReturn((byte)DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
+        when(fixMessageTrackerHeader.flags()).thenReturn((byte)DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
         when(clock.nanoTime()).thenReturn(DATE_TIME_EPOCH_NS);
         when(publication.tryClaim(anyInt(), any())).thenReturn(1L);
         when(publication.maxPayloadLength()).thenReturn(Configuration.mtuLength() - DataHeaderFlyweight.HEADER_LENGTH);
@@ -117,6 +140,13 @@ public class ReplayerTest extends AbstractLogTest
             .thenReturn(replayOperation);
         when(replayOperation.pollReplay()).thenReturn(true);
         when(senderSequenceNumbers.bytesInBufferCounter(anyLong())).thenReturn(bytesInBufferCounter);
+
+        when(replayerSubscriptionHeader.flags()).thenReturn((byte)DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
+        when(replayerSubscriptionHeader.sessionId()).thenReturn(REPLAY_SUBSCRIPTION_SESSION_ID);
+        when(recordingIdLookup.getRecordingId(REPLAY_SUBSCRIPTION_SESSION_ID)).thenReturn(1L);
+        when(outboundReplayIndexPositionBuffer.capacity()).thenReturn(4096);
+        when(outboundReplayIndexPositionBuffer.getLong(REPLAY_INDEX_BUFFER_SESSION_ID_OFFSET, BYTE_ORDER))
+            .thenReturn(1L);
 
         setReplayedMessages(1);
 
@@ -143,7 +173,10 @@ public class ReplayerTest extends AbstractLogTest
             clock,
             FixPProtocolType.ILINK_3,
             mock(EngineConfiguration.class),
-            mock(DutyCycleTracker.class));
+            mock(DutyCycleTracker.class),
+            false,
+            recordingIdLookup,
+            outboundReplayIndexPositionBuffer);
     }
 
     private void setReplayedMessages(final int replayedMessages)
@@ -613,6 +646,36 @@ public class ReplayerTest extends AbstractLogTest
         replayer.doWork();
     }
 
+    @Test
+    public void shouldResendAppMessageWhenIndexerOriginallyBehind()
+    {
+        whenReplayQueried().thenAnswer(inv ->
+        {
+            setupCapturingClaim();
+            final int srcLength1 = onExampleMessage(BEGIN_SEQ_NO);
+            assertHasResentWithPossDupFlag(srcLength1, times(2));
+
+            return true;
+        });
+
+        final long result = bufferHasResendRequest(BEGIN_SEQ_NO);
+
+        sendsStartReplay = false;
+        onRequestResendMessageWithSession(
+            result, ABORT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
+            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), 0);
+
+        sendsStartReplay = true;
+        onRequestResendMessageWithSession(
+            result, COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
+            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), Aeron.NULL_VALUE);
+
+        replayer.doWork();
+        replayer.doWork();
+
+        verifyReplayCompleteMessageSent();
+    }
+
     @AfterEach
     public void shouldHaveNoMoreErrors()
     {
@@ -688,12 +751,12 @@ public class ReplayerTest extends AbstractLogTest
 
         final long result = bufferHasResendRequest(endSeqNo, RESEND_TARGET_2);
         onRequestResendMessageWithSession(result, COMMIT, SESSION_ID_2, CONNECTION_ID_2, BEGIN_SEQ_NO, endSeqNo,
-            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue());
+            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), Aeron.NULL_VALUE);
     }
 
     private void onFragment(final int length, final Action expectedAction, final ControlledFragmentHandler handler)
     {
-        final Action action = handler.onFragment(buffer, START, length, fragmentHeader);
+        final Action action = handler.onFragment(buffer, START, length, fixMessageTrackerHeader);
         assertEquals(expectedAction, action);
     }
 
@@ -807,7 +870,14 @@ public class ReplayerTest extends AbstractLogTest
     private void onRequestResendMessage(final long result, final int endSeqNo, final int overriddenBeginSeqNo)
     {
         onRequestResendMessageWithSession(
-            result, Action.COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, endSeqNo, overriddenBeginSeqNo);
+            result,
+            Action.COMMIT,
+            SESSION_ID,
+            CONNECTION_ID,
+            BEGIN_SEQ_NO,
+            endSeqNo,
+            overriddenBeginSeqNo,
+            Aeron.NULL_VALUE);
     }
 
     private void onRequestResendMessageWithSession(
@@ -817,7 +887,8 @@ public class ReplayerTest extends AbstractLogTest
         final long connectionId,
         final int beginSeqNo,
         final int endSeqNo,
-        final int overriddenBeginSeqNo)
+        final int overriddenBeginSeqNo,
+        final int currentIndexedPosition)
     {
         final int offset = Encoder.offset(result);
         final int length = Encoder.length(result);
@@ -825,9 +896,14 @@ public class ReplayerTest extends AbstractLogTest
         final MutableAsciiBuffer buffer = new MutableAsciiBuffer();
         buffer.wrap(this.buffer, offset, length);
 
+        final long messageLength = BitUtil.align(VALID_RESEND_REQUEST_BLOCK_LENGTH + length, FRAME_ALIGNMENT);
+        when(replayerSubscriptionHeader.position()).thenReturn(messageLength);
+        when(outboundReplayIndexPositionBuffer.getLongVolatile(REPLAY_INDEX_BUFFER_POSITION_OFFSET))
+            .thenReturn(Aeron.NULL_VALUE == currentIndexedPosition ? messageLength : currentIndexedPosition);
+
         setupClaim(START_REPLAY_LENGTH);
         final Action action = replayer.onResendRequest(sessionId, connectionId, CORRELATION_ID,
-            beginSeqNo, endSeqNo, SEQUENCE_INDEX, overriddenBeginSeqNo, buffer);
+            beginSeqNo, endSeqNo, SEQUENCE_INDEX, overriddenBeginSeqNo, buffer, replayerSubscriptionHeader);
         if (sendsStartReplay)
         {
             verifyStartReplyClaim();
