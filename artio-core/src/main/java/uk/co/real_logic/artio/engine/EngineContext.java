@@ -237,7 +237,7 @@ public class EngineContext implements AutoCloseable
             configuration.archiverIdleStrategy(),
             errorHandler,
             configuration.outboundMaxClaimAttempts(),
-            inboundLibraryStreams.subscription("replayer"),
+            outboundLibraryStreams.subscription("replayer"),
             configuration.agentNamePrefix(),
             configuration.gapfillOnReplayMessageTypes(),
             configuration.gapfillOnRetransmitILinkTemplateIds(),
@@ -367,7 +367,7 @@ public class EngineContext implements AutoCloseable
                 configuration.outboundMaxClaimAttempts());
 
             replayer = new GapFiller(
-                inboundLibraryStreams.subscription("replayer"),
+                outboundLibraryStreams.subscription("replayer"),
                 replayGatewayPublication,
                 configuration.agentNamePrefix(),
                 senderSequenceNumbers,
