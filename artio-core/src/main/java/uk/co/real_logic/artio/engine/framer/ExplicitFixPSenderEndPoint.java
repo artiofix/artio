@@ -21,6 +21,7 @@ import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.engine.MessageTimingHandler;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 
 import java.io.IOException;
 
@@ -50,11 +51,12 @@ class ExplicitFixPSenderEndPoint extends FixPSenderEndPoint
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer,
         final Framer framer,
-        final FixPReceiverEndPoint receiverEndPoint)
+        final FixPReceiverEndPoint receiverEndPoint,
+        final SenderSequenceNumber senderSequenceNumber)
     {
         super(connectionId, channel, errorHandler, inboundPublication, reproductionLogWriter,
             libraryId, bytesInBuffer, maxBytesInBuffer,
-            framer, receiverEndPoint);
+            framer, receiverEndPoint, senderSequenceNumber);
         this.messageTimingHandler = messageTimingHandler;
     }
 

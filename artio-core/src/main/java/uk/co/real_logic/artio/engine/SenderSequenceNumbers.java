@@ -61,18 +61,6 @@ public class SenderSequenceNumbers
     }
 
     // Called on Indexer Thread
-    public int lastSentSequenceNumber(final long connectionId)
-    {
-        final SenderSequenceNumber senderSequenceNumber = connectionIdToSequencePosition.get(connectionId);
-        if (senderSequenceNumber == null)
-        {
-            return UNKNOWN_SESSION;
-        }
-
-        return senderSequenceNumber.lastSentSequenceNumber();
-    }
-
-    // Called on Indexer Thread
     public AtomicCounter bytesInBufferCounter(final long connectionId)
     {
         final SenderSequenceNumber senderSequenceNumber = connectionIdToSequencePosition.get(connectionId);

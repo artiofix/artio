@@ -30,7 +30,6 @@ public class SenderSequenceNumber implements ReplayerCommand
     private final long connectionId;
     private final AtomicCounter bytesInBuffer;
     private final SenderSequenceNumbers senderSequenceNumbers;
-    private final AtomicInteger lastSentSequenceNumber = new AtomicInteger();
 
     SenderSequenceNumber(
         final long connectionId, final AtomicCounter bytesInBuffer, final SenderSequenceNumbers senderSequenceNumbers)
@@ -38,16 +37,6 @@ public class SenderSequenceNumber implements ReplayerCommand
         this.connectionId = connectionId;
         this.bytesInBuffer = bytesInBuffer;
         this.senderSequenceNumbers = senderSequenceNumbers;
-    }
-
-    public void onNewMessage(final int sequenceNumber)
-    {
-        lastSentSequenceNumber.set(sequenceNumber);
-    }
-
-    public int lastSentSequenceNumber()
-    {
-        return lastSentSequenceNumber.get();
     }
 
     public long connectionId()
