@@ -102,7 +102,7 @@ class ExplicitFixPSenderEndPoint extends FixPSenderEndPoint
         return true;
     }
 
-    public void onStartReplay(final long correlationId)
+    public void onValidResendRequest(final long correlationId)
     {
     }
 }

@@ -47,6 +47,7 @@ public final class EngineProtocolSubscription implements ControlledFragmentHandl
     private final ThrottleRejectDecoder throttleReject = new ThrottleRejectDecoder();
     private final ThrottleConfigurationDecoder throttleConfiguration = new ThrottleConfigurationDecoder();
     private final SeqIndexSyncDecoder seqIndexSync = new SeqIndexSyncDecoder();
+    private final ValidResendRequestDecoder validResendRequest = new ValidResendRequestDecoder();
 
     private final EngineEndPointHandler handler;
 
@@ -113,9 +114,25 @@ public final class EngineProtocolSubscription implements ControlledFragmentHandl
 
             case SeqIndexSyncDecoder.TEMPLATE_ID:
                 return onSeqIndexSync(buffer, offset, blockLength, version, header);
+
+            case ValidResendRequestDecoder.TEMPLATE_ID:
+                return onValidResendRequest(buffer, offset, blockLength, version, header);
         }
 
         return CONTINUE;
+    }
+
+    private Action onValidResendRequest(
+        final DirectBuffer buffer, final int offset, final int blockLength, final int version, final Header header)
+    {
+        final ValidResendRequestDecoder validResendRequest = this.validResendRequest;
+        validResendRequest.wrap(buffer, offset, blockLength, version);
+
+        return handler.onValidResendRequest(
+            validResendRequest.session(),
+            validResendRequest.connection(),
+            validResendRequest.correlationId(),
+            header);
     }
 
     private Action onSeqIndexSync(
