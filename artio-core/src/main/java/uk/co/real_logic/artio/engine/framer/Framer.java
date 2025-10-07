@@ -681,7 +681,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
 
         final AtomicCounter bytesInBuffer = fixCounters.bytesInBuffer(connectionId, channel.remoteAddr());
         final SenderSequenceNumber senderSequenceNumber =
-            senderSequenceNumbers.onNewSender(connectionId, bytesInBuffer);
+            senderSequenceNumbers.onNewSender(true, connectionId, bytesInBuffer);
 
         final AcceptorFixPReceiverEndPoint receiverEndPoint = new AcceptorFixPReceiverEndPoint(
             connectionId,
@@ -866,7 +866,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
 
                     final AtomicCounter bytesInBuffer = fixCounters.bytesInBuffer(connectionId, channel.remoteAddr());
                     final SenderSequenceNumber senderSequenceNumber =
-                        senderSequenceNumbers.onNewSender(connectionId, bytesInBuffer);
+                        senderSequenceNumbers.onNewSender(true, connectionId, bytesInBuffer);
                     final InitiatorFixPReceiverEndPoint receiverEndPoint = new InitiatorFixPReceiverEndPoint(
                         connectionId, channel, configuration.receiverBufferSize(),
                         errorHandler, this, inboundPublication, libraryId, context,

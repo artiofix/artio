@@ -25,16 +25,26 @@ import org.agrona.concurrent.status.AtomicCounter;
  */
 public class SenderSequenceNumber implements ReplayerCommand
 {
+    private final boolean fixP;
     private final long connectionId;
     private final AtomicCounter bytesInBuffer;
     private final SenderSequenceNumbers senderSequenceNumbers;
 
     SenderSequenceNumber(
-        final long connectionId, final AtomicCounter bytesInBuffer, final SenderSequenceNumbers senderSequenceNumbers)
+        final boolean fixP,
+        final long connectionId,
+        final AtomicCounter bytesInBuffer,
+        final SenderSequenceNumbers senderSequenceNumbers)
     {
+        this.fixP = fixP;
         this.connectionId = connectionId;
         this.bytesInBuffer = bytesInBuffer;
         this.senderSequenceNumbers = senderSequenceNumbers;
+    }
+
+    public boolean fixP()
+    {
+        return fixP;
     }
 
     public long connectionId()

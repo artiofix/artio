@@ -115,7 +115,6 @@ public class Replayer extends AbstractReplayer
     private final ReplayHandler replayHandler;
     private final FixPRetransmitHandler fixPRetransmitHandler;
     private final UtcTimestampEncoder utcTimestampEncoder;
-    private final boolean acceptsFixP;
 
     private final RecordingIdLookup recordingIdLookup;
     private final IndexedPositionReader outboundReplayIndexPositionReader;
@@ -145,7 +144,6 @@ public class Replayer extends AbstractReplayer
         final FixPProtocolType fixPProtocolType,
         final EngineConfiguration configuration,
         final DutyCycleTracker dutyCycleTracker,
-        final boolean acceptsFixP,
         final RecordingIdLookup recordingIdLookup,
         final AtomicBuffer outboundReplayIndexPositionBuffer)
     {
@@ -178,7 +176,6 @@ public class Replayer extends AbstractReplayer
 
         timestamper = new ReplayTimestamper(publication, clock);
 
-        this.acceptsFixP = acceptsFixP;
         this.recordingIdLookup = recordingIdLookup;
         this.outboundReplayIndexPositionReader = new IndexedPositionReader(outboundReplayIndexPositionBuffer);
     }
@@ -298,7 +295,6 @@ public class Replayer extends AbstractReplayer
             catch (final IllegalStateException e)
             {
                 errorHandler.onError(e);
-                sendStartReplay = true;
                 return CONTINUE;
             }
         }
@@ -314,14 +310,15 @@ public class Replayer extends AbstractReplayer
         final long overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer)
     {
-        if (acceptsFixP)
+        final SenderSequenceNumber senderSequenceNumber = senderSequenceNumbers.senderSequenceNumber(connectionId);
+        if (null == senderSequenceNumber)
         {
-            final AtomicCounter bytesInBuffer = senderSequenceNumbers.bytesInBufferCounter(connectionId);
-            if (bytesInBuffer == null)
-            {
-                return null;
-            }
+            return null;
+        }
 
+        final AtomicCounter bytesInBuffer = senderSequenceNumber.bytesInBuffer();
+        if (senderSequenceNumber.fixP())
+        {
             DebugLogger.log(REPLAY,
                 receivedResendFormatter,
                 beginSeqNo,
@@ -351,12 +348,9 @@ public class Replayer extends AbstractReplayer
                     return null;
                 }
 
-                final FixReplayerSession fixReplayerSession = processFixResendRequest(
+                return processFixResendRequest(
                     sessionId, connectionId, correlationId, (int)beginSeqNo, (int)endSeqNo, sequenceIndex,
-                    (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs);
-                // Suppress resending of start replay if back-pressure happens here, ie if fixReplayerSession == null.
-                sendStartReplay = fixReplayerSession != null;
-                return fixReplayerSession;
+                    (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs, bytesInBuffer);
             }
 
             // ManageSession and ValidResendRequest might race each other (different sessions), so it's possible we see
@@ -374,14 +368,9 @@ public class Replayer extends AbstractReplayer
         final int sequenceIndex,
         final int overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer,
-        final FixReplayerCodecs sessionCodecs)
+        final FixReplayerCodecs sessionCodecs,
+        final AtomicCounter bytesInBuffer)
     {
-        final AtomicCounter bytesInBuffer = senderSequenceNumbers.bytesInBufferCounter(connectionId);
-        if (bytesInBuffer == null)
-        {
-            return null;
-        }
-
         DebugLogger.log(REPLAY,
             receivedResendFormatter,
             beginSeqNo,
@@ -490,7 +479,15 @@ public class Replayer extends AbstractReplayer
                             enqueuedReplay.overriddenBeginSeqNo(),
                             enqueuedReplay.asciiBuffer());
 
-                        channel.startReplay(session);
+                        if (null == session)
+                        {
+                            channel.startReplay(null);
+                            channel.enqueueReplay(enqueuedReplay);
+                        }
+                        else
+                        {
+                            channel.startReplay(session);
+                        }
                     }
                     catch (final IllegalStateException e)
                     {

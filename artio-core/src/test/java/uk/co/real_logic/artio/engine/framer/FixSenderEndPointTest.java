@@ -195,6 +195,7 @@ public class FixSenderEndPointTest
 
     private void startValidReplay()
     {
+        endPoint.onValidResendRequest(REPLAY_CORRELATION_ID);
         endPoint.onStartReplay(REPLAY_CORRELATION_ID);
     }
 
@@ -327,6 +328,9 @@ public class FixSenderEndPointTest
     @Test
     public void shouldCopeWithMultipleResendRequests()
     {
+        endPoint.onValidResendRequest(REPLAY_CORRELATION_ID);
+        endPoint.onValidResendRequest(REPLAY_CORRELATION_ID_2);
+
         // First replay
         endPoint.onStartReplay(REPLAY_CORRELATION_ID);
 
