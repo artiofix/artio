@@ -48,6 +48,7 @@ import uk.co.real_logic.artio.decoder.SequenceResetDecoder;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.ReplayHandler;
 import uk.co.real_logic.artio.engine.ReplayerCommandQueue;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 import uk.co.real_logic.artio.engine.SenderSequenceNumbers;
 import uk.co.real_logic.artio.fields.EpochFractionFormat;
 import uk.co.real_logic.artio.fields.RejectReason;
@@ -139,7 +140,10 @@ public class ReplayerTest extends AbstractLogTest
         when(replayQuery.query(anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), any(), messageTracker.capture()))
             .thenReturn(replayOperation);
         when(replayOperation.pollReplay()).thenReturn(true);
-        when(senderSequenceNumbers.bytesInBufferCounter(anyLong())).thenReturn(bytesInBufferCounter);
+        final SenderSequenceNumber senderSequenceNumber = mock(SenderSequenceNumber.class);
+        when(senderSequenceNumber.fixP()).thenReturn(false);
+        when(senderSequenceNumber.bytesInBuffer()).thenReturn(bytesInBufferCounter);
+        when(senderSequenceNumbers.senderSequenceNumber(anyLong())).thenReturn(senderSequenceNumber);
 
         when(replayerSubscriptionHeader.flags()).thenReturn((byte)DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
         when(replayerSubscriptionHeader.sessionId()).thenReturn(REPLAY_SUBSCRIPTION_SESSION_ID);
@@ -174,7 +178,6 @@ public class ReplayerTest extends AbstractLogTest
             FixPProtocolType.ILINK_3,
             mock(EngineConfiguration.class),
             mock(DutyCycleTracker.class),
-            false,
             recordingIdLookup,
             outboundReplayIndexPositionBuffer);
     }

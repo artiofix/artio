@@ -256,7 +256,6 @@ public class EngineContext implements AutoCloseable
             configuration.supportedFixPProtocolType(),
             configuration,
             fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()),
-            configuration.acceptsFixP(),
             recordingCoordinator.replayerLookup(),
             outboundReplayIndex.replayIndexPositionBuffer());
     }
