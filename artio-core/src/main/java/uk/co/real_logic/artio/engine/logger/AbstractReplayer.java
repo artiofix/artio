@@ -69,6 +69,8 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
     final BufferClaim bufferClaim;
     final SenderSequenceNumbers senderSequenceNumbers;
 
+    boolean sendStartReplay = true;
+
     protected final EpochNanoClock clock;
     private final DutyCycleTracker dutyCycleTracker;
 
@@ -90,24 +92,27 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
 
     boolean trySendStartReplay(final long sessionId, final long connectionId, final long correlationId)
     {
-        final long position = publication.tryClaim(START_REPLAY_LENGTH, bufferClaim);
-        if (Pressure.isBackPressured(position))
+        if (sendStartReplay)
         {
-            return true;
+            final long position = publication.tryClaim(START_REPLAY_LENGTH, bufferClaim);
+            if (Pressure.isBackPressured(position))
+            {
+                return true;
+            }
+
+            final MutableDirectBuffer buffer = bufferClaim.buffer();
+            final int offset = bufferClaim.offset();
+
+            startReplayEncoder
+                .wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+                .session(sessionId)
+                .connection(connectionId)
+                .correlationId(correlationId);
+
+            DebugLogger.logSbeMessage(REPLAY, startReplayEncoder);
+
+            bufferClaim.commit();
         }
-
-        final MutableDirectBuffer buffer = bufferClaim.buffer();
-        final int offset = bufferClaim.offset();
-
-        startReplayEncoder
-            .wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
-            .session(sessionId)
-            .connection(connectionId)
-            .correlationId(correlationId);
-
-        DebugLogger.logSbeMessage(REPLAY, startReplayEncoder);
-
-        bufferClaim.commit();
 
         return false;
     }
