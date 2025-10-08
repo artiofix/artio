@@ -400,7 +400,11 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             final int headerSeqNum = connection.exchangeTestRequestHeartbeat(testReqId).header().msgSeqNum();
 
             session = acquireSession();
-            ReportFactory.sendOneReport(testSystem, session, Side.SELL);
+            final long reportIndex = ReportFactory.sendOneReport(testSystem, session, Side.SELL);
+
+            final ReadablePosition libraryPosition = testSystem.awaitReply(
+                engine.libraryIndexedPosition(library.libraryId())).resultIfPresent();
+            testSystem.awaitPosition(libraryPosition, reportIndex);
 
             testSystem.awaitBlocking(() ->
             {
@@ -857,6 +861,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
         setupLibrary();
 
+        final ReadablePosition libraryPosition = testSystem.libraryPosition(engine, library);
+
         try (FixConnection connection = FixConnection.initiate(port))
         {
             // Given setup session with 1 sent execution report
@@ -874,7 +880,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             // useful to send it on an offline session
             final int highSeqNum = 100;
             assertThat(highSeqNum, greaterThan(msgSeqNum));
-            testSystem.awaitSend(() -> session.trySendSequenceReset(highSeqNum, highSeqNum));
+            final long position = testSystem.awaitSend(() -> session.trySendSequenceReset(highSeqNum, highSeqNum));
 
             testSystem.awaitBlocking(() ->
             {
@@ -882,6 +888,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 assertFalse(sequenceReset.hasGapFillFlag(), sequenceReset.toString());
                 assertEquals(highSeqNum, sequenceReset.newSeqNo());
             });
+
+            testSystem.awaitPosition(libraryPosition, position);
 
             testSystem.awaitBlocking(() ->
             {
