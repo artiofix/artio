@@ -256,7 +256,17 @@ public class EngineContext implements AutoCloseable
             fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()));
     }
 
-    private void newIndexers()
+    public long inboundIndexRegistrationId()
+    {
+        return inboundIndexRegistrationId;
+    }
+
+    public long outboundIndexRegistrationId()
+    {
+        return outboundIndexRegistrationId;
+    }
+
+    private void newArchivingAgent()
     {
         ReplayIndex inboundReplayIndex = null;
         ReplayIndex outboundReplayIndex = null;
@@ -307,12 +317,13 @@ public class EngineContext implements AutoCloseable
                     outboundEvictionHandler);
                 outboundIndices.add(outboundReplayIndex);
             }
+            outboundIndices.add(replayerIndex());
             outboundIndices.add(sentSequenceNumberIndex);
 
             final Subscription outboundIndexSubscription = outboundLibraryStreams.subscription("outboundIndexer");
             outboundIndexRegistrationId = outboundIndexSubscription.registrationId();
 
-            this.outboundIndexer = new Indexer(
+            outboundIndexer = new Indexer(
                 outboundIndices,
                 outboundIndexSubscription,
                 configuration.agentNamePrefix(),
@@ -325,23 +336,17 @@ public class EngineContext implements AutoCloseable
             suppressingClose(outboundReplayIndex, e);
             throw e;
         }
+
+        final List<Agent> agents = new ArrayList<>();
+        agents.add(inboundIndexer);
+        agents.add(outboundIndexer);
+
+        indexingAgent = new CompositeAgent(agents);
     }
 
-    public long inboundIndexRegistrationId()
+    private Index replayerIndex()
     {
-        return inboundIndexRegistrationId;
-    }
-
-    public long outboundIndexRegistrationId()
-    {
-        return outboundIndexRegistrationId;
-    }
-
-    private void newArchivingAgent()
-    {
-        newIndexers();
-
-        final Agent replayer;
+        final Index replayer;
         if (configuration.logOutboundMessages())
         {
             outboundReplayQuery = newReplayQuery(
@@ -377,12 +382,7 @@ public class EngineContext implements AutoCloseable
                 fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()));
         }
 
-        final List<Agent> agents = new ArrayList<>();
-        agents.add(inboundIndexer);
-        agents.add(outboundIndexer);
-        agents.add(replayer);
-
-        indexingAgent = new CompositeAgent(agents);
+        return replayer;
     }
 
     public void catchupIndices()
