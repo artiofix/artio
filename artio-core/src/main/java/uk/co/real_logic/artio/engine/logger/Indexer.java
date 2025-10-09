@@ -73,6 +73,17 @@ public class Indexer implements Agent, ControlledFragmentHandler
         this.archiveReplayStream = archiveReplayStream;
     }
 
+    public void onStart()
+    {
+        final List<Index> indices = this.indices;
+        final int size = indices.size();
+        for (int i = 0; i < size; i++)
+        {
+            final Index value = indices.get(i);
+            value.onStart();
+        }
+    }
+
     public int doWork()
     {
         return subscription.controlledPoll(this, LIMIT) + pollIndexes();
