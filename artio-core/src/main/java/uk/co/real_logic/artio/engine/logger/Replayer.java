@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static io.aeron.archive.status.RecordingPos.NULL_RECORDING_ID;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.*;
 import static io.aeron.logbuffer.FrameDescriptor.UNFRAGMENTED;
 import static uk.co.real_logic.artio.DebugLogger.IS_REPLAY_LOG_TAG_ENABLED;
@@ -243,13 +244,6 @@ public class Replayer extends AbstractReplayer
             return CONTINUE;
         }
 
-        final long recordingId = recordingIdLookup.getRecordingId(header.sessionId());
-        final long indexedPosition = outboundReplayIndexPositionReader.indexedPosition(recordingId);
-        if (indexedPosition < header.position())
-        {
-            return ABORT;
-        }
-
         final ReplayChannel replayChannel = connectionIdToReplayerChannel.get(connectionId);
         if (replayChannel != null)
         {
@@ -270,7 +264,8 @@ public class Replayer extends AbstractReplayer
             copiedBuffer.putBytes(0, asciiBuffer, 0, length);
 
             replayChannel.enqueueReplay(new EnqueuedReplay(sessionId, connectionId, correlationId,
-                beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer));
+                beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer,
+                header.sessionId(), header.position()));
 
             return COMMIT;
         }
@@ -279,16 +274,28 @@ public class Replayer extends AbstractReplayer
             // New replay
             try
             {
-                final ReplayerSession session = processResendRequest(sessionId, connectionId, correlationId,
-                    beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, asciiBuffer);
-                if (session == null)
-                {
-                    return ABORT;
-                }
-
-                final ReplayChannel channel = new ReplayChannel(session);
+                final ReplayChannel channel = new ReplayChannel();
                 connectionIdToReplayerChannel.put(connectionId, channel);
                 currentReplayCount.increment();
+
+                final ReplayerSession session = processResendRequest(sessionId, connectionId, correlationId,
+                    beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, asciiBuffer,
+                    header.sessionId(), header.position());
+
+                if (session == null)
+                {
+                    final int length = asciiBuffer.capacity();
+                    final MutableAsciiBuffer copiedBuffer = new MutableAsciiBuffer(new byte[length]);
+                    copiedBuffer.putBytes(0, asciiBuffer, 0, length);
+
+                    channel.enqueueReplay(new EnqueuedReplay(sessionId, connectionId, correlationId,
+                        beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer,
+                        header.sessionId(), header.position()));
+                }
+                else
+                {
+                    channel.startReplay(session);
+                }
 
                 return COMMIT;
             }
@@ -308,8 +315,17 @@ public class Replayer extends AbstractReplayer
         final long endSeqNo,
         final int sequenceIndex,
         final long overriddenBeginSeqNo,
-        final AsciiBuffer asciiBuffer)
+        final AsciiBuffer asciiBuffer,
+        final int aeronSessionId,
+        final long aeronSessionRequiredPosition)
     {
+        final long recordingId = recordingIdLookup.findRecordingId(aeronSessionId);
+        if (NULL_RECORDING_ID == recordingId ||
+            outboundReplayIndexPositionReader.indexedPosition(recordingId) < aeronSessionRequiredPosition)
+        {
+            return null;
+        }
+
         final SenderSequenceNumber senderSequenceNumber = senderSequenceNumbers.senderSequenceNumber(connectionId);
         if (null == senderSequenceNumber)
         {
@@ -477,7 +493,9 @@ public class Replayer extends AbstractReplayer
                             enqueuedReplay.endSeqNo(),
                             enqueuedReplay.sequenceIndex(),
                             enqueuedReplay.overriddenBeginSeqNo(),
-                            enqueuedReplay.asciiBuffer());
+                            enqueuedReplay.asciiBuffer(),
+                            enqueuedReplay.aeronSessionId(),
+                            enqueuedReplay.aeronSessionRequiredPosition());
 
                         if (null == session)
                         {

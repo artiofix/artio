@@ -27,6 +27,8 @@ public class EnqueuedReplay
     private final int sequenceIndex;
     private final long overriddenBeginSeqNo;
     private final AsciiBuffer asciiBuffer;
+    private final int aeronSessionId;
+    private final long aeronSessionRequiredPosition;
 
     public EnqueuedReplay(
         final long sessionId,
@@ -35,7 +37,9 @@ public class EnqueuedReplay
         final long endSeqNo,
         final int sequenceIndex,
         final long overriddenBeginSeqNo,
-        final AsciiBuffer asciiBuffer)
+        final AsciiBuffer asciiBuffer,
+        final int aeronSessionId,
+        final long aeronSessionRequiredPosition)
     {
 
         this.sessionId = sessionId;
@@ -46,6 +50,8 @@ public class EnqueuedReplay
         this.sequenceIndex = sequenceIndex;
         this.overriddenBeginSeqNo = overriddenBeginSeqNo;
         this.asciiBuffer = asciiBuffer;
+        this.aeronSessionId = aeronSessionId;
+        this.aeronSessionRequiredPosition = aeronSessionRequiredPosition;
     }
 
     public long sessionId()
@@ -81,6 +87,16 @@ public class EnqueuedReplay
     public long overriddenBeginSeqNo()
     {
         return overriddenBeginSeqNo;
+    }
+
+    public int aeronSessionId()
+    {
+        return aeronSessionId;
+    }
+
+    public long aeronSessionRequiredPosition()
+    {
+        return aeronSessionRequiredPosition;
     }
 
     public String toString()
