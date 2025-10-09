@@ -147,7 +147,7 @@ public class ReplayerTest extends AbstractLogTest
 
         when(replayerSubscriptionHeader.flags()).thenReturn((byte)DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
         when(replayerSubscriptionHeader.sessionId()).thenReturn(REPLAY_SUBSCRIPTION_SESSION_ID);
-        when(recordingIdLookup.getRecordingId(REPLAY_SUBSCRIPTION_SESSION_ID)).thenReturn(1L);
+        when(recordingIdLookup.findRecordingId(REPLAY_SUBSCRIPTION_SESSION_ID)).thenReturn(1L);
         when(outboundReplayIndexPositionBuffer.capacity()).thenReturn(4096);
         when(outboundReplayIndexPositionBuffer.getLong(REPLAY_INDEX_BUFFER_SESSION_ID_OFFSET, BYTE_ORDER))
             .thenReturn(1L);
@@ -665,16 +665,29 @@ public class ReplayerTest extends AbstractLogTest
 
         sendsStartReplay = false;
         onRequestResendMessageWithSession(
-            result, ABORT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
+            result, COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
             (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), 0);
 
-        sendsStartReplay = true;
-        onRequestResendMessageWithSession(
-            result, COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
-            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), Aeron.NULL_VALUE);
+        replayer.doWork();
+        replayer.doWork();
+        replayer.doWork();
+        replayer.doWork();
+        replayer.doWork();
+
+        verify(replayHandler, times(0))
+            .onReplayedMessage(any(), anyInt(), anyInt(), anyInt(), anyLong(), anyInt(), anyLong());
+        verify(publication, times(0)).tryClaim(anyInt(), any());
+
+        when(outboundReplayIndexPositionBuffer.getLongVolatile(REPLAY_INDEX_BUFFER_POSITION_OFFSET))
+            .thenReturn(Long.MAX_VALUE);
 
         replayer.doWork();
         replayer.doWork();
+        replayer.doWork();
+
+        verify(replayHandler, times(1))
+            .onReplayedMessage(any(), anyInt(), anyInt(), anyInt(), anyLong(), anyInt(), anyLong());
+        verify(publication, times(3)).tryClaim(anyInt(), any());
 
         verifyReplayCompleteMessageSent();
     }
