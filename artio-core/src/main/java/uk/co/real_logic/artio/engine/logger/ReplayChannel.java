@@ -43,6 +43,11 @@ class ReplayChannel
         enqueuedReplays.addLast(enqueuedReplay);
     }
 
+    void reEnqueueReplay(final EnqueuedReplay enqueuedReplay)
+    {
+        enqueuedReplays.addFirst(enqueuedReplay);
+    }
+
     public int enqueuedReplayCount()
     {
         final Deque<EnqueuedReplay> enqueuedReplays = this.enqueuedReplays;
