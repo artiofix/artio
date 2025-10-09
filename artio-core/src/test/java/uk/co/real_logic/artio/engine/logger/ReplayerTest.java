@@ -155,6 +155,7 @@ public class ReplayerTest extends AbstractLogTest
         setReplayedMessages(1);
 
         replayer = new Replayer(
+            DEFAULT_ARCHIVER_FRAGMENT_LIMIT,
             replayQuery,
             publication,
             claim,

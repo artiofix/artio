@@ -38,8 +38,6 @@ import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 
 abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
 {
-    static final int POLL_LIMIT = 20;
-
     private static final int REPLAY_COMPLETE_LEN =
         MessageHeaderEncoder.ENCODED_LENGTH + ReplayCompleteEncoder.BLOCK_LENGTH;
     static final int START_REPLAY_LENGTH =
@@ -64,6 +62,7 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
         "ReplayerSession: completeReplay-sendGapFill action=%s, replayedMessages=%s, " +
         "beginGapFillSeqNum=%s, newSequenceNumber=%s connId=%s");
 
+    protected final int pollLimit;
     final ExclusivePublication publication;
     final FixSessionCodecsFactory fixSessionCodecsFactory;
     final BufferClaim bufferClaim;
@@ -73,6 +72,7 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
     private final DutyCycleTracker dutyCycleTracker;
 
     AbstractReplayer(
+        final int pollLimit,
         final ExclusivePublication publication,
         final FixSessionCodecsFactory fixSessionCodecsFactory,
         final BufferClaim bufferClaim,
@@ -80,6 +80,7 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
         final EpochNanoClock clock,
         final DutyCycleTracker dutyCycleTracker)
     {
+        this.pollLimit = pollLimit;
         this.publication = publication;
         this.fixSessionCodecsFactory = fixSessionCodecsFactory;
         this.bufferClaim = bufferClaim;

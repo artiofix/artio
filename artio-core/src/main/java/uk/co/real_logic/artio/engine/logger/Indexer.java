@@ -46,13 +46,12 @@ import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
 @SuppressWarnings("ForLoopReplaceableByForEach")
 public class Indexer implements Agent, ControlledFragmentHandler
 {
-    private static final int LIMIT = 20;
-
     private final CharFormatter indexingFormatter = new CharFormatter(
         "Indexing @ %s from [%s, %s]");
     private final CharFormatter catchupFormatter = new CharFormatter(
         "Catchup [%s]: recordingId = %s, recordingStopped @ %s, indexStopped @ %s");
 
+    private final int pollLimit;
     private final List<Index> indices;
     private final Subscription subscription;
     private final String agentNamePrefix;
@@ -60,12 +59,14 @@ public class Indexer implements Agent, ControlledFragmentHandler
     private final int archiveReplayStream;
 
     public Indexer(
+        final int pollLimit,
         final List<Index> indices,
         final Subscription subscription,
         final String agentNamePrefix,
         final CompletionPosition completionPosition,
         final int archiveReplayStream)
     {
+        this.pollLimit = pollLimit;
         this.indices = indices;
         this.subscription = subscription;
         this.agentNamePrefix = agentNamePrefix;
@@ -75,7 +76,7 @@ public class Indexer implements Agent, ControlledFragmentHandler
 
     public int doWork()
     {
-        return subscription.controlledPoll(this, LIMIT) + pollIndexes();
+        return subscription.controlledPoll(this, pollLimit) + pollIndexes();
     }
 
     private int pollIndexes()
@@ -136,7 +137,7 @@ public class Indexer implements Agent, ControlledFragmentHandler
 
                             while (replayImage.position() < recordingStoppedPosition)
                             {
-                                final int workCount = replayImage.poll(handler, LIMIT);
+                                final int workCount = replayImage.poll(handler, pollLimit);
                                 idle(idleStrategy, aeronInvoker, workCount);
                             }
                             idleStrategy.reset();

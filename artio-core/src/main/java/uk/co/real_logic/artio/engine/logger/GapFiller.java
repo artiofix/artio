@@ -58,6 +58,7 @@ public class GapFiller extends AbstractReplayer
     private AbortState abortState;
 
     public GapFiller(
+        final int pollLimit,
         final Subscription outboundSubscription,
         final GatewayPublication publication,
         final String agentNamePrefix,
@@ -67,8 +68,8 @@ public class GapFiller extends AbstractReplayer
         final EpochNanoClock clock,
         final DutyCycleTracker dutyCycleTracker)
     {
-        super(publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(), senderSequenceNumbers,
-            clock, dutyCycleTracker);
+        super(pollLimit, publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(),
+            senderSequenceNumbers, clock, dutyCycleTracker);
         this.outboundSubscription = outboundSubscription;
         this.publication = publication;
         this.agentNamePrefix = agentNamePrefix;
@@ -84,7 +85,7 @@ public class GapFiller extends AbstractReplayer
         trackDutyCycleTime(timeInNs);
         timestamper.sendTimestampMessage(timeInNs);
 
-        return replayerCommandQueue.poll() + outboundSubscription.controlledPoll(this, POLL_LIMIT);
+        return replayerCommandQueue.poll() + outboundSubscription.controlledPoll(this, pollLimit);
     }
 
     public Action onFragment(final DirectBuffer buffer, final int start, final int length, final Header header)

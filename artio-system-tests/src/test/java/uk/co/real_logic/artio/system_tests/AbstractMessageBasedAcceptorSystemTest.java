@@ -154,6 +154,22 @@ public class AbstractMessageBasedAcceptorSystemTest
         final long endInNs,
         final boolean deleteLogsOnStart)
     {
+        setup(sequenceNumberReset, shouldBind, provideBindingAddress, initialAcceptedSessionOwner,
+            enableThrottle, enableReproduction, startInNs, endInNs, deleteLogsOnStart, false);
+    }
+
+    void setup(
+        final boolean sequenceNumberReset,
+        final boolean shouldBind,
+        final boolean provideBindingAddress,
+        final InitialAcceptedSessionOwner initialAcceptedSessionOwner,
+        final boolean enableThrottle,
+        final boolean enableReproduction,
+        final long startInNs,
+        final long endInNs,
+        final boolean deleteLogsOnStart,
+        final boolean slowArchiverIndexer)
+    {
         mediaDriver = launchMediaDriver(mediaDriverContext(TERM_BUFFER_LENGTH, deleteLogsOnStart));
 
         final EngineConfiguration config = new EngineConfiguration()
@@ -217,6 +233,11 @@ public class AbstractMessageBasedAcceptorSystemTest
         else
         {
             config.monitoringAgentFactory(MonitoringAgentFactory.none());
+        }
+
+        if (slowArchiverIndexer)
+        {
+            config.archiverIndexerFragmentLimit(1);
         }
 
         engine = FixEngine.launch(config);

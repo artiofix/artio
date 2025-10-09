@@ -122,6 +122,7 @@ public class Replayer extends AbstractReplayer
     private long timeOfLastCheckDisconnectedChannels;
 
     public Replayer(
+        final int pollLimit,
         final ReplayQuery outboundReplayQuery,
         final ExclusivePublication publication,
         final BufferClaim bufferClaim,
@@ -148,7 +149,8 @@ public class Replayer extends AbstractReplayer
         final RecordingIdLookup recordingIdLookup,
         final AtomicBuffer outboundReplayIndexPositionBuffer)
     {
-        super(publication, fixSessionCodecsFactory, bufferClaim, senderSequenceNumbers, clock, dutyCycleTracker);
+        super(pollLimit, publication, fixSessionCodecsFactory, bufferClaim,
+            senderSequenceNumbers, clock, dutyCycleTracker);
         this.outboundReplayQuery = outboundReplayQuery;
         this.idleStrategy = idleStrategy;
         this.errorHandler = errorHandler;
@@ -460,7 +462,7 @@ public class Replayer extends AbstractReplayer
         int work = replayerCommandQueue.poll();
         work += pollReplayerChannels();
         work += checkDisconnectedChannels(timeInNs);
-        return work + outboundSubscription.controlledPoll(this, POLL_LIMIT);
+        return work + outboundSubscription.controlledPoll(this, pollLimit);
     }
 
     private int pollReplayerChannels()
