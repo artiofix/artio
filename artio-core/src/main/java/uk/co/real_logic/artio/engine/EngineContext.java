@@ -233,6 +233,7 @@ public class EngineContext implements AutoCloseable
     {
         final EpochFractionFormat epochFractionFormat = configuration.sessionEpochFractionFormat();
         return new Replayer(
+            configuration.archiverReplayerFragmentLimit(),
             replayQuery,
             replayPublication,
             new BufferClaim(),
@@ -288,6 +289,7 @@ public class EngineContext implements AutoCloseable
             inboundIndexRegistrationId = inboundIndexSubscription.registrationId();
 
             inboundIndexer = new Indexer(
+                configuration.archiverIndexerFragmentLimit(),
                 inboundIndices,
                 inboundIndexSubscription,
                 configuration.agentNamePrefix(),
@@ -314,6 +316,7 @@ public class EngineContext implements AutoCloseable
             outboundIndexRegistrationId = outboundIndexSubscription.registrationId();
 
             this.outboundIndexer = new Indexer(
+                configuration.archiverIndexerFragmentLimit(),
                 outboundIndices,
                 outboundIndexSubscription,
                 configuration.agentNamePrefix(),
@@ -368,6 +371,7 @@ public class EngineContext implements AutoCloseable
                 configuration.outboundMaxClaimAttempts());
 
             replayer = new GapFiller(
+                configuration.archiverReplayerFragmentLimit(),
                 outboundLibraryStreams.subscription("replayer"),
                 replayGatewayPublication,
                 configuration.agentNamePrefix(),

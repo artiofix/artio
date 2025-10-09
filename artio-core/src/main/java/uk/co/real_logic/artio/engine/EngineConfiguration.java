@@ -165,6 +165,10 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
      * Property name for the timeout before a connection that hasn't sent a logon is disconnected
      */
     public static final String NO_LOGON_DISCONNECT_TIMEOUT_PROP = "fix.core.no_logon_disconnect";
+    /**
+     * Property name for the max number of messages to read on the indexer.
+     */
+    public static final String ARCHIVER_FRAGMENT_LIMIT_PROP = "fix.core.archiver_fragment_limit";
 
     // ------------------------------------------------
     //          Configuration Defaults
@@ -192,6 +196,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public static final String DEFAULT_SEQUENCE_NUMBERS_SENT_FILE = "sequence_numbers_sent";
     public static final String DEFAULT_SEQUENCE_NUMBERS_RECEIVED_FILE = "sequence_numbers_received";
     public static final long DEFAULT_SLOW_CONSUMER_TIMEOUT_IN_MS = 10_000;
+    public static final int DEFAULT_ARCHIVER_FRAGMENT_LIMIT = 20;
     public static final ReplayHandler DEFAULT_REPLAY_HANDLER =
         (buffer, offset, length, libraryId, sessionId, sequenceIndex, messageType) ->
         {
@@ -282,6 +287,11 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     private int noLogonDisconnectTimeoutInMs =
         getInteger(NO_LOGON_DISCONNECT_TIMEOUT_PROP, DEFAULT_NO_LOGON_DISCONNECT_TIMEOUT_IN_MS);
     private boolean indexChecksumEnabled = getBoolean(INDEX_CHECKSUM_ENABLED_PROP, DEFAULT_INDEX_CHECKSUM_ENABLED);
+    private int archiverIndexerFragmentLimit =
+        getInteger(ARCHIVER_FRAGMENT_LIMIT_PROP, DEFAULT_ARCHIVER_FRAGMENT_LIMIT);
+    private int archiverReplayerFragmentLimit =
+        getInteger(ARCHIVER_FRAGMENT_LIMIT_PROP, DEFAULT_ARCHIVER_FRAGMENT_LIMIT);
+
 
     private String libraryAeronChannel = null;
     private Function<EngineConfiguration, TcpChannelSupplier> channelSupplierFactory = DefaultTcpChannelSupplier::new;
@@ -1322,6 +1332,32 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
         return this;
     }
 
+    /**
+     * Sets the fragment limit for the subscription to messages to the archiver indexer.
+     *
+     * @param archiverIndexerFragmentLimit the fragment limit for the subscription to messages from the replayer.
+     * @return this
+     * @see EngineConfiguration#ARCHIVER_FRAGMENT_LIMIT_PROP
+     */
+    public EngineConfiguration archiverIndexerFragmentLimit(final int archiverIndexerFragmentLimit)
+    {
+        this.archiverIndexerFragmentLimit = archiverIndexerFragmentLimit;
+        return this;
+    }
+
+    /**
+     * Sets the fragment limit for the subscription to messages to the archiver replayer.
+     *
+     * @param archiverReplayerFragmentLimit the fragment limit for the subscription to messages from the replayer.
+     * @return this
+     * @see EngineConfiguration#ARCHIVER_FRAGMENT_LIMIT_PROP
+     */
+    public EngineConfiguration archiverReplayerFragmentLimit(final int archiverReplayerFragmentLimit)
+    {
+        this.archiverReplayerFragmentLimit = archiverReplayerFragmentLimit;
+        return this;
+    }
+
     // ---------------------
     // END SETTERS
     // ---------------------
@@ -2086,6 +2122,16 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public int reproductionReplayStream()
     {
         return reproductionReplayStream;
+    }
+
+    public int archiverIndexerFragmentLimit()
+    {
+        return archiverIndexerFragmentLimit;
+    }
+
+    public int archiverReplayerFragmentLimit()
+    {
+        return archiverReplayerFragmentLimit;
     }
 
     // ---------------------

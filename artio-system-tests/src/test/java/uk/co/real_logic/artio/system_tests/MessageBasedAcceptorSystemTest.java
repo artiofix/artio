@@ -1119,7 +1119,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     {
         final int outboundMessageCount = 100;
 
-        setup(true, true);
+        setup(true, true, true, ENGINE, false, false, 0L, 0L, true, true);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
