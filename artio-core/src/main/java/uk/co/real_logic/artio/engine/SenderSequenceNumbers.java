@@ -40,10 +40,12 @@ public class SenderSequenceNumbers
     }
 
     // Called on Framer Thread
-    public SenderSequenceNumber onNewSender(final long connectionId, final AtomicCounter bytesInBuffer)
+    public SenderSequenceNumber onNewSender(
+        final boolean fixP,
+        final long connectionId,
+        final AtomicCounter bytesInBuffer)
     {
-        final SenderSequenceNumber position = new SenderSequenceNumber(
-            connectionId, bytesInBuffer, this);
+        final SenderSequenceNumber position = new SenderSequenceNumber(fixP, connectionId, bytesInBuffer, this);
         enqueue(position);
         return position;
     }
@@ -61,22 +63,9 @@ public class SenderSequenceNumbers
     }
 
     // Called on Indexer Thread
-    public int lastSentSequenceNumber(final long connectionId)
+    public SenderSequenceNumber senderSequenceNumber(final long connectionId)
     {
-        final SenderSequenceNumber senderSequenceNumber = connectionIdToSequencePosition.get(connectionId);
-        if (senderSequenceNumber == null)
-        {
-            return UNKNOWN_SESSION;
-        }
-
-        return senderSequenceNumber.lastSentSequenceNumber();
-    }
-
-    // Called on Indexer Thread
-    public AtomicCounter bytesInBufferCounter(final long connectionId)
-    {
-        final SenderSequenceNumber senderSequenceNumber = connectionIdToSequencePosition.get(connectionId);
-        return senderSequenceNumber == null ? null : senderSequenceNumber.bytesInBuffer();
+        return connectionIdToSequencePosition.get(connectionId);
     }
 
     // Called on Indexer Thread
