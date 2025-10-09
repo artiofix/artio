@@ -23,6 +23,7 @@ import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.engine.ByteBufferUtil;
 import uk.co.real_logic.artio.engine.MessageTimingHandler;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -51,21 +52,22 @@ abstract class FixPSenderEndPoint extends SenderEndPoint
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer,
         final Framer framer,
-        final FixPReceiverEndPoint receiverEndPoint)
+        final FixPReceiverEndPoint receiverEndPoint,
+        final SenderSequenceNumber senderSequenceNumber)
     {
         if (explicitSequenceNumbers)
         {
             return new ExplicitFixPSenderEndPoint(
                 connectionId, channel, errorHandler, inboundPublication, reproductionPublication, libraryId,
                 messageTimingHandler,
-                bytesInBuffer, maxBytesInBuffer, framer, receiverEndPoint);
+                bytesInBuffer, maxBytesInBuffer, framer, receiverEndPoint, senderSequenceNumber);
         }
         else
         {
             return new ImplicitFixPSenderEndPoint(
                 connectionId, channel, errorHandler, inboundPublication, reproductionPublication, libraryId,
                 templateIdOffset, retransmissionTemplateId, fixPSenderEndPoints,
-                bytesInBuffer, maxBytesInBuffer, framer, receiverEndPoint);
+                bytesInBuffer, maxBytesInBuffer, framer, receiverEndPoint, senderSequenceNumber);
         }
     }
 
@@ -79,11 +81,12 @@ abstract class FixPSenderEndPoint extends SenderEndPoint
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer,
         final Framer framer,
-        final FixPReceiverEndPoint receiverEndPoint)
+        final FixPReceiverEndPoint receiverEndPoint,
+        final SenderSequenceNumber senderSequenceNumber)
     {
         super(connectionId, inboundPublication, reproductionLogWriter, libraryId, channel, bytesInBuffer,
             maxBytesInBuffer, errorHandler,
-            framer);
+            framer, senderSequenceNumber);
         this.receiverEndPoint = receiverEndPoint;
     }
 

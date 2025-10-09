@@ -112,7 +112,7 @@ class FixEndPointFactory
             configuration.senderMaxBytesInBuffer(),
             configuration.slowConsumerTimeoutInMs(),
             System.currentTimeMillis(),
-            senderSequenceNumbers.onNewSender(connectionId, bytesInBuffer),
+            senderSequenceNumbers.onNewSender(false, connectionId, bytesInBuffer),
             messageTimingHandler,
             receiverEndPoint,
             senderFormatters);

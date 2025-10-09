@@ -21,6 +21,7 @@ import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.concurrent.status.AtomicCounter;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 import uk.co.real_logic.artio.messages.DisconnectReason;
 
 import java.io.IOException;
@@ -60,10 +61,12 @@ class ImplicitFixPSenderEndPoint extends FixPSenderEndPoint
         final FixPSenderEndPoints fixPSenderEndPoints,
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer,
-        final Framer framer, final FixPReceiverEndPoint receiverEndPoint)
+        final Framer framer,
+        final FixPReceiverEndPoint receiverEndPoint,
+        final SenderSequenceNumber senderSequenceNumber)
     {
         super(connectionId, channel, errorHandler, inboundPublication, reproductionLogWriter, libraryId,
-            bytesInBuffer, maxBytesInBuffer, framer, receiverEndPoint);
+            bytesInBuffer, maxBytesInBuffer, framer, receiverEndPoint, senderSequenceNumber);
         this.templateIdOffset = templateIdOffset;
         this.retransmissionTemplateId = retransmissionTemplateId;
         this.fixPSenderEndPoints = fixPSenderEndPoints;

@@ -85,7 +85,6 @@ class FixSenderEndPoint extends SenderEndPoint
     private final long connectionId;
     private final AtomicCounter invalidLibraryAttempts;
     private final long slowConsumerTimeoutInMs;
-    private final SenderSequenceNumber senderSequenceNumber;
     private final MessageTimingHandler messageTimingHandler;
     private final FixReceiverEndPoint receiverEndPoint;
     private final Formatters formatters;
@@ -128,12 +127,11 @@ class FixSenderEndPoint extends SenderEndPoint
     {
         super(connectionId, inboundPublication, reproductionPublication, libraryId, channel, bytesInBuffer,
             maxBytesInBuffer, errorHandler,
-            framer);
+            framer, senderSequenceNumber);
         this.connectionId = connectionId;
         this.invalidLibraryAttempts = invalidLibraryAttempts;
 
         this.slowConsumerTimeoutInMs = slowConsumerTimeoutInMs;
-        this.senderSequenceNumber = senderSequenceNumber;
 
         this.messageTimingHandler = messageTimingHandler;
         this.receiverEndPoint = receiverEndPoint;
@@ -159,8 +157,6 @@ class FixSenderEndPoint extends SenderEndPoint
         }
 
         onMessage(directBuffer, offset, bodyLength, metaDataLength, sequenceNumber, timeInMs, false);
-
-        senderSequenceNumber.onNewMessage(sequenceNumber);
 
         if (messageType == LOGON_MESSAGE_TYPE)
         {
@@ -613,7 +609,6 @@ class FixSenderEndPoint extends SenderEndPoint
 
     public void close()
     {
-        senderSequenceNumber.close();
         invalidLibraryAttempts.close();
         super.close();
     }

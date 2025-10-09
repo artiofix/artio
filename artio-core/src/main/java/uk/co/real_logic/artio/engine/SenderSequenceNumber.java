@@ -17,8 +17,6 @@ package uk.co.real_logic.artio.engine;
 
 import org.agrona.concurrent.status.AtomicCounter;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Class to notify replays and gap fills of the latest sent sequence
  * number.
@@ -27,27 +25,26 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SenderSequenceNumber implements ReplayerCommand
 {
+    private final boolean fixP;
     private final long connectionId;
     private final AtomicCounter bytesInBuffer;
     private final SenderSequenceNumbers senderSequenceNumbers;
-    private final AtomicInteger lastSentSequenceNumber = new AtomicInteger();
 
     SenderSequenceNumber(
-        final long connectionId, final AtomicCounter bytesInBuffer, final SenderSequenceNumbers senderSequenceNumbers)
+        final boolean fixP,
+        final long connectionId,
+        final AtomicCounter bytesInBuffer,
+        final SenderSequenceNumbers senderSequenceNumbers)
     {
+        this.fixP = fixP;
         this.connectionId = connectionId;
         this.bytesInBuffer = bytesInBuffer;
         this.senderSequenceNumbers = senderSequenceNumbers;
     }
 
-    public void onNewMessage(final int sequenceNumber)
+    public boolean fixP()
     {
-        lastSentSequenceNumber.set(sequenceNumber);
-    }
-
-    public int lastSentSequenceNumber()
-    {
-        return lastSentSequenceNumber.get();
+        return fixP;
     }
 
     public long connectionId()
