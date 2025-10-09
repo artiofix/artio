@@ -482,7 +482,7 @@ public class Replayer extends AbstractReplayer
                         if (null == session)
                         {
                             channel.startReplay(null);
-                            channel.enqueueReplay(enqueuedReplay);
+                            channel.reEnqueueReplay(enqueuedReplay);
                         }
                         else
                         {
