@@ -110,6 +110,11 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         return maxBytesInBuffer < (bytesInBuffer.get() + messageLength);
     }
 
+    boolean sendStartReplayMessage()
+    {
+        return replayer.trySendStartReplay(sessionId, connectionId, correlationId);
+    }
+
     boolean sendCompleteMessage()
     {
         return replayer.sendCompleteMessage(connectionId, correlationId);

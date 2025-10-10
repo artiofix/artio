@@ -57,6 +57,7 @@ class FixReplayerSession extends ReplayerSession
 
     private enum State
     {
+        START_REPLAY,
         REPLAYING,
         CHECK_REPLAY,
         SEND_COMPLETE_MESSAGE,
@@ -141,7 +142,7 @@ class FixReplayerSession extends ReplayerSession
             clock,
             publication.maxPayloadLength());
 
-        state = State.REPLAYING;
+        state = State.START_REPLAY;
     }
 
     void query()
@@ -399,6 +400,14 @@ class FixReplayerSession extends ReplayerSession
     {
         switch (state)
         {
+            case START_REPLAY:
+                DebugLogger.log(REPLAY_ATTEMPT, "ReplayerSession: START_REPLAY step");
+                if (!sendStartReplayMessage())
+                {
+                    state = State.REPLAYING;
+                }
+                return false;
+
             case REPLAYING:
                 DebugLogger.log(REPLAY_ATTEMPT, "ReplayerSession: REPLAYING step");
                 if (replayOperation.pollReplay())

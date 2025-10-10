@@ -685,6 +685,7 @@ public class ReplayerTest extends AbstractLogTest
         replayer.doWork();
         replayer.doWork();
         replayer.doWork();
+        replayer.doWork();
 
         verify(replayHandler, times(1))
             .onReplayedMessage(any(), anyInt(), anyInt(), anyInt(), anyLong(), anyInt(), anyLong());
@@ -923,6 +924,7 @@ public class ReplayerTest extends AbstractLogTest
             beginSeqNo, endSeqNo, SEQUENCE_INDEX, overriddenBeginSeqNo, buffer, replayerSubscriptionHeader);
         if (sendsStartReplay)
         {
+            replayer.doWork();
             verifyStartReplyClaim();
         }
         assertEquals(expectedAction, action);
