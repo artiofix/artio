@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import io.aeron.ExclusivePublication;
+import io.aeron.driver.DutyCycleTracker;
 import io.aeron.logbuffer.BufferClaim;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
@@ -130,9 +131,10 @@ public class Replayer extends AbstractReplayer
         final int maxConcurrentSessionReplays,
         final EpochNanoClock clock,
         final FixPProtocolType fixPProtocolType,
-        final EngineConfiguration configuration)
+        final EngineConfiguration configuration,
+        final DutyCycleTracker dutyCycleTracker)
     {
-        super(publication, fixSessionCodecsFactory, bufferClaim, senderSequenceNumbers, clock);
+        super(publication, fixSessionCodecsFactory, bufferClaim, senderSequenceNumbers, clock, dutyCycleTracker);
         this.outboundReplayQuery = outboundReplayQuery;
         this.idleStrategy = idleStrategy;
         this.errorHandler = errorHandler;
@@ -418,6 +420,7 @@ public class Replayer extends AbstractReplayer
     {
         final long timeInNs = clock.nanoTime();
 
+        trackDutyCycleTime(timeInNs);
         timestamper.sendTimestampMessage(timeInNs);
 
         int work = replayerCommandQueue.poll();

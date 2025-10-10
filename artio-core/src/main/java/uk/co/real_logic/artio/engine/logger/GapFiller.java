@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
+import io.aeron.driver.DutyCycleTracker;
 import io.aeron.logbuffer.BufferClaim;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
@@ -50,9 +51,11 @@ public class GapFiller extends AbstractReplayer
         final SenderSequenceNumbers senderSequenceNumbers,
         final ReplayerCommandQueue replayerCommandQueue,
         final FixSessionCodecsFactory fixSessionCodecsFactory,
-        final EpochNanoClock clock)
+        final EpochNanoClock clock,
+        final DutyCycleTracker dutyCycleTracker)
     {
-        super(publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(), senderSequenceNumbers, clock);
+        super(publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(), senderSequenceNumbers,
+            clock, dutyCycleTracker);
         this.publication = publication;
         this.agentNamePrefix = agentNamePrefix;
         this.replayerCommandQueue = replayerCommandQueue;
@@ -126,6 +129,7 @@ public class GapFiller extends AbstractReplayer
         int workCount = 0;
         final long timeInNs = clock.nanoTime();
 
+        trackDutyCycleTime(timeInNs);
         timestamper.sendTimestampMessage(timeInNs);
 
         workCount += replayerCommandQueue.poll();
