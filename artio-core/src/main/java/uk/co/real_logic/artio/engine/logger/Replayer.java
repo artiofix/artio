@@ -47,7 +47,6 @@ import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static io.aeron.archive.status.RecordingPos.NULL_RECORDING_ID;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.*;
@@ -68,7 +67,6 @@ import static uk.co.real_logic.artio.util.MessageTypeEncoding.packAllMessageType
 public class Replayer extends AbstractReplayer
 {
     public static final int MOST_RECENT_MESSAGE = 0;
-    private static final long CHECK_DISCONNECTED_CHANNELS_TIMEOUT = TimeUnit.MILLISECONDS.toNanos(500);
 
     static final int MESSAGE_FRAME_BLOCK_LENGTH =
         ENCODED_LENGTH + FixMessageDecoder.BLOCK_LENGTH + FixMessageDecoder.bodyHeaderLength();
@@ -119,7 +117,6 @@ public class Replayer extends AbstractReplayer
 
     private final RecordingIdLookup recordingIdLookup;
     private final IndexedPositionReader outboundReplayIndexPositionReader;
-    private long timeOfLastCheckDisconnectedChannels;
 
     public Replayer(
         final int pollLimit,
@@ -361,11 +358,6 @@ public class Replayer extends AbstractReplayer
             final FixReplayerCodecs sessionCodecs = fixSessionCodecsFactory.get(sessionId);
             if (sessionCodecs != null)
             {
-                if (trySendStartReplay(sessionId, connectionId, correlationId))
-                {
-                    return null;
-                }
-
                 return processFixResendRequest(
                     sessionId, connectionId, correlationId, (int)beginSeqNo, (int)endSeqNo, sequenceIndex,
                     (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs, bytesInBuffer);
@@ -461,7 +453,6 @@ public class Replayer extends AbstractReplayer
 
         int work = replayerCommandQueue.poll();
         work += pollReplayerChannels();
-        work += checkDisconnectedChannels(timeInNs);
         return work + outboundSubscription.controlledPoll(this, pollLimit);
     }
 
@@ -473,87 +464,68 @@ public class Replayer extends AbstractReplayer
 
         while (replayerChannels.hasNext())
         {
-            final ReplayChannel channel = replayerChannels.next().getValue();
-            if (channel.attemptReplay())
-            {
-                // Replay complete
-                final EnqueuedReplay enqueuedReplay = channel.pollReplay();
-                if (enqueuedReplay == null)
-                {
-                    currentReplayCount.decrementOrdered();
-                    replayerChannels.remove();
-                }
-                else
-                {
-                    try
-                    {
-                        final ReplayerSession session = processResendRequest(
-                            enqueuedReplay.sessionId(),
-                            enqueuedReplay.connectionId(),
-                            enqueuedReplay.correlationId(),
-                            enqueuedReplay.beginSeqNo(),
-                            enqueuedReplay.endSeqNo(),
-                            enqueuedReplay.sequenceIndex(),
-                            enqueuedReplay.overriddenBeginSeqNo(),
-                            enqueuedReplay.asciiBuffer(),
-                            enqueuedReplay.aeronSessionId(),
-                            enqueuedReplay.aeronSessionRequiredPosition());
+            replayerChannels.next();
+            final long connectionId = replayerChannels.getLongKey();
+            final ReplayChannel channel = replayerChannels.getValue();
 
-                        if (null == session)
-                        {
-                            channel.startReplay(null);
-                            channel.reEnqueueReplay(enqueuedReplay);
-                        }
-                        else
-                        {
-                            channel.startReplay(session);
-                        }
-                    }
-                    catch (final IllegalStateException e)
+            if (checkDisconnected(connectionId))
+            {
+                replayerChannels.remove();
+
+                currentReplayCount.decrement();
+                // replay was in progress at the time of disconnect
+                if (!channel.startClose())
+                {
+                    closingChannels.add(channel);
+                }
+            }
+            else
+            {
+                if (channel.attemptReplay())
+                {
+                    // Replay complete
+                    final EnqueuedReplay enqueuedReplay = channel.pollReplay();
+                    if (enqueuedReplay == null)
                     {
-                        errorHandler.onError(e);
+                        currentReplayCount.decrementOrdered();
+                        replayerChannels.remove();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            final ReplayerSession session = processResendRequest(
+                                enqueuedReplay.sessionId(),
+                                enqueuedReplay.connectionId(),
+                                enqueuedReplay.correlationId(),
+                                enqueuedReplay.beginSeqNo(),
+                                enqueuedReplay.endSeqNo(),
+                                enqueuedReplay.sequenceIndex(),
+                                enqueuedReplay.overriddenBeginSeqNo(),
+                                enqueuedReplay.asciiBuffer(),
+                                enqueuedReplay.aeronSessionId(),
+                                enqueuedReplay.aeronSessionRequiredPosition());
+
+                            if (null == session)
+                            {
+                                channel.startReplay(null);
+                                channel.reEnqueueReplay(enqueuedReplay);
+                            }
+                            else
+                            {
+                                channel.startReplay(session);
+                            }
+                        }
+                        catch (final IllegalStateException e)
+                        {
+                            errorHandler.onError(e);
+                        }
                     }
                 }
             }
         }
 
         return size + CollectionUtil.removeIf(closingChannels, ReplayChannel::attemptReplay);
-    }
-
-    private int checkDisconnectedChannels(final long nowNs)
-    {
-        int workCount = 0;
-
-        if (nowNs - timeOfLastCheckDisconnectedChannels >= CHECK_DISCONNECTED_CHANNELS_TIMEOUT)
-        {
-            timeOfLastCheckDisconnectedChannels = nowNs;
-
-            final Long2ObjectHashMap<ReplayChannel>.EntryIterator replayerChannelsIterator =
-                connectionIdToReplayerChannel.entrySet().iterator();
-
-            while (replayerChannelsIterator.hasNext())
-            {
-                replayerChannelsIterator.next();
-                final long connectionId = replayerChannelsIterator.getKey();
-                final ReplayChannel replayChannel = replayerChannelsIterator.getValue();
-
-                if (checkDisconnected(connectionId))
-                {
-                    replayerChannelsIterator.remove();
-
-                    currentReplayCount.decrement();
-                    // replay was in progress at the time of disconnect
-                    if (!replayChannel.startClose())
-                    {
-                        closingChannels.add(replayChannel);
-                    }
-
-                    ++workCount;
-                }
-            }
-        }
-
-        return workCount;
     }
 
     public void onClose()
