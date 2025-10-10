@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 import static uk.co.real_logic.artio.LogTag.REPLAY;
 import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 
-abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
+abstract class AbstractReplayer implements Index
 {
     static final int POLL_LIMIT = 10;
 
@@ -69,8 +69,6 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
     final BufferClaim bufferClaim;
     final SenderSequenceNumbers senderSequenceNumbers;
 
-    boolean sendStartReplay = true;
-
     protected final EpochNanoClock clock;
     private final DutyCycleTracker dutyCycleTracker;
 
@@ -92,29 +90,26 @@ abstract class AbstractReplayer implements Agent, ControlledFragmentHandler
 
     boolean trySendStartReplay(final long sessionId, final long connectionId, final long correlationId)
     {
-        if (sendStartReplay)
+        final long position = publication.tryClaim(START_REPLAY_LENGTH, bufferClaim);
+        if (Pressure.isBackPressured(position))
         {
-            final long position = publication.tryClaim(START_REPLAY_LENGTH, bufferClaim);
-            if (Pressure.isBackPressured(position))
-            {
-                return true;
-            }
-
-            final MutableDirectBuffer buffer = bufferClaim.buffer();
-            final int offset = bufferClaim.offset();
-
-            startReplayEncoder
-                .wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
-                .session(sessionId)
-                .connection(connectionId)
-                .correlationId(correlationId);
-
-            DebugLogger.logSbeMessage(REPLAY, startReplayEncoder);
-
-            bufferClaim.commit();
+            return false;
         }
 
-        return false;
+        final MutableDirectBuffer buffer = bufferClaim.buffer();
+        final int offset = bufferClaim.offset();
+
+        startReplayEncoder
+            .wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+            .session(sessionId)
+            .connection(connectionId)
+            .correlationId(correlationId);
+
+        DebugLogger.logSbeMessage(REPLAY, startReplayEncoder);
+
+        bufferClaim.commit();
+
+        return true;
     }
 
     public void onStart()
