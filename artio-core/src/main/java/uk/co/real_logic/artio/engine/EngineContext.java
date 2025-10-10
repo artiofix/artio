@@ -371,7 +371,6 @@ public class EngineContext implements AutoCloseable
                 configuration.outboundMaxClaimAttempts());
 
             replayer = new GapFiller(
-                inboundLibraryStreams.subscription("replayer"),
                 replayGatewayPublication,
                 configuration.agentNamePrefix(),
                 senderSequenceNumbers,
