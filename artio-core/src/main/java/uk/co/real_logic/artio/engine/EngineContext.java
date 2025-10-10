@@ -237,7 +237,6 @@ public class EngineContext implements AutoCloseable
             configuration.archiverIdleStrategy(),
             errorHandler,
             configuration.outboundMaxClaimAttempts(),
-            inboundLibraryStreams.subscription("replayer"),
             configuration.agentNamePrefix(),
             configuration.gapfillOnReplayMessageTypes(),
             configuration.gapfillOnRetransmitILinkTemplateIds(),
