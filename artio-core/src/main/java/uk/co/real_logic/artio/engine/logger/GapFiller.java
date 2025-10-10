@@ -15,7 +15,6 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
-import io.aeron.driver.DutyCycleTracker;
 import io.aeron.logbuffer.BufferClaim;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
@@ -39,7 +38,7 @@ import static uk.co.real_logic.artio.messages.MessageHeaderDecoder.ENCODED_LENGT
 
 public class GapFiller extends AbstractReplayer
 {
-    private final Long2ObjectHashMap<ArrayDeque<GapFillerSession>> gapFillerSessions= new Long2ObjectHashMap<>();
+    private final Long2ObjectHashMap<ArrayDeque<GapFillerSession>> gapFillerSessions = new Long2ObjectHashMap<>();
     private final ReplayerCommandQueue replayerCommandQueue;
     private final GatewayPublication publication;
     private final String agentNamePrefix;
@@ -51,11 +50,9 @@ public class GapFiller extends AbstractReplayer
         final SenderSequenceNumbers senderSequenceNumbers,
         final ReplayerCommandQueue replayerCommandQueue,
         final FixSessionCodecsFactory fixSessionCodecsFactory,
-        final EpochNanoClock clock,
-        final DutyCycleTracker dutyCycleTracker)
+        final EpochNanoClock clock)
     {
-        super(publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(), senderSequenceNumbers,
-            clock, dutyCycleTracker);
+        super(publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(), senderSequenceNumbers, clock);
         this.publication = publication;
         this.agentNamePrefix = agentNamePrefix;
         this.replayerCommandQueue = replayerCommandQueue;
@@ -129,7 +126,6 @@ public class GapFiller extends AbstractReplayer
         int workCount = 0;
         final long timeInNs = clock.nanoTime();
 
-        trackDutyCycleTime(timeInNs);
         timestamper.sendTimestampMessage(timeInNs);
 
         workCount += replayerCommandQueue.poll();
@@ -240,6 +236,8 @@ public class GapFiller extends AbstractReplayer
                         state = State.ON_START_REPLAY;
                         return 1;
                     }
+
+                    return 0;
                 }
 
                 case ON_START_REPLAY:
@@ -249,6 +247,8 @@ public class GapFiller extends AbstractReplayer
                         state = State.ON_GAP_FILL;
                         return 1;
                     }
+
+                    return 0;
                 }
 
                 case ON_GAP_FILL:
@@ -276,6 +276,8 @@ public class GapFiller extends AbstractReplayer
                         state = State.ON_SEND_COMPLETE;
                         return 1;
                     }
+
+                    return 0;
                 }
 
                 case ON_SEND_COMPLETE:
@@ -285,6 +287,8 @@ public class GapFiller extends AbstractReplayer
                         state = State.DONE;
                         return 1;
                     }
+
+                    return 0;
                 }
             }
 
