@@ -66,19 +66,22 @@ abstract class AbstractReplayer implements Index
     final SenderSequenceNumbers senderSequenceNumbers;
 
     protected final EpochNanoClock clock;
+    private final DutyCycleTracker dutyCycleTracker;
 
     AbstractReplayer(
         final ExclusivePublication publication,
         final FixSessionCodecsFactory fixSessionCodecsFactory,
         final BufferClaim bufferClaim,
         final SenderSequenceNumbers senderSequenceNumbers,
-        final EpochNanoClock clock)
+        final EpochNanoClock clock,
+        final DutyCycleTracker dutyCycleTracker)
     {
         this.publication = publication;
         this.fixSessionCodecsFactory = fixSessionCodecsFactory;
         this.bufferClaim = bufferClaim;
         this.senderSequenceNumbers = senderSequenceNumbers;
         this.clock = clock;
+        this.dutyCycleTracker = dutyCycleTracker;
     }
 
     boolean trySendStartReplay(final long sessionId, final long connectionId, final long correlationId)
@@ -103,6 +106,16 @@ abstract class AbstractReplayer implements Index
         bufferClaim.commit();
 
         return true;
+    }
+
+    public void onStart()
+    {
+        dutyCycleTracker.update(clock.nanoTime());
+    }
+
+    protected void trackDutyCycleTime(final long timeInNs)
+    {
+        dutyCycleTracker.measureAndUpdate(timeInNs);
     }
 
     public void close()

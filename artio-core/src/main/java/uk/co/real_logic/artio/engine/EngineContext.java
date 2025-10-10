@@ -20,7 +20,6 @@ import io.aeron.ExclusivePublication;
 import io.aeron.Subscription;
 import io.aeron.UnavailableImageHandler;
 import io.aeron.archive.client.AeronArchive;
-import io.aeron.driver.DutyCycleTracker;
 import io.aeron.logbuffer.BufferClaim;
 import org.agrona.ErrorHandler;
 import org.agrona.collections.Long2LongHashMap;
@@ -252,7 +251,8 @@ public class EngineContext implements AutoCloseable
             configuration.maxConcurrentSessionReplays(),
             clock,
             configuration.supportedFixPProtocolType(),
-            configuration);
+            configuration,
+            fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()));
     }
 
     public long inboundIndexRegistrationId()
@@ -336,14 +336,9 @@ public class EngineContext implements AutoCloseable
             throw e;
         }
 
-        final DutyCycleTracker archiverDutyCycleTracker =
-            fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs());
-        final Agent archiverDutyCycleAgent = new ArchiverDutyCycleTracker(clock, archiverDutyCycleTracker);
-
         final List<Agent> agents = new ArrayList<>();
         agents.add(inboundIndexer);
         agents.add(outboundIndexer);
-        agents.add(archiverDutyCycleAgent);
 
         indexingAgent = new CompositeAgent(agents);
     }
@@ -381,7 +376,8 @@ public class EngineContext implements AutoCloseable
                 senderSequenceNumbers,
                 replayerCommandQueue,
                 new FixSessionCodecsFactory(clock, configuration.sessionEpochFractionFormat()),
-                clock);
+                clock,
+                fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()));
         }
 
         return replayer;
@@ -513,33 +509,5 @@ public class EngineContext implements AutoCloseable
     {
         Exceptions.closeAll(
             sentSequenceNumberIndex, receivedSequenceNumberIndex, pruneInboundReplayQuery);
-    }
-
-    private static class ArchiverDutyCycleTracker implements Agent
-    {
-        protected final EpochNanoClock clock;
-        private final DutyCycleTracker dutyCycleTracker;
-
-        ArchiverDutyCycleTracker(final EpochNanoClock clock, final DutyCycleTracker dutyCycleTracker)
-        {
-            this.clock = clock;
-            this.dutyCycleTracker = dutyCycleTracker;
-        }
-
-        public void onStart()
-        {
-            dutyCycleTracker.update(clock.nanoTime());
-        }
-
-        public int doWork()
-        {
-            dutyCycleTracker.measureAndUpdate(clock.nanoTime());
-            return 0;
-        }
-
-        public String roleName()
-        {
-            return "ArchiverDutyCycleTracker";
-        }
     }
 }

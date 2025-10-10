@@ -29,8 +29,6 @@ import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.AfterEach;
-
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -145,7 +143,8 @@ public class ReplayerTest extends AbstractLogTest
             DEFAULT_MAX_CONCURRENT_SESSION_REPLAYS,
             clock,
             FixPProtocolType.ILINK_3,
-            mock(EngineConfiguration.class));
+            mock(EngineConfiguration.class),
+            mock(DutyCycleTracker.class));
     }
 
     private void setReplayedMessages(final int replayedMessages)
