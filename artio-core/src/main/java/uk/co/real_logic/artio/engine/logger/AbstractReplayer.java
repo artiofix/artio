@@ -122,7 +122,7 @@ abstract class AbstractReplayer implements Index
         dutyCycleTracker.measureAndUpdate(timeInNs);
     }
 
-    public void onClose()
+    public void close()
     {
         publication.close();
     }
