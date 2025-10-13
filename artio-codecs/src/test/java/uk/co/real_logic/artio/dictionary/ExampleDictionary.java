@@ -87,6 +87,7 @@ public final class ExampleDictionary
     public static final String FLOAT_FIELD = "floatField";
     public static final String BOOLEAN_FIELD = "booleanField";
     public static final String DATA_FIELD = "dataField";
+    public static final String DATA_LENGTH_FIELD = "dataFieldLength";
     public static final String TEST_REQ_ID_LENGTH = "testReqIDLength";
     public static final String TEST_REQ_ID_OFFSET = "testReqIDOffset";
     public static final String ON_BEHALF_OF_COMP_ID_LENGTH = "onBehalfOfCompIDLength";
@@ -221,12 +222,16 @@ public final class ExampleDictionary
         "\001118=Y\001200=3\001119=123\001127=19700101-00:00:00.001\00110=199\001";
 
     public static final String ENCODED_MESSAGE_FIXT11 =
-        "8=FIXT.1.1\0019=75\00135=0\001115=abc\001112=abc\001116=2\001117=1.1" +
-        "\001118=Y\001119=123\001127=19700101-00:00:00.001\00110=021\001";
+        "8=FIXT.1.1\0019=81\00135=0\001115=abc\001112=abc\001116=2\001117=1.1" +
+        "\001118=Y\001200=3\001119=123\001127=19700101-00:00:00.001\00110=021\001";
+
+    public static final String ENCODED_MESSAGE_LONG_DATA =
+        "8=FIXT.1.1\0019=84\00135=0\001115=abc\001112=abc\001116=2\001117=1.1" +
+        "\001118=Y\001200=6\001119=123456\001127=19700101-00:00:00.001\00110=186\001";
 
     public static final String ENCODED_MESSAGE_WITH_SIGNATURE =
-        "8=FIX.4.4\0019=96\00135=0\001115=abc\001112=abc\001116=2\001117=1.1" +
-        "\001118=Y\001119=123\001127=19700101-00:00:00.001\00193=11\00189=Good to go!\00110=040\001";
+        "8=FIX.4.4\0019=102\00135=0\001115=abc\001112=abc\001116=2\001117=1.1" +
+        "\001118=Y\001200=3\001119=123\001127=19700101-00:00:00.001\00193=11\00189=Good to go!\00110=079\001";
 
     public static final String ONLY_TESTREQ_ENCODED_MESSAGE =
         "8=FIX.4.4\0019=61\00135=0\001115=abc\001112=abc\001116=2\001117=1.1\001127=19700101-00:00:00.001" +

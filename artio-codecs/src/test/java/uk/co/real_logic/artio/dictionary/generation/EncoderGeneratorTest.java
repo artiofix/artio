@@ -391,9 +391,8 @@ public class EncoderGeneratorTest
         setRequiredFields(encoder);
         setupHeader(encoder);
         setupTrailer(encoder);
-
         setOptionalFields(encoder);
-        setDataFieldLength(encoder);
+
         assertEncodesTo(encoder, ENCODED_MESSAGE);
     }
 
@@ -439,6 +438,34 @@ public class EncoderGeneratorTest
     }
 
     @Test
+    public void encodesDataWithoutOverflowFromPreviousMessage() throws Exception
+    {
+        final Encoder encoder = newHeartbeat();
+
+        setRequiredFields(encoder);
+        setupHeader(encoder, "FIXT.1.1");
+        setupTrailer(encoder);
+        setTestReqIdTo(encoder, ABC);
+        setBoolean(encoder, BOOLEAN_FIELD, true);
+        setByteArrayAsCopy(encoder, DATA_FIELD, new byte[]{ '1', '2', '3', '4', '5', '6' }, 0, 6);
+        setInt(encoder, DATA_LENGTH_FIELD, 6);
+
+        assertEncodesTo(encoder, ENCODED_MESSAGE_LONG_DATA);
+
+        encoder.reset();
+
+        setRequiredFields(encoder);
+        setupHeader(encoder, "FIXT.1.1");
+        setupTrailer(encoder);
+        setTestReqIdTo(encoder, ABC);
+        setBoolean(encoder, BOOLEAN_FIELD, true);
+        setByteArrayAsCopy(encoder, DATA_FIELD, new byte[]{ '1', '2', '3' }, 0, 3);
+        setInt(encoder, DATA_LENGTH_FIELD, 3);
+
+        assertEncodesTo(encoder, ENCODED_MESSAGE_FIXT11);
+    }
+
+    @Test
     public void encodeDecimalFloatUsingRawValueAndScale() throws Exception
     {
         final Encoder encoder = newHeartbeat();
@@ -447,9 +474,7 @@ public class EncoderGeneratorTest
         setFloatFieldRawValues(encoder);
         setupHeader(encoder);
         setupTrailer(encoder);
-
         setOptionalFields(encoder);
-        setDataFieldLength(encoder);
 
         assertEncodesTo(encoder, ENCODED_MESSAGE);
     }
@@ -510,7 +535,6 @@ public class EncoderGeneratorTest
 
         setRequiredFields(encoder);
         setOptionalFields(encoder);
-        setDataFieldLength(encoder);
 
         assertThat(encoder.toString(), containsString(STRING_ENCODED_MESSAGE_SUFFIX));
     }
@@ -1162,6 +1186,7 @@ public class EncoderGeneratorTest
         setTestReqIdTo(encoder, ABC);
         setBoolean(encoder, BOOLEAN_FIELD, true);
         setByteArray(encoder, DATA_FIELD, new byte[]{ '1', '2', '3' });
+        setInt(encoder, DATA_LENGTH_FIELD, 3);
     }
 
     private FieldBagEncoder getAnyFieldsEncoder(final Encoder encoder, final String name) throws Exception
@@ -1287,10 +1312,5 @@ public class EncoderGeneratorTest
         heartbeat
             .getMethod(TEST_REQ_ID, DirectBuffer.class, int.class, int.class)
             .invoke(encoder, new UnsafeBuffer(PREFIXED_VALUE_IN_BYTES), 1, 3);
-    }
-
-    private void setDataFieldLength(final Encoder encoder) throws Exception
-    {
-        setInt(encoder, "dataFieldLength", 3);
     }
 }
