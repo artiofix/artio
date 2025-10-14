@@ -90,6 +90,27 @@ public final class Reflection
         set(object, setter, byte[].class, value);
     }
 
+    public static void setByteArrayAsCopy(
+        final Object object,
+        final String setter,
+        final byte[] value,
+        final int offset,
+        final int length
+    )
+        throws Exception
+    {
+        try
+        {
+            object.getClass()
+                    .getMethod(setter + "AsCopy", byte[].class, int.class, int.class)
+                    .invoke(object, value, offset, length);
+        }
+        catch (final InvocationTargetException e)
+        {
+            LangUtil.rethrowUnchecked(e.getCause());
+        }
+    }
+
     private static void set(
         final Object object,
         final String setterName,

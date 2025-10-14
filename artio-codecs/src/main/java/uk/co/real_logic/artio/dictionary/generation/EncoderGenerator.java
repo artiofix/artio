@@ -1125,15 +1125,16 @@ class EncoderGenerator extends Generator
             case XMLDATA:
                 return String.format(
                     "%1$s" +
-                    "%4$s        buffer.putBytes(position, %2$s);\n" +
-                    "%4$s        position += %2$s.length;\n" +
+                    "%4$s        buffer.putBytes(position, %2$s, 0, %5$s);\n" +
+                    "%4$s        position += %5$s;\n" +
                     "%4$s        buffer.putSeparator(position);\n" +
                     "%4$s        position++;\n" +
                     "%3$s",
                     tag,
                     fieldName,
                     enablingSuffix,
-                    indent);
+                    indent,
+                    formatPropertyName(field.associatedLengthField().name()));
 
             default:
                 throw new UnsupportedOperationException("Unknown type: " + type);
