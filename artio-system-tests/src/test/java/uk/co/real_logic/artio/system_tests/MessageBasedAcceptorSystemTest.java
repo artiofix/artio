@@ -1143,7 +1143,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 assertFalse(decoder.header().hasPossDupFlag(), decoder.toString());
             }
 
-            connection.readSequenceResetGapFill(2);
+            testSystem.awaitBlocking(() -> connection.readSequenceResetGapFill(2));
 
             for (int i = 0; i < outboundMessageCount; ++i)
             {
