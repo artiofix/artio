@@ -18,7 +18,9 @@ package uk.co.real_logic.artio.engine.logger;
 import io.aeron.ExclusivePublication;
 import io.aeron.driver.DutyCycleTracker;
 import io.aeron.logbuffer.BufferClaim;
+import io.aeron.logbuffer.FragmentHandler;
 import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.EpochNanoClock;
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.LogTag;
@@ -34,7 +36,7 @@ import java.util.function.Consumer;
 import static uk.co.real_logic.artio.LogTag.REPLAY;
 import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 
-abstract class AbstractReplayer implements Index
+public abstract class AbstractReplayer implements Agent, FragmentHandler
 {
     private static final int REPLAY_COMPLETE_LEN =
         MessageHeaderEncoder.ENCODED_LENGTH + ReplayCompleteEncoder.BLOCK_LENGTH;
@@ -118,7 +120,7 @@ abstract class AbstractReplayer implements Index
         dutyCycleTracker.measureAndUpdate(timeInNs);
     }
 
-    public void close()
+    public void onClose()
     {
         publication.close();
     }

@@ -208,15 +208,6 @@ public class Replayer extends AbstractReplayer
     }
 
 
-    public void onCatchup(
-        final DirectBuffer buffer,
-        final int offset,
-        final int length,
-        final Header header,
-        final long recordingId)
-    {
-    }
-
     void onResendRequest(
         final long sessionId,
         final long connectionId,
@@ -500,19 +491,14 @@ public class Replayer extends AbstractReplayer
         return size + CollectionUtil.removeIf(closingChannels, ReplayChannel::attemptReplay);
     }
 
-    public void readLastPosition(final IndexedPositionConsumer consumer)
-    {
-
-    }
-
-    public void close()
+    public void onClose()
     {
         connectionIdToReplayerChannel.values().forEach(ReplayChannel::closeNow);
         connectionIdToReplayerChannel.clear();
         currentReplayCount.set(0);
         currentReplayCount.close();
         outboundReplayQuery.close();
-        super.close();
+        super.onClose();
     }
 
     public String roleName()

@@ -32,10 +32,6 @@ public interface Index extends FragmentHandler, AutoCloseable
         return getClass().getSimpleName();
     }
 
-    default void onStart()
-    {
-    }
-
     void close();
 
     /**

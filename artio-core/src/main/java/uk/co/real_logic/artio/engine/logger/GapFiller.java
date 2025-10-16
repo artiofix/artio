@@ -102,15 +102,6 @@ public class GapFiller extends AbstractReplayer
         }
     }
 
-    public void onCatchup(
-        final DirectBuffer buffer,
-        final int offset,
-        final int length,
-        final Header header,
-        final long recordingId)
-    {
-    }
-
     private void onResendRequest(
         final long sessionId,
         final long connectionId,
@@ -173,10 +164,6 @@ public class GapFiller extends AbstractReplayer
         }
 
         return workCount;
-    }
-
-    public void readLastPosition(final IndexedPositionConsumer consumer)
-    {
     }
 
     public String roleName()
