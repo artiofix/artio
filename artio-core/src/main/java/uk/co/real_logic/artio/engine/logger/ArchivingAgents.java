@@ -2,6 +2,7 @@ package uk.co.real_logic.artio.engine.logger;
 
 import io.aeron.Subscription;
 import io.aeron.archive.client.AeronArchive;
+import io.aeron.logbuffer.ControlledFragmentHandler;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
@@ -89,14 +90,23 @@ public class ArchivingAgents implements Agent, FragmentHandler
         }
 
         // We know that any remaining data to quiesce at this point must be in the subscription.
-        subscription.poll(this::quiesceFragment, Integer.MAX_VALUE);
+        subscription.controlledPoll(this::quiesceFragment, Integer.MAX_VALUE);
     }
 
-    private void quiesceFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
+    private ControlledFragmentHandler.Action quiesceFragment(
+        final DirectBuffer buffer,
+        final int offset,
+        final int length,
+        final Header header)
     {
         if (header.position() <= completedPosition(header.sessionId()))
         {
             onFragment(buffer, offset, length, header);
+            return ControlledFragmentHandler.Action.CONTINUE;
+        }
+        else
+        {
+            return ControlledFragmentHandler.Action.ABORT;
         }
     }
 

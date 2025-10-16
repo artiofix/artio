@@ -25,6 +25,7 @@ import uk.co.real_logic.artio.builder.Encoder;
 import uk.co.real_logic.artio.decoder.AbstractResendRequestDecoder;
 import uk.co.real_logic.artio.decoder.SessionHeaderDecoder;
 import uk.co.real_logic.artio.engine.ReplayerCommandQueue;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 import uk.co.real_logic.artio.engine.SenderSequenceNumbers;
 import uk.co.real_logic.artio.messages.MessageStatus;
 import uk.co.real_logic.artio.messages.ValidResendRequestDecoder;
@@ -220,6 +221,19 @@ public class GapFiller extends AbstractReplayer
             {
                 case INIT:
                 {
+                    final SenderSequenceNumber senderSequenceNumber =
+                        senderSequenceNumbers.senderSequenceNumber(connectionId);
+                    if (null == senderSequenceNumber)
+                    {
+                        return 0;
+                    }
+
+                    if (senderSequenceNumber.fixP())
+                    {
+                        state = State.DONE;
+                        return 0;
+                    }
+
                     fixReplayerCodecs = fixSessionCodecsFactory.get(sessionId);
                     if (null != fixReplayerCodecs)
                     {
