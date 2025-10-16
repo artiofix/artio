@@ -989,7 +989,7 @@ class InternalBinaryEntryPointConnection
             }
         }
 
-        final long position = saveValidResendRequest(sessionID, fromSeqNo, endSequenceNumber, sessionVerId, 0);
+        final long position = saveValidResendRequest(sessionID, fromSeqNo, endSequenceNumber, 0, 0);
         // suppress if we've failed to send the resend request to the replayer as this will cause this handler to be
         // retried
         if (position < 0)

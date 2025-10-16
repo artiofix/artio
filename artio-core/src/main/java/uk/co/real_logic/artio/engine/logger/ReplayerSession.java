@@ -75,8 +75,6 @@ abstract class ReplayerSession implements ControlledFragmentHandler
         this.bytesInBuffer = bytesInBuffer;
     }
 
-    abstract void query();
-
     boolean claimBuffer(final int newLength, final int messageLength)
     {
         if (isBackpressured(messageLength))

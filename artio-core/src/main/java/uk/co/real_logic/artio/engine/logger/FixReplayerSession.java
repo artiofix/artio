@@ -38,6 +38,8 @@ import uk.co.real_logic.artio.messages.*;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
+import java.util.List;
+
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.ABORT;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
 import static uk.co.real_logic.artio.DebugLogger.IS_REPLAY_LOG_TAG_ENABLED;
@@ -47,6 +49,7 @@ import static uk.co.real_logic.artio.dictionary.SessionConstants.SEQUENCE_RESET_
 import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 import static uk.co.real_logic.artio.engine.framer.SenderEndPoint.NOT_LAST_REPLAY_MSG;
 import static uk.co.real_logic.artio.engine.logger.Replayer.MESSAGE_FRAME_BLOCK_LENGTH;
+import static uk.co.real_logic.artio.engine.logger.Replayer.adjustBeginningSequenceNo;
 import static uk.co.real_logic.artio.messages.FixMessageDecoder.metaDataHeaderLength;
 import static uk.co.real_logic.artio.messages.FixMessageDecoder.metaDataSinceVersion;
 
@@ -105,7 +108,8 @@ class FixReplayerSession extends ReplayerSession
         final int maxBytesInBuffer,
         final UtcTimestampEncoder utcTimestampEncoder,
         final Replayer replayer,
-        final FixThrottleRejectBuilder throttleRejectBuilder)
+        final FixThrottleRejectBuilder throttleRejectBuilder,
+        final List<RecordingRange> recordingRanges)
     {
         super(connectionId, correlationId, bufferClaim, idleStrategy, maxClaimAttempts, publication, replayQuery,
             beginSeqNo, endSeqNo,
@@ -142,20 +146,10 @@ class FixReplayerSession extends ReplayerSession
             clock,
             publication.maxPayloadLength());
 
-        state = State.START_REPLAY;
-    }
+        final MessageTracker fixMessageTracker = new FixMessageTracker(REPLAY_MESSAGE, this, sessionId);
+        replayOperation = replayQuery.newReplayOperation(recordingRanges, REPLAY, fixMessageTracker);
 
-    void query()
-    {
-        final int adjustedBeginSeqNo = adjustBeginningSequenceNo(beginSeqNo, overriddenBeginSeqNo);
-        replayOperation = replayQuery.query(
-            sessionId,
-            adjustedBeginSeqNo,
-            sequenceIndex,
-            endSeqNo,
-            sequenceIndex,
-            REPLAY,
-            new FixMessageTracker(REPLAY_MESSAGE, this, sessionId));
+        state = State.START_REPLAY;
     }
 
     private void onPreCommit(final MutableDirectBuffer buffer, final int offset)
@@ -530,12 +524,5 @@ class FixReplayerSession extends ReplayerSession
     public void beginGapFillSeqNum(final int beginGapFillSeqNum)
     {
         this.beginGapFillSeqNum = beginGapFillSeqNum;
-    }
-
-
-    static int adjustBeginningSequenceNo(final int beginSeqNo, final int overriddenBeginSeqNo)
-    {
-        return overriddenBeginSeqNo != (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue() ?
-                overriddenBeginSeqNo : beginSeqNo;
     }
 }

@@ -55,6 +55,7 @@ import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -112,8 +113,8 @@ public class ReplayerTest extends AbstractLogTest
         when(publication.tryClaim(anyInt(), any())).thenReturn(1L);
         when(publication.maxPayloadLength()).thenReturn(Configuration.mtuLength() - DataHeaderFlyweight.HEADER_LENGTH);
 
-        when(replayQuery.query(anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), any(), messageTracker.capture()))
-            .thenReturn(replayOperation);
+        when(replayQuery.query(anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), any())).thenReturn(new ArrayList<>());
+        when(replayQuery.newReplayOperation(any(), any(), messageTracker.capture())).thenReturn(replayOperation);
         when(replayOperation.pollReplay()).thenReturn(true);
         final SenderSequenceNumber senderSequenceNumber = mock(SenderSequenceNumber.class);
         when(senderSequenceNumber.fixP()).thenReturn(false);
@@ -783,8 +784,8 @@ public class ReplayerTest extends AbstractLogTest
             eq(SEQUENCE_INDEX),
             eq(endSeqNo),
             eq(SEQUENCE_INDEX),
-            any(),
             any());
+        verify(replayQuery).newReplayOperation(any(), any(), any());
     }
 
     private void assertResultBufferHasSetPossDupFlagAndSendingTimeUpdates()

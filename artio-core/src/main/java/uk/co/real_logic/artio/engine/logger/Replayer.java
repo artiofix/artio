@@ -232,6 +232,10 @@ public class Replayer extends AbstractReplayer
             return;
         }
 
+        final int adjustedBeginSeqNo = adjustBeginningSequenceNo((int)beginSeqNo, (int)overriddenBeginSeqNo);
+        final List<RecordingRange> recordingRanges = outboundReplayQuery.query(
+            sessionId, adjustedBeginSeqNo, sequenceIndex, (int)endSeqNo, sequenceIndex, REPLAY);
+
         final ReplayChannel replayChannel = connectionIdToReplayerChannel.get(connectionId);
         if (replayChannel != null)
         {
@@ -252,7 +256,7 @@ public class Replayer extends AbstractReplayer
             copiedBuffer.putBytes(0, asciiBuffer, 0, length);
 
             replayChannel.enqueueReplay(new EnqueuedReplay(sessionId, connectionId, correlationId,
-                beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer));
+                beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer, recordingRanges));
         }
         else
         {
@@ -264,7 +268,7 @@ public class Replayer extends AbstractReplayer
                 currentReplayCount.increment();
 
                 final ReplayerSession session = processResendRequest(sessionId, connectionId, correlationId,
-                    beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, asciiBuffer);
+                    beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, asciiBuffer, recordingRanges);
 
                 if (session == null)
                 {
@@ -273,7 +277,7 @@ public class Replayer extends AbstractReplayer
                     copiedBuffer.putBytes(0, asciiBuffer, 0, length);
 
                     channel.enqueueReplay(new EnqueuedReplay(sessionId, connectionId, correlationId,
-                        beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer));
+                        beginSeqNo, endSeqNo, sequenceIndex, overriddenBeginSeqNo, copiedBuffer, recordingRanges));
                 }
                 else
                 {
@@ -295,7 +299,8 @@ public class Replayer extends AbstractReplayer
         final long endSeqNo,
         final int sequenceIndex,
         final long overriddenBeginSeqNo,
-        final AsciiBuffer asciiBuffer)
+        final AsciiBuffer asciiBuffer,
+        final List<RecordingRange> recordingRanges)
     {
         final SenderSequenceNumber senderSequenceNumber = senderSequenceNumbers.senderSequenceNumber(connectionId);
         if (null == senderSequenceNumber)
@@ -313,16 +318,12 @@ public class Replayer extends AbstractReplayer
                 overriddenBeginSeqNo,
                 connectionId);
 
-            final FixPReplayerSession session = new FixPReplayerSession(
+            return new FixPReplayerSession(
                 connectionId, correlationId, bufferClaim, idleStrategy, maxClaimAttempts, publication,
                 outboundReplayQuery,
                 (int)beginSeqNo, (int)endSeqNo, sessionId, this, gapfillOnRetransmitILinkTemplateIds,
                 fixPMessageEncoder, binaryFixPParser.get(), binaryFixPProxy.get(), abstractBinaryFixPOffsets.get(),
-                fixPRetransmitHandler, bytesInBuffer, configuration.senderMaxBytesInBuffer());
-
-            session.query();
-
-            return session;
+                fixPRetransmitHandler, bytesInBuffer, configuration.senderMaxBytesInBuffer(), recordingRanges);
         }
 
         else
@@ -332,7 +333,7 @@ public class Replayer extends AbstractReplayer
             {
                 return processFixResendRequest(
                     sessionId, connectionId, correlationId, (int)beginSeqNo, (int)endSeqNo, sequenceIndex,
-                    (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs, bytesInBuffer);
+                    (int)overriddenBeginSeqNo, asciiBuffer, sessionCodecs, bytesInBuffer, recordingRanges);
             }
 
             // ManageSession and ValidResendRequest might race each other (different sessions), so it's possible we see
@@ -351,7 +352,8 @@ public class Replayer extends AbstractReplayer
         final int overriddenBeginSeqNo,
         final AsciiBuffer asciiBuffer,
         final FixReplayerCodecs sessionCodecs,
-        final AtomicCounter bytesInBuffer)
+        final AtomicCounter bytesInBuffer,
+        final List<RecordingRange> recordingRanges)
     {
         DebugLogger.log(REPLAY,
             receivedResendFormatter,
@@ -386,7 +388,8 @@ public class Replayer extends AbstractReplayer
         }
 
         final String message = asciiBuffer.getAscii(0, asciiBuffer.capacity());
-        final FixReplayerSession fixReplayerSession = new FixReplayerSession(
+
+        return new FixReplayerSession(
             bufferClaim,
             idleStrategy,
             replayHandler,
@@ -409,11 +412,8 @@ public class Replayer extends AbstractReplayer
             maxBytesInBuffer,
             utcTimestampEncoder,
             this,
-            throttleRejectBuilder);
-
-        fixReplayerSession.query();
-
-        return fixReplayerSession;
+            throttleRejectBuilder,
+            recordingRanges);
     }
 
     public int doWork()
@@ -475,7 +475,8 @@ public class Replayer extends AbstractReplayer
                                 enqueuedReplay.endSeqNo(),
                                 enqueuedReplay.sequenceIndex(),
                                 enqueuedReplay.overriddenBeginSeqNo(),
-                                enqueuedReplay.asciiBuffer());
+                                enqueuedReplay.asciiBuffer(),
+                                enqueuedReplay.recordingRanges());
 
                             if (null == session)
                             {
@@ -519,4 +520,9 @@ public class Replayer extends AbstractReplayer
         return agentNamePrefix + "Replayer";
     }
 
+    static int adjustBeginningSequenceNo(final int beginSeqNo, final int overriddenBeginSeqNo)
+    {
+        return overriddenBeginSeqNo != (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue() ?
+            overriddenBeginSeqNo : beginSeqNo;
+    }
 }
