@@ -268,13 +268,8 @@ public class EngineContext implements AutoCloseable
 
             final Indexer inboundIndexer = new Indexer(
                 inboundIndices, configuration.agentNamePrefix(), configuration.archiveReplayStream());
-
             inboundArchivingAgents = new ArchivingAgents(
-                inboundIndexer,
-                null,
-                inboundIndexSubscription,
-                inboundCompletionPosition
-            );
+                inboundIndexer, null, inboundIndexSubscription, inboundCompletionPosition);
 
             final List<Index> outboundIndices = new ArrayList<>();
             if (configuration.logOutboundMessages())
