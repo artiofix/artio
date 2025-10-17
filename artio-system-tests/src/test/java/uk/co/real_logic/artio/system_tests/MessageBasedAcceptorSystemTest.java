@@ -15,7 +15,6 @@
  */
 package uk.co.real_logic.artio.system_tests;
 
-import org.agrona.concurrent.status.ReadablePosition;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -400,11 +399,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             final int headerSeqNum = connection.exchangeTestRequestHeartbeat(testReqId).header().msgSeqNum();
 
             session = acquireSession();
-            final long reportIndex = ReportFactory.sendOneReport(testSystem, session, Side.SELL);
-
-            final ReadablePosition libraryPosition = testSystem.awaitReply(
-                engine.libraryIndexedPosition(library.libraryId())).resultIfPresent();
-            testSystem.awaitPosition(libraryPosition, reportIndex);
+            ReportFactory.sendOneReport(testSystem, session, Side.SELL);
 
             testSystem.awaitBlocking(() ->
             {
@@ -861,8 +856,6 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
         setupLibrary();
 
-        final ReadablePosition libraryPosition = testSystem.libraryPosition(engine, library);
-
         try (FixConnection connection = FixConnection.initiate(port))
         {
             // Given setup session with 1 sent execution report
@@ -880,7 +873,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             // useful to send it on an offline session
             final int highSeqNum = 100;
             assertThat(highSeqNum, greaterThan(msgSeqNum));
-            final long position = testSystem.awaitSend(() -> session.trySendSequenceReset(highSeqNum, highSeqNum));
+            testSystem.awaitSend(() -> session.trySendSequenceReset(highSeqNum, highSeqNum));
 
             testSystem.awaitBlocking(() ->
             {
@@ -888,8 +881,6 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 assertFalse(sequenceReset.hasGapFillFlag(), sequenceReset.toString());
                 assertEquals(highSeqNum, sequenceReset.newSeqNo());
             });
-
-            testSystem.awaitPosition(libraryPosition, position);
 
             testSystem.awaitBlocking(() ->
             {
@@ -1120,6 +1111,47 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         final List<SessionInfo> sessionContextAfterLogonNoSenderEndpoint = engine.allSessions();
         assertEquals(1, sessionContextAfterLogonNoSenderEndpoint.size());
         assertEquals(0, sessionContextAfterLogonNoSenderEndpoint.get(0).sequenceIndex());
+    }
+
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
+    public void shouldResendAllOutboundMessagesInFlight() throws IOException
+    {
+        final int outboundMessageCount = 100;
+
+        setup(true, true);
+        setupLibrary();
+
+        try (FixConnection connection = FixConnection.initiate(port))
+        {
+            connection.logon(true, 45);
+            connection.readLogon();
+
+            session = acquireSession();
+            for (int i = 0; i < outboundMessageCount; ++i)
+            {
+                ReportFactory.sendOneReport(testSystem, session, Side.SELL);
+            }
+
+            connection.sendResendRequest(1, 0);
+            testSystem.awaitIsReplaying(session);
+
+            for (int i = 0; i < outboundMessageCount; ++i)
+            {
+                final ExecutionReportDecoder decoder = connection.readExecutionReport();
+                assertSell(decoder);
+                assertFalse(decoder.header().hasPossDupFlag(), decoder.toString());
+            }
+
+            testSystem.awaitBlocking(() -> connection.readSequenceResetGapFill(2));
+
+            for (int i = 0; i < outboundMessageCount; ++i)
+            {
+                final ExecutionReportDecoder decoder = connection.readExecutionReport();
+                assertSell(decoder);
+                assertTrue(decoder.header().hasPossDupFlag() && decoder.header().possDupFlag(), decoder.toString());
+            }
+        }
     }
 
     private void assertSell(final ExecutionReportDecoder executionReport)

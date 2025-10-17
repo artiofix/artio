@@ -34,6 +34,8 @@ import uk.co.real_logic.artio.messages.FixPMessageDecoder;
 import uk.co.real_logic.artio.messages.FixPMessageEncoder;
 import uk.co.real_logic.artio.messages.MessageHeaderEncoder;
 
+import java.util.List;
+
 import static uk.co.real_logic.artio.LogTag.REPLAY;
 import static uk.co.real_logic.artio.LogTag.REPLAY_ATTEMPT;
 import static uk.co.real_logic.artio.fixp.AbstractFixPParser.FIXP_MESSAGE_HEADER_LENGTH;
@@ -82,7 +84,8 @@ public class FixPReplayerSession extends ReplayerSession
         final AbstractFixPOffsets fixPOffsets,
         final FixPRetransmitHandler fixPRetransmitHandler,
         final AtomicCounter bytesInBuffer,
-        final int maxBytesInBuffer)
+        final int maxBytesInBuffer,
+        final List<RecordingRange> recordingRanges)
     {
         super(connectionId, correlationId, bufferClaim, idleStrategy, maxClaimAttempts, publication, replayQuery,
             beginSeqNo, endSeqNo,
@@ -95,19 +98,12 @@ public class FixPReplayerSession extends ReplayerSession
         this.fixPOffsets = fixPOffsets;
         this.fixPRetransmitHandler = fixPRetransmitHandler;
 
-        state = State.REPLAYING;
-    }
-
-    void query()
-    {
-        replayOperation = replayQuery.query(
-            sessionId,
-            beginSeqNo,
-            sequenceIndex,
-            endSeqNo,
-            sequenceIndex,
+        replayOperation = replayQuery.newReplayOperation(
+            recordingRanges,
             REPLAY,
             new FixPMessageTracker(this, binaryParser, (endSeqNo - beginSeqNo) + 1));
+
+        state = State.REPLAYING;
     }
 
     public boolean attemptReplay()
