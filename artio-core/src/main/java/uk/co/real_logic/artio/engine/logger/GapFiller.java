@@ -230,6 +230,7 @@ public class GapFiller extends AbstractReplayer
 
                     if (senderSequenceNumber.fixP())
                     {
+                        // It's a FIXP request, we don't support that configuration with no logging enabled yet.
                         state = State.DONE;
                         return 0;
                     }
@@ -237,7 +238,6 @@ public class GapFiller extends AbstractReplayer
                     fixReplayerCodecs = fixSessionCodecsFactory.get(sessionId);
                     if (null != fixReplayerCodecs)
                     {
-                        // It's a FIXP request, we don't support that configuration with no logging enabled yet.
                         state = State.ON_START_REPLAY;
                         return 1;
                     }
