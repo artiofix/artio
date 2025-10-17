@@ -784,6 +784,16 @@ public final class DebugLogger
         return DEBUG_PRINT_MESSAGE_TYPES == null || DEBUG_PRINT_MESSAGE_TYPES.contains(messageType);
     }
 
+    public static boolean inboundFixMessage(final int templateId)
+    {
+        return FixMessageDecoder.TEMPLATE_ID == templateId || ThrottleNotificationDecoder.TEMPLATE_ID == templateId;
+    }
+
+    public static boolean outboundFixMessage(final int templateId)
+    {
+        return FixMessageDecoder.TEMPLATE_ID == templateId || ThrottleRejectDecoder.TEMPLATE_ID == templateId;
+    }
+
     static class ThreadLocalLogger
     {
         // Library -> Engine

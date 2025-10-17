@@ -1255,7 +1255,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         {
             DebugLogger.logFixMessage(FIX_MESSAGE, messageType, receivedFormatter, libraryId, buffer, offset, length);
 
-            checkReproductionTimestamp(timestampInNs);
+            onApplicationHeartbeat(libraryId, FixMessageDecoder.TEMPLATE_ID, timestampInNs);
 
             final SessionSubscriber subscriber = connectionIdToSession.get(connectionId);
             if (subscriber != null)
@@ -1284,6 +1284,8 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         {
             return CONTINUE;
         }
+
+        onApplicationHeartbeat(libraryId, DisconnectDecoder.TEMPLATE_ID, NO_MESSAGE_TIMESTAMP);
 
         final SessionSubscriber subscriber = connectionIdToSession.get(connectionId);
         if (subscriber != null)
@@ -1403,24 +1405,27 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
 
             final long timeInMs = timeInMs();
 
-            if (timestampInNs != NO_MESSAGE_TIMESTAMP)
+            if (DebugLogger.isEnabled(APPLICATION_HEARTBEAT) && !DebugLogger.inboundFixMessage(messageTemplateId))
             {
-                DebugLogger.log(
-                    APPLICATION_HEARTBEAT,
-                    applicationHeartbeatFormatter,
-                    libraryId,
-                    messageTemplateId,
-                    timeInMs,
-                    timestampInNs);
-            }
-            else
-            {
-                DebugLogger.log(
-                    APPLICATION_HEARTBEAT,
-                    applicationHeartbeatFormatterNoTimestamp,
-                    libraryId,
-                    messageTemplateId,
-                    timeInMs);
+                if (timestampInNs != NO_MESSAGE_TIMESTAMP)
+                {
+                    DebugLogger.log(
+                        APPLICATION_HEARTBEAT,
+                        applicationHeartbeatFormatter,
+                        libraryId,
+                        messageTemplateId,
+                        timeInMs,
+                        timestampInNs);
+                }
+                else
+                {
+                    DebugLogger.log(
+                        APPLICATION_HEARTBEAT,
+                        applicationHeartbeatFormatterNoTimestamp,
+                        libraryId,
+                        messageTemplateId,
+                        timeInMs);
+                }
             }
 
             livenessDetector.onHeartbeat(timeInMs);

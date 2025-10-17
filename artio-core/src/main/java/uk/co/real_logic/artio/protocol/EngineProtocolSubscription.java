@@ -170,8 +170,11 @@ public final class EngineProtocolSubscription implements ControlledFragmentHandl
         final int businessRejectRefIDOffset =
             throttleReject.limit() + ThrottleRejectDecoder.businessRejectRefIDHeaderLength();
 
+        final int libraryId = throttleReject.libraryId();
+        handler.onApplicationHeartbeat(libraryId, header.sessionId(), ThrottleRejectDecoder.TEMPLATE_ID, 0);
+
         return handler.onThrottleReject(
-            throttleReject.libraryId(),
+            libraryId,
             throttleReject.connection(),
             throttleReject.refMsgType(),
             throttleReject.refSeqNum(),
