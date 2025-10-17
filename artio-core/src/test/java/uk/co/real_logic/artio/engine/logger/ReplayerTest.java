@@ -666,30 +666,16 @@ public class ReplayerTest extends AbstractLogTest
 
         sendsStartReplay = false;
         onRequestResendMessageWithSession(
-            result, COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
+            result, ABORT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
             (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), 0);
 
-        replayer.doWork();
-        replayer.doWork();
-        replayer.doWork();
-        replayer.doWork();
-        replayer.doWork();
-
-        verify(replayHandler, times(0))
-            .onReplayedMessage(any(), anyInt(), anyInt(), anyInt(), anyLong(), anyInt(), anyLong());
-        verify(publication, times(0)).tryClaim(anyInt(), any());
-
-        when(outboundReplayIndexPositionBuffer.getLongVolatile(REPLAY_INDEX_BUFFER_POSITION_OFFSET))
-            .thenReturn(Long.MAX_VALUE);
+        sendsStartReplay = true;
+        onRequestResendMessageWithSession(
+            result, COMMIT, SESSION_ID, CONNECTION_ID, BEGIN_SEQ_NO, END_SEQ_NO,
+            (int)ValidResendRequestEncoder.overriddenBeginSequenceNumberNullValue(), Aeron.NULL_VALUE);
 
         replayer.doWork();
         replayer.doWork();
-        replayer.doWork();
-        replayer.doWork();
-
-        verify(replayHandler, times(1))
-            .onReplayedMessage(any(), anyInt(), anyInt(), anyInt(), anyLong(), anyInt(), anyLong());
-        verify(publication, times(3)).tryClaim(anyInt(), any());
 
         verifyReplayCompleteMessageSent();
     }

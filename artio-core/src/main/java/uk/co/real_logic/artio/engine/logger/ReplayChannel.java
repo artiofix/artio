@@ -17,6 +17,7 @@ package uk.co.real_logic.artio.engine.logger;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Objects;
 
 /**
  * Owns replay operations for a given connection. It maintains a queue and a current replay operation.
@@ -25,6 +26,12 @@ class ReplayChannel
 {
     private ReplayerSession session;
     private Deque<EnqueuedReplay> enqueuedReplays;
+
+    ReplayChannel(final ReplayerSession session)
+    {
+        Objects.requireNonNull(session);
+        startReplay(session);
+    }
 
     void enqueueReplay(final EnqueuedReplay enqueuedReplay)
     {
