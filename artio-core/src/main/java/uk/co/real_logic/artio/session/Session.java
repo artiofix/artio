@@ -123,7 +123,6 @@ public class Session
     private final CancelOnDisconnect cancelOnDisconnect;
 
     private boolean backpressuredResendRequestResponse = false;
-    private boolean backpressuredOutboundValidResendRequest = false;
     private final ResendRequestResponse resendRequestResponse = new ResendRequestResponse();
     private final ResendRequestController resendRequestController;
     private final int forcedHeartbeatIntervalInS;
@@ -2142,31 +2141,19 @@ public class Session
             final long correlationId = generateReplayCorrelationId();
 
             // Notify the sender end point that a replay is going to happen.
-            if (!backpressuredResendRequestResponse || backpressuredOutboundValidResendRequest)
-            {
-                if (saveValidResendRequest(beginSeqNum, messageBuffer, messageOffset, messageLength, correctedEndSeqNo,
-                    correlationId, overriddenBeginSeqNum, outboundPublication))
-                {
-                    lastReceivedMsgSeqNum(oldLastReceivedMsgSeqNum);
-                    backpressuredResendRequestResponse = true;
-                    backpressuredOutboundValidResendRequest = true;
-                    return ABORT;
-                }
-
-                backpressuredOutboundValidResendRequest = false;
-            }
-
             if (saveValidResendRequest(beginSeqNum, messageBuffer, messageOffset, messageLength, correctedEndSeqNo,
-                correlationId, overriddenBeginSeqNum, inboundPublication))
+                correlationId, overriddenBeginSeqNum, outboundPublication))
             {
                 lastReceivedMsgSeqNum(oldLastReceivedMsgSeqNum);
                 backpressuredResendRequestResponse = true;
                 return ABORT;
             }
-
-            backpressuredResendRequestResponse = false;
-            replaysInFlight++;
-            return CONTINUE;
+            else
+            {
+                backpressuredResendRequestResponse = false;
+                replaysInFlight++;
+                return CONTINUE;
+            }
         }
         else
         {

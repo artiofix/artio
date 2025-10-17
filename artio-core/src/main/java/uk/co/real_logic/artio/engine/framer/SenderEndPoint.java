@@ -23,6 +23,7 @@ import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.LogTag;
 import uk.co.real_logic.artio.Pressure;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 import uk.co.real_logic.artio.messages.MessageHeaderEncoder;
 import uk.co.real_logic.artio.messages.ReplayCompleteEncoder;
 
@@ -50,6 +51,7 @@ public class SenderEndPoint implements AutoCloseable
     protected int libraryId;
     protected final ErrorHandler errorHandler;
     protected final Framer framer;
+    private final SenderSequenceNumber senderSequenceNumber;
 
     public SenderEndPoint(
         final long connectionId,
@@ -60,7 +62,8 @@ public class SenderEndPoint implements AutoCloseable
         final AtomicCounter bytesInBuffer,
         final int maxBytesInBuffer,
         final ErrorHandler errorHandler,
-        final Framer framer)
+        final Framer framer,
+        final SenderSequenceNumber senderSequenceNumber)
     {
         this.connectionId = connectionId;
         this.inboundPublication = inboundPublication;
@@ -71,6 +74,7 @@ public class SenderEndPoint implements AutoCloseable
         this.maxBytesInBuffer = maxBytesInBuffer;
         this.errorHandler = errorHandler;
         this.framer = framer;
+        this.senderSequenceNumber = senderSequenceNumber;
     }
 
     public Action onReplayComplete(final long correlationId)
@@ -119,5 +123,6 @@ public class SenderEndPoint implements AutoCloseable
     public void close()
     {
         bytesInBuffer.close();
+        senderSequenceNumber.close();
     }
 }

@@ -17,6 +17,8 @@ package uk.co.real_logic.artio.engine.logger;
 
 import uk.co.real_logic.artio.util.AsciiBuffer;
 
+import java.util.List;
+
 public class EnqueuedReplay
 {
     private final long sessionId;
@@ -27,6 +29,7 @@ public class EnqueuedReplay
     private final int sequenceIndex;
     private final long overriddenBeginSeqNo;
     private final AsciiBuffer asciiBuffer;
+    private final List<RecordingRange> recordingRanges;
 
     public EnqueuedReplay(
         final long sessionId,
@@ -35,7 +38,8 @@ public class EnqueuedReplay
         final long endSeqNo,
         final int sequenceIndex,
         final long overriddenBeginSeqNo,
-        final AsciiBuffer asciiBuffer)
+        final AsciiBuffer asciiBuffer,
+        final List<RecordingRange> recordingRanges)
     {
 
         this.sessionId = sessionId;
@@ -46,6 +50,7 @@ public class EnqueuedReplay
         this.sequenceIndex = sequenceIndex;
         this.overriddenBeginSeqNo = overriddenBeginSeqNo;
         this.asciiBuffer = asciiBuffer;
+        this.recordingRanges = recordingRanges;
     }
 
     public long sessionId()
@@ -81,6 +86,11 @@ public class EnqueuedReplay
     public long overriddenBeginSeqNo()
     {
         return overriddenBeginSeqNo;
+    }
+
+    public List<RecordingRange> recordingRanges()
+    {
+        return recordingRanges;
     }
 
     public String toString()

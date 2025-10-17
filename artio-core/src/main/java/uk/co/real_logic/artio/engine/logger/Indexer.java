@@ -31,14 +31,13 @@ import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.LogTag;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
-import uk.co.real_logic.artio.engine.CompletionPosition;
 import uk.co.real_logic.artio.util.CharFormatter;
 
 import java.util.List;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
-import static io.aeron.logbuffer.ControlledFragmentHandler.Action.ABORT;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
+import static uk.co.real_logic.artio.engine.logger.ArchivingAgents.LIMIT;
 
 /**
  * Incrementally builds indexes by polling a subscription.
@@ -46,36 +45,28 @@ import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
 @SuppressWarnings("ForLoopReplaceableByForEach")
 public class Indexer implements Agent, ControlledFragmentHandler
 {
-    private static final int LIMIT = 20;
-
     private final CharFormatter indexingFormatter = new CharFormatter(
         "Indexing @ %s from [%s, %s]");
     private final CharFormatter catchupFormatter = new CharFormatter(
         "Catchup [%s]: recordingId = %s, recordingStopped @ %s, indexStopped @ %s");
 
     private final List<Index> indices;
-    private final Subscription subscription;
     private final String agentNamePrefix;
-    private final CompletionPosition completionPosition;
     private final int archiveReplayStream;
 
     public Indexer(
         final List<Index> indices,
-        final Subscription subscription,
         final String agentNamePrefix,
-        final CompletionPosition completionPosition,
         final int archiveReplayStream)
     {
         this.indices = indices;
-        this.subscription = subscription;
         this.agentNamePrefix = agentNamePrefix;
-        this.completionPosition = completionPosition;
         this.archiveReplayStream = archiveReplayStream;
     }
 
     public int doWork()
     {
-        return subscription.controlledPoll(this, LIMIT) + pollIndexes();
+        return pollIndexes();
     }
 
     private int pollIndexes()
@@ -185,42 +176,7 @@ public class Indexer implements Agent, ControlledFragmentHandler
 
     public void onClose()
     {
-        quiesce();
-
-        Exceptions.closeAll(() -> Exceptions.closeAll(indices), subscription);
-    }
-
-    private void quiesce()
-    {
-        while (!completionPosition.hasCompleted())
-        {
-            Thread.yield();
-        }
-
-        if (completionPosition.wasStartupComplete())
-        {
-            return;
-        }
-
-        // We know that any remaining data to quiesce at this point must be in the subscription.
-        subscription.controlledPoll(this::quiesceFragment, Integer.MAX_VALUE);
-    }
-
-    private Action quiesceFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
-    {
-        if (header.position() <= completedPosition(header.sessionId()))
-        {
-            return onFragment(buffer, offset, length, header);
-        }
-        else
-        {
-            return ABORT;
-        }
-    }
-
-    private long completedPosition(final int aeronSessionId)
-    {
-        return completionPosition.positions().get(aeronSessionId);
+        Exceptions.closeAll(indices);
     }
 
     public String roleName()
