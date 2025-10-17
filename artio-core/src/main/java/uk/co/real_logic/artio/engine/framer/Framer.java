@@ -680,7 +680,8 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         final long connectionId = newConnectionId();
 
         final AtomicCounter bytesInBuffer = fixCounters.bytesInBuffer(connectionId, channel.remoteAddr());
-        senderSequenceNumbers.onNewSender(connectionId, bytesInBuffer);
+        final SenderSequenceNumber senderSequenceNumber =
+            senderSequenceNumbers.onNewSender(true, connectionId, bytesInBuffer);
 
         final AcceptorFixPReceiverEndPoint receiverEndPoint = new AcceptorFixPReceiverEndPoint(
             connectionId,
@@ -699,7 +700,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             reproductionLogWriter, ENGINE_LIBRARY_ID,
             configuration.messageTimingHandler(), fixPProtocol.explicitSequenceNumbers(),
             fixPParser.templateIdOffset(), fixPParser.retransmissionTemplateId(), fixPSenderEndPoints,
-            bytesInBuffer, configuration.senderMaxBytesInBuffer(), this, receiverEndPoint);
+            bytesInBuffer, configuration.senderMaxBytesInBuffer(), this, receiverEndPoint, senderSequenceNumber);
         fixPSenderEndPoints.add(senderEndPoint);
 
         final FixPGatewaySession gatewaySession = new FixPGatewaySession(
@@ -864,7 +865,8 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
                     }
 
                     final AtomicCounter bytesInBuffer = fixCounters.bytesInBuffer(connectionId, channel.remoteAddr());
-                    senderSequenceNumbers.onNewSender(connectionId, bytesInBuffer);
+                    final SenderSequenceNumber senderSequenceNumber =
+                        senderSequenceNumbers.onNewSender(true, connectionId, bytesInBuffer);
                     final InitiatorFixPReceiverEndPoint receiverEndPoint = new InitiatorFixPReceiverEndPoint(
                         connectionId, channel, configuration.receiverBufferSize(),
                         errorHandler, this, inboundPublication, libraryId, context,
@@ -878,7 +880,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
                         libraryId, configuration.messageTimingHandler(), fixPProtocol.explicitSequenceNumbers(),
                         fixPParser.templateIdOffset(), fixPParser.retransmissionTemplateId(), fixPSenderEndPoints,
                         bytesInBuffer,
-                        configuration.senderMaxBytesInBuffer(), this, receiverEndPoint));
+                        configuration.senderMaxBytesInBuffer(), this, receiverEndPoint, senderSequenceNumber));
                 });
         }
         catch (final Exception ex)

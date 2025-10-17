@@ -29,6 +29,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.OngoingStubbing;
 import org.mockito.verification.VerificationMode;
 import uk.co.real_logic.artio.engine.MessageTimingHandler;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -85,7 +86,8 @@ public class ImplicitFixPSenderEndPointTest
         bytesInBuffer,
         CAPACITY,
         framer,
-        mock(FixPReceiverEndPoint.class));
+        mock(FixPReceiverEndPoint.class),
+        mock(SenderSequenceNumber.class));
 
     @Before
     public void setup()

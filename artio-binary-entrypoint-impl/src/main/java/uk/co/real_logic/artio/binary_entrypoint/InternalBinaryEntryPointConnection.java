@@ -78,7 +78,6 @@ class InternalBinaryEntryPointConnection
     private long codTimeoutWindowInMs;
     // true iff we've sent a redact then got back-pressured sending a message after
     private boolean suppressRedactResend = false;
-    private boolean suppressInboundValidResend = false;
     private boolean suppressRetransmissionResend = false;
     private boolean suppressRetransmissionCallback = false;
     private boolean replaying = false;
@@ -592,24 +591,8 @@ class InternalBinaryEntryPointConnection
         // were supposed to be sent with the next connect
 
         final long endSequenceNumber = nextSentSeqNo - 1;
-
-        if (!suppressInboundValidResend)
-        {
-            final long resendRequestPosition = saveValidResendRequest(
-                sessionID, 1, endSequenceNumber, NEXT_SESSION_VERSION_ID,
-                FORCE_START_REPLAY_CORR_ID);
-
-            if (Pressure.isBackPressured(resendRequestPosition))
-            {
-                return false;
-            }
-
-            suppressInboundValidResend = true;
-        }
-
         final long outboundPosition = saveValidResendRequest(
-            outboundPublication, sessionID, 1, endSequenceNumber,
-            NEXT_SESSION_VERSION_ID, FORCE_START_REPLAY_CORR_ID);
+            sessionID, 1, endSequenceNumber, NEXT_SESSION_VERSION_ID, FORCE_START_REPLAY_CORR_ID);
 
         if (Pressure.isBackPressured(outboundPosition))
         {
@@ -618,7 +601,6 @@ class InternalBinaryEntryPointConnection
 
         replaying = true;
         retransmitOfflineNextSessionMessages = false;
-        suppressInboundValidResend = false;
 
         return true;
     }
@@ -1008,7 +990,7 @@ class InternalBinaryEntryPointConnection
             }
         }
 
-        final long position = saveValidResendRequest(sessionID, fromSeqNo, endSequenceNumber, sessionVerId, 0);
+        final long position = saveValidResendRequest(sessionID, fromSeqNo, endSequenceNumber, 0, 0);
         // suppress if we've failed to send the resend request to the replayer as this will cause this handler to be
         // retried
         if (position < 0)
@@ -1032,19 +1014,7 @@ class InternalBinaryEntryPointConnection
         final long sessionVerId,
         final int correlationId)
     {
-        return saveValidResendRequest(
-            inboundPublication, sessionID, fromSeqNo, endSequenceNumber, sessionVerId, correlationId);
-    }
-
-    private long saveValidResendRequest(
-        final GatewayPublication publication,
-        final long sessionID,
-        final long fromSeqNo,
-        final long endSequenceNumber,
-        final long sessionVerId,
-        final int correlationId)
-    {
-        return publication.saveValidResendRequest(
+        return outboundPublication.saveValidResendRequest(
             sessionID,
             connectionId,
             fromSeqNo,
@@ -1159,7 +1129,6 @@ class InternalBinaryEntryPointConnection
             ", cancelOnDisconnectType=" + cancelOnDisconnectType +
             ", codTimeoutWindowInMs=" + codTimeoutWindowInMs +
             ", suppressRedactResend=" + suppressRedactResend +
-            ", suppressInboundValidResend=" + suppressInboundValidResend +
             ", suppressRetransmissionResend=" + suppressRetransmissionResend +
             ", replaying=" + replaying +
             ", retransmitOfflineNextSessionMessages=" + retransmitOfflineNextSessionMessages +

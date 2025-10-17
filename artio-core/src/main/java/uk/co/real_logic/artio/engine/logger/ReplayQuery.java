@@ -120,7 +120,7 @@ public class ReplayQuery implements AutoCloseable
      * @param endSequenceIndex the sequence index to end replay at (inclusive).
      * @param logTag the operation to tag log entries with
      * @param tracker the tracker to which messages are replayed
-     * @return number of messages replayed
+     * @return {@link ReplayOperation} that can be retired
      */
     public ReplayOperation query(
         final long sessionId,
@@ -137,8 +137,36 @@ public class ReplayQuery implements AutoCloseable
             return null;
         }
 
-        return sessionQuery
-            .query(beginSequenceNumber, beginSequenceIndex, endSequenceNumber, endSequenceIndex, logTag, tracker);
+        final List<RecordingRange> recordingRanges = sessionQuery
+            .query(beginSequenceNumber, beginSequenceIndex, endSequenceNumber, endSequenceIndex, logTag);
+        return newReplayOperation(recordingRanges, logTag, tracker);
+    }
+
+    /**
+     *
+     * @param sessionId the FIX session id of the stream to replay.
+     * @param beginSequenceNumber sequence number to begin replay at (inclusive).
+     * @param beginSequenceIndex the sequence index to begin replay at (inclusive).
+     * @param endSequenceNumber sequence number to end replay at (inclusive).
+     * @param endSequenceIndex the sequence index to end replay at (inclusive).
+     * @param logTag the operation to tag log entries with
+     * @return list of recording ranges necessary for {@link ReplayOperation}
+     */
+    public List<RecordingRange> query(
+        final long sessionId,
+        final int beginSequenceNumber,
+        final int beginSequenceIndex,
+        final int endSequenceNumber,
+        final int endSequenceIndex,
+        final LogTag logTag)
+    {
+        final SessionQuery sessionQuery = lookupSessionQuery(sessionId);
+        if (sessionQuery == null)
+        {
+            return null;
+        }
+
+        return sessionQuery.query(beginSequenceNumber, beginSequenceIndex, endSequenceNumber, endSequenceIndex, logTag);
     }
 
     public void queryStartPositions(final Long2LongHashMap newStartPositions)
@@ -193,6 +221,25 @@ public class ReplayQuery implements AutoCloseable
         }
     }
 
+    public ReplayOperation newReplayOperation(
+        final List<RecordingRange> ranges, final LogTag logTag, final MessageTracker messageTracker)
+    {
+        if (replaySubscription == null)
+        {
+            replaySubscription = aeronArchive.context().aeron().addSubscription(
+                IPC_CHANNEL, archiveReplayStream);
+        }
+
+        return new ReplayOperation(
+            ranges,
+            aeronArchive,
+            errorHandler,
+            replaySubscription,
+            archiveReplayStream,
+            logTag,
+            messageTracker);
+    }
+
     private final class SessionQuery implements AutoCloseable
     {
         private final long fixSessionId;
@@ -217,13 +264,12 @@ public class ReplayQuery implements AutoCloseable
         }
 
         @SuppressWarnings("MethodLength")
-        ReplayOperation query(
+        List<RecordingRange> query(
             final int beginSequenceNumber,
             final int beginSequenceIndex,
             final int endSequenceNumber,
             final int endSequenceIndex,
-            final LogTag logTag,
-            final MessageTracker messageTracker)
+            final LogTag logTag)
         {
             final boolean log = IS_REPLAY_ATTEMPT_ENABLED && logTag == LogTag.REPLAY;
             if (log)
@@ -330,7 +376,7 @@ public class ReplayQuery implements AutoCloseable
                 ranges.add(currentRange);
             }
 
-            return newReplayOperation(ranges, logTag, messageTracker);
+            return ranges;
         }
 
         private UnsafeBuffer segmentBuffer(
@@ -370,25 +416,6 @@ public class ReplayQuery implements AutoCloseable
             final int sequenceNumberJump = beginSequenceNumber - sequenceNumber;
             final int jumpInBytes = sequenceNumberJump * RECORD_LENGTH;
             return iteratorPosition + jumpInBytes;
-        }
-
-        private ReplayOperation newReplayOperation(
-            final List<RecordingRange> ranges, final LogTag logTag, final MessageTracker messageTracker)
-        {
-            if (replaySubscription == null)
-            {
-                replaySubscription = aeronArchive.context().aeron().addSubscription(
-                    IPC_CHANNEL, archiveReplayStream);
-            }
-
-            return new ReplayOperation(
-                ranges,
-                aeronArchive,
-                errorHandler,
-                replaySubscription,
-                archiveReplayStream,
-                logTag,
-                messageTracker);
         }
 
         private RecordingRange addRange(
