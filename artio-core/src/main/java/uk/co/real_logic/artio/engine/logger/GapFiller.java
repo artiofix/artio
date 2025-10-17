@@ -40,7 +40,7 @@ import static uk.co.real_logic.artio.messages.MessageHeaderDecoder.ENCODED_LENGT
 
 public class GapFiller extends AbstractReplayer
 {
-    private final Long2ObjectHashMap<ArrayDeque<GapFillerSession>> gapFillerSessions = new Long2ObjectHashMap<>();
+    private final Long2ObjectHashMap<GapFillerChannel> gapFillerChannels = new Long2ObjectHashMap<>();
     private final ReplayerCommandQueue replayerCommandQueue;
     private final GatewayPublication publication;
     private final String agentNamePrefix;
@@ -113,7 +113,18 @@ public class GapFiller extends AbstractReplayer
     {
         final GapFillerSession gapFillerSession = new GapFillerSession(
             sessionId, connectionId, beginSeqNo, endSeqNo, sequenceIndex, correlationId);
-        gapFillerSessions.computeIfAbsent(connectionId, k -> new ArrayDeque<>()).addLast(gapFillerSession);
+
+        if (gapFillerChannels.containsKey(connectionId))
+        {
+            final GapFillerChannel gapFillerChannel = gapFillerChannels.get(connectionId);
+            gapFillerChannel.enqueue(gapFillerSession);
+        }
+        else
+        {
+            final GapFillerChannel gapFillerChannel = new GapFillerChannel();
+            gapFillerChannel.currentSession(gapFillerSession);
+            gapFillerChannels.put(connectionId, gapFillerChannel);
+        }
     }
 
     public int doWork()
@@ -133,32 +144,35 @@ public class GapFiller extends AbstractReplayer
     {
         int workCount = 0;
 
-        final Long2ObjectHashMap<ArrayDeque<GapFillerSession>>.EntryIterator gapFillerSessionsIterator =
-            gapFillerSessions.entrySet().iterator();
+        final Long2ObjectHashMap<GapFillerChannel>.EntryIterator gapFillerChannelIterator =
+            gapFillerChannels.entrySet().iterator();
 
-        while (gapFillerSessionsIterator.hasNext())
+        while (gapFillerChannelIterator.hasNext())
         {
-            gapFillerSessionsIterator.next();
+            gapFillerChannelIterator.next();
 
-            final long connectionId = gapFillerSessionsIterator.getLongKey();
-            final ArrayDeque<GapFillerSession> gapFillerSessionDeque = gapFillerSessionsIterator.getValue();
+            final long connectionId = gapFillerChannelIterator.getLongKey();
+            final GapFillerChannel gapFillerChannel = gapFillerChannelIterator.getValue();
 
             if (checkDisconnected(connectionId))
             {
-                gapFillerSessionsIterator.remove();
+                gapFillerChannelIterator.remove();
             }
             else
             {
-                final GapFillerSession gapFillerSession = gapFillerSessionDeque.peekFirst();
-                workCount += gapFillerSession.doWork();
+                final GapFillerSession currentSession = gapFillerChannel.currentSession();
+                workCount += currentSession.doWork();
 
-                if (gapFillerSession.isDone())
+                if (currentSession.isDone())
                 {
-                    gapFillerSessionDeque.pollFirst();
-
-                    if (gapFillerSessionDeque.isEmpty())
+                    final GapFillerSession queuedSession = gapFillerChannel.pollEnqueued();
+                    if (null == queuedSession)
                     {
-                        gapFillerSessionsIterator.remove();
+                        gapFillerChannelIterator.remove();
+                    }
+                    else
+                    {
+                        gapFillerChannel.currentSession(queuedSession);
                     }
                 }
             }
@@ -172,11 +186,44 @@ public class GapFiller extends AbstractReplayer
         return agentNamePrefix + "GapFiller";
     }
 
+    class GapFillerChannel
+    {
+        private GapFillerSession currentSession;
+        private ArrayDeque<GapFillerSession> enqueued;
+
+        void currentSession(final GapFillerSession currentSession)
+        {
+            this.currentSession = currentSession;
+        }
+
+        GapFillerSession currentSession()
+        {
+            return currentSession;
+        }
+
+        void enqueue(final GapFillerSession enqueuedSession)
+        {
+            if (null == enqueued)
+            {
+                enqueued = new ArrayDeque<>();
+            }
+            enqueued.add(enqueuedSession);
+        }
+
+        GapFillerSession pollEnqueued()
+        {
+            if (null == enqueued)
+            {
+                return null;
+            }
+            return enqueued.poll();
+        }
+    }
+
     class GapFillerSession
     {
         private enum State
         {
-            // NB: don't reorder this enum without reviewing onResendRequest
             INIT,
             ON_START_REPLAY,
             ON_GAP_FILL,

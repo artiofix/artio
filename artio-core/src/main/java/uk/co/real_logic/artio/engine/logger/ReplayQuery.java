@@ -120,7 +120,7 @@ public class ReplayQuery implements AutoCloseable
      * @param endSequenceIndex the sequence index to end replay at (inclusive).
      * @param logTag the operation to tag log entries with
      * @param tracker the tracker to which messages are replayed
-     * @return number of messages replayed
+     * @return {@link ReplayOperation} that can be retired
      */
     public ReplayOperation query(
         final long sessionId,
@@ -150,7 +150,7 @@ public class ReplayQuery implements AutoCloseable
      * @param endSequenceNumber sequence number to end replay at (inclusive).
      * @param endSequenceIndex the sequence index to end replay at (inclusive).
      * @param logTag the operation to tag log entries with
-     * @return number of messages replayed
+     * @return list of recording ranges necessary for {@link ReplayOperation}
      */
     public List<RecordingRange> query(
         final long sessionId,
