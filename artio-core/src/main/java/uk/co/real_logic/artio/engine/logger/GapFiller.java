@@ -26,6 +26,7 @@ import uk.co.real_logic.artio.builder.Encoder;
 import uk.co.real_logic.artio.decoder.AbstractResendRequestDecoder;
 import uk.co.real_logic.artio.decoder.SessionHeaderDecoder;
 import uk.co.real_logic.artio.engine.ReplayerCommandQueue;
+import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 import uk.co.real_logic.artio.engine.SenderSequenceNumbers;
 import uk.co.real_logic.artio.messages.MessageStatus;
 import uk.co.real_logic.artio.messages.ValidResendRequestDecoder;
@@ -142,12 +143,23 @@ public class GapFiller extends AbstractReplayer
             return CONTINUE;
         }
 
-        final FixReplayerCodecs fixReplayerCodecs = fixSessionCodecsFactory.get(sessionId);
-        if (fixReplayerCodecs == null)
+        final SenderSequenceNumber senderSequenceNumber = senderSequenceNumbers.senderSequenceNumber(connectionId);
+        if (null == senderSequenceNumber)
+        {
+            return ABORT;
+        }
+
+        if (senderSequenceNumber.fixP())
         {
             // It's a FIXP request, we don't support that configuration with no logging enabled yet.
             abortState = null;
             return CONTINUE;
+        }
+
+        final FixReplayerCodecs fixReplayerCodecs = fixSessionCodecsFactory.get(sessionId);
+        if (fixReplayerCodecs == null)
+        {
+            return ABORT;
         }
 
         if (checkAbortState(AbortState.ON_START_REPLAY))
