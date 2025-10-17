@@ -1715,6 +1715,8 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
     {
         final long now = outboundTimer.recordSince(timestamp);
 
+        onApplicationHeartbeat(libraryId, header.sessionId(), FixMessageDecoder.TEMPLATE_ID, timestamp);
+
         final boolean online = fixSenderEndPoints.onMessage(
             libraryId,
             connectionId,
@@ -1982,13 +1984,16 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         if (library != null)
         {
             final long timeInMs = epochClock.time();
-            DebugLogger.log(
-                APPLICATION_HEARTBEAT,
-                applicationHeartbeatFormatter,
-                messageTemplateId,
-                libraryId,
-                timeInMs,
-                timestampInNs);
+            if (DebugLogger.isEnabled(APPLICATION_HEARTBEAT) && !DebugLogger.outboundFixMessage(messageTemplateId))
+            {
+                DebugLogger.log(
+                    APPLICATION_HEARTBEAT,
+                    applicationHeartbeatFormatter,
+                    messageTemplateId,
+                    libraryId,
+                    timeInMs,
+                    timestampInNs);
+            }
             library.onHeartbeat(timeInMs);
 
             return null;
