@@ -217,7 +217,7 @@ public class GapFiller extends AbstractReplayer
 
         int doWork()
         {
-            switch (state)
+            return switch (state)
             {
                 case INIT:
                 {
@@ -225,24 +225,24 @@ public class GapFiller extends AbstractReplayer
                         senderSequenceNumbers.senderSequenceNumber(connectionId);
                     if (null == senderSequenceNumber)
                     {
-                        return 0;
+                        yield 0;
                     }
 
                     if (senderSequenceNumber.fixP())
                     {
                         // It's a FIXP request, we don't support that configuration with no logging enabled yet.
                         state = State.DONE;
-                        return 0;
+                        yield 0;
                     }
 
                     fixReplayerCodecs = fixSessionCodecsFactory.get(sessionId);
                     if (null != fixReplayerCodecs)
                     {
                         state = State.ON_START_REPLAY;
-                        return 1;
+                        yield 1;
                     }
 
-                    return 0;
+                    yield 0;
                 }
 
                 case ON_START_REPLAY:
@@ -250,10 +250,10 @@ public class GapFiller extends AbstractReplayer
                     if (trySendStartReplay(sessionId, connectionId, correlationId))
                     {
                         state = State.ON_GAP_FILL;
-                        return 1;
+                        yield 1;
                     }
 
-                    return 0;
+                    yield 0;
                 }
 
                 case ON_GAP_FILL:
@@ -279,10 +279,10 @@ public class GapFiller extends AbstractReplayer
                     if (0 < sentPosition)
                     {
                         state = State.ON_SEND_COMPLETE;
-                        return 1;
+                        yield 1;
                     }
 
-                    return 0;
+                    yield 0;
                 }
 
                 case ON_SEND_COMPLETE:
@@ -290,14 +290,17 @@ public class GapFiller extends AbstractReplayer
                     if (sendCompleteMessage(connectionId, correlationId))
                     {
                         state = State.DONE;
-                        return 1;
+                        yield 1;
                     }
 
-                    return 0;
+                    yield 0;
                 }
-            }
 
-            return 0;
+                case DONE:
+                {
+                    yield 0;
+                }
+            };
         }
     }
 }
