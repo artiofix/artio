@@ -1125,7 +1125,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         try (FixConnection connection = FixConnection.initiate(port))
         {
             connection.logon(true, 45);
-            connection.readLogon();
+            testSystem.awaitBlocking(() -> connection.readLogon());
 
             session = acquireSession();
             for (int i = 0; i < outboundMessageCount; ++i)
@@ -1136,21 +1136,24 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             connection.sendResendRequest(1, 0);
             testSystem.awaitIsReplaying(session);
 
-            for (int i = 0; i < outboundMessageCount; ++i)
+            testSystem.awaitBlocking(() ->
             {
-                final ExecutionReportDecoder decoder = connection.readExecutionReport();
-                assertSell(decoder);
-                assertFalse(decoder.header().hasPossDupFlag(), decoder.toString());
-            }
+                for (int i = 0; i < outboundMessageCount; ++i)
+                {
+                    final ExecutionReportDecoder decoder = connection.readExecutionReport();
+                    assertSell(decoder);
+                    assertFalse(decoder.header().hasPossDupFlag(), decoder.toString());
+                }
 
-            testSystem.awaitBlocking(() -> connection.readSequenceResetGapFill(2));
+                connection.readSequenceResetGapFill(2);
 
-            for (int i = 0; i < outboundMessageCount; ++i)
-            {
-                final ExecutionReportDecoder decoder = connection.readExecutionReport();
-                assertSell(decoder);
-                assertTrue(decoder.header().hasPossDupFlag() && decoder.header().possDupFlag(), decoder.toString());
-            }
+                for (int i = 0; i < outboundMessageCount; ++i)
+                {
+                    final ExecutionReportDecoder decoder = connection.readExecutionReport();
+                    assertSell(decoder);
+                    assertTrue(decoder.header().hasPossDupFlag() && decoder.header().possDupFlag(), decoder.toString());
+                }
+            });
         }
     }
 
