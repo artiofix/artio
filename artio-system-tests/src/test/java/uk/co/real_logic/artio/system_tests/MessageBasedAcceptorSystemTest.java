@@ -1052,8 +1052,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         assertEquals(0, sessionContextAfterLogonNoSenderEndpoint.get(0).sequenceIndex());
     }
 
-    @Test
-    @Timeout(TEST_TIMEOUT_IN_MS)
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
     public void shouldResendAllOutboundMessagesInFlight() throws IOException
     {
         final int outboundMessageCount = 100;
@@ -1081,7 +1080,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 {
                     final ExecutionReportDecoder decoder = connection.readExecutionReport();
                     assertSell(decoder);
-                    assertFalse(decoder.header().hasPossDupFlag(), decoder.toString());
+                    assertFalse(decoder.toString(), decoder.header().hasPossDupFlag());
                 }
 
                 connection.readSequenceResetGapFill(2);
@@ -1090,7 +1089,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 {
                     final ExecutionReportDecoder decoder = connection.readExecutionReport();
                     assertSell(decoder);
-                    assertTrue(decoder.header().hasPossDupFlag() && decoder.header().possDupFlag(), decoder.toString());
+                    assertTrue(decoder.toString(), decoder.header().hasPossDupFlag() && decoder.header().possDupFlag());
                 }
             });
         }
