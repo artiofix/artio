@@ -129,7 +129,7 @@ public class ReproductionSystemTest extends AbstractMessageBasedAcceptorSystemTe
         reproductionMessageHandler = messageStash;
 
         setup(false, true, true, InitialAcceptedSessionOwner.ENGINE, false,
-            true, startInNs, endInNs, false);
+            true, startInNs, endInNs, false, true);
         setupLibrary();
 
         // Reply to messages

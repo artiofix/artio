@@ -83,6 +83,12 @@ public class AbstractMessageBasedAcceptorSystemTest
         setup(sequenceNumberReset, shouldBind, true);
     }
 
+    void setupWithLogging(final boolean sequenceNumberReset, final boolean shouldBind, final boolean logging)
+    {
+        setup(sequenceNumberReset, shouldBind, true, InitialAcceptedSessionOwner.ENGINE,
+            false, false, 0L, 0L, true, logging);
+    }
+
     void setupLibrary()
     {
         setupLibrary(false, 0, 0);
@@ -138,7 +144,7 @@ public class AbstractMessageBasedAcceptorSystemTest
         final boolean enableThrottle)
     {
         setup(sequenceNumberReset, shouldBind, provideBindingAddress, initialAcceptedSessionOwner,
-            enableThrottle, false, 0L, 0L, true);
+            enableThrottle, false, 0L, 0L, true, true);
     }
 
     void setup(
@@ -150,7 +156,8 @@ public class AbstractMessageBasedAcceptorSystemTest
         final boolean enableReproduction,
         final long startInNs,
         final long endInNs,
-        final boolean deleteLogsOnStart)
+        final boolean deleteLogsOnStart,
+        final boolean logging)
     {
         mediaDriver = launchMediaDriver(mediaDriverContext(TERM_BUFFER_LENGTH, deleteLogsOnStart));
 
@@ -215,6 +222,17 @@ public class AbstractMessageBasedAcceptorSystemTest
         else
         {
             config.monitoringAgentFactory(MonitoringAgentFactory.none());
+        }
+
+        if (logging)
+        {
+            config.logOutboundMessages(true);
+            config.logInboundMessages(true);
+        }
+        else
+        {
+            config.logOutboundMessages(false);
+            config.logInboundMessages(false);
         }
 
         engine = FixEngine.launch(config);

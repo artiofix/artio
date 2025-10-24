@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.agrona.CloseHelper.close;
@@ -314,9 +315,9 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     }
 
     @Test(timeout = TEST_TIMEOUT_IN_MS)
-    public void shouldRejectInvalidResendRequestsHighBeginSeqNo() throws IOException
+    public void shouldRejectInvalidResendRequestsHighBeginSeqNoUsingReplayer() throws IOException
     {
-        shouldRejectInvalidResendRequests((connection, reportSeqNum) ->
+        shouldRejectInvalidResendRequests(true, (connection, reportSeqNum) ->
         {
             final int invalidSeqNum = reportSeqNum + 1;
             return connection.sendResendRequest(invalidSeqNum, invalidSeqNum);
@@ -324,19 +325,40 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     }
 
     @Test(timeout = TEST_TIMEOUT_IN_MS)
-    public void shouldRejectInvalidResendRequestsEndSeqNoBelowBeginSeqNo() throws IOException
+    public void shouldRejectInvalidResendRequestsHighBeginSeqNoUsingGapfiller() throws IOException
     {
-        shouldRejectInvalidResendRequests((connection, reportSeqNum) ->
+        shouldRejectInvalidResendRequests(false, (connection, reportSeqNum) ->
+        {
+            final int invalidSeqNum = reportSeqNum + 1;
+            return connection.sendResendRequest(invalidSeqNum, invalidSeqNum);
+        });
+    }
+
+
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldRejectInvalidResendRequestsEndSeqNoBelowBeginSeqNoUsingReplayer() throws IOException
+    {
+        shouldRejectInvalidResendRequests(true, (connection, reportSeqNum) ->
+        {
+            return connection.sendResendRequest(reportSeqNum, reportSeqNum - 1);
+        });
+    }
+
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldRejectInvalidResendRequestsEndSeqNoBelowBeginSeqNoUsingGapfiller() throws IOException
+    {
+        shouldRejectInvalidResendRequests(false, (connection, reportSeqNum) ->
         {
             return connection.sendResendRequest(reportSeqNum, reportSeqNum - 1);
         });
     }
 
     private void shouldRejectInvalidResendRequests(
+        final boolean logging,
         final BiFunction<FixConnection, Integer, ResendRequestEncoder> resendRequester)
         throws IOException
     {
-        setup(true, true);
+        setupWithLogging(true, true, logging);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
@@ -370,7 +392,35 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     @Test(timeout = TEST_TIMEOUT_IN_MS)
     public void shouldReplyWithOnlyValidMessageSequenceWithHighEndSeqNo() throws IOException
     {
-        setup(true, true);
+        connectionWithOnlyValidMessageSequenceWithHighEndSeqNo(true, (connection, reportSeqNum) ->
+        {
+            final SequenceResetDecoder sequenceResetDecoder =
+                connection.readMessage(new SequenceResetDecoder());
+            assertTrue(sequenceResetDecoder.header().possDupFlag());
+            assertEquals(connection.lastMessageAsString(), (int)reportSeqNum, sequenceResetDecoder.newSeqNo());
+            final ExecutionReportDecoder secondExecutionReport = connection.readExecutionReport();
+            assertTrue(secondExecutionReport.header().possDupFlag());
+            assertEquals((int)reportSeqNum, secondExecutionReport.header().msgSeqNum());
+        });
+    }
+
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldGapfillWithOnlyValidMessageSequenceWithHighEndSeqNo() throws IOException
+    {
+        connectionWithOnlyValidMessageSequenceWithHighEndSeqNo(false, (connection, reportSeqNum) ->
+        {
+            final SequenceResetDecoder sequenceResetDecoder =
+                connection.readMessage(new SequenceResetDecoder());
+            assertTrue(sequenceResetDecoder.header().possDupFlag());
+            assertEquals(connection.lastMessageAsString(), reportSeqNum + 1, sequenceResetDecoder.newSeqNo());
+        });
+    }
+
+    private void connectionWithOnlyValidMessageSequenceWithHighEndSeqNo(
+        final boolean logging,
+        final BiConsumer<FixConnection, Integer> connectionConsumer) throws IOException
+    {
+        setupWithLogging(true, true, logging);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
@@ -391,14 +441,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 final int invalidSeqNum = reportSeqNum + 100;
                 connection.sendResendRequest(headerSeqNum, invalidSeqNum);
 
-                final SequenceResetDecoder sequenceResetDecoder = connection.readMessage(new SequenceResetDecoder());
-                assertTrue(sequenceResetDecoder.header().possDupFlag());
-                assertEquals(connection.lastMessageAsString(), reportSeqNum, sequenceResetDecoder.newSeqNo());
-                final ExecutionReportDecoder secondExecutionReport = connection.readExecutionReport();
-                assertTrue(secondExecutionReport.header().possDupFlag());
-                assertEquals(reportSeqNum, secondExecutionReport.header().msgSeqNum());
-
-                sleep(200);
+                connectionConsumer.accept(connection, reportSeqNum);
 
                 final HeartbeatDecoder heartbeat = connection.exchangeTestRequestHeartbeat("ABC2");
                 assertFalse(heartbeat.header().hasPossDupFlag());
@@ -479,8 +522,12 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             // Test that resend requests work with throttle rejection
             connection.sendResendRequest(4, 5);
-            assertReadsBusinessReject(connection, 4, 6, true, THROTTLE_MSG_LIMIT);
-            assertReadsBusinessReject(connection, 5, 7, true, THROTTLE_MSG_LIMIT);
+            testSystem.awaitBlocking(() ->
+            {
+                assertReadsBusinessReject(connection, 4, 6, true, THROTTLE_MSG_LIMIT);
+                assertReadsBusinessReject(connection, 5, 7, true, THROTTLE_MSG_LIMIT);
+            });
+
             final HeartbeatDecoder def = connection.exchangeTestRequestHeartbeat("DEF");
             assertEquals(11, def.header().msgSeqNum());
             testSystem.poll();
@@ -505,9 +552,20 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     }
 
     @Test(timeout = TEST_TIMEOUT_IN_MS)
-    public void shouldAnswerResendRequestWithHighSeqNum() throws IOException
+    public void shouldAnswerResendRequestWithHighSeqNumUsingReplayer() throws IOException
     {
-        setup(true, true);
+        shouldAnswerResendRequestWithHighSeqNum(true);
+    }
+
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldAnswerResendRequestWithHighSeqNumUsingGapfiller() throws IOException
+    {
+        shouldAnswerResendRequestWithHighSeqNum(false);
+    }
+
+    private void shouldAnswerResendRequestWithHighSeqNum(final boolean logging) throws IOException
+    {
+        setupWithLogging(true, true, logging);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
@@ -615,7 +673,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     {
         final int erSeqNum;
 
-        setup(false, true, true, SOLE_LIBRARY, false, false, 0, 0, true);
+        setup(false, true, true, SOLE_LIBRARY, false, false, 0, 0, true, true);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
@@ -640,7 +698,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         teardownArtio();
         cleanupMediaDriver(mediaDriver);
 
-        setup(false, true, true, SOLE_LIBRARY, false, false, 0, 0, false);
+        setup(false, true, true, SOLE_LIBRARY, false, false, 0, 0, false, true);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
@@ -1057,7 +1115,36 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     {
         final int outboundMessageCount = 100;
 
-        setup(true, true);
+        createOutboundMessagesInFlight(outboundMessageCount, true, (connection ->
+        {
+            connection.readSequenceResetGapFill(2);
+
+            for (int i = 0; i < outboundMessageCount; ++i)
+            {
+                final ExecutionReportDecoder decoder = connection.readExecutionReport();
+                assertSell(decoder);
+                assertTrue(decoder.toString(), decoder.header().hasPossDupFlag() && decoder.header().possDupFlag());
+            }
+        }));
+    }
+
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldGapfillAllOutboundMessagesInFlight() throws IOException
+    {
+        final int outboundMessageCount = 100;
+
+        createOutboundMessagesInFlight(outboundMessageCount, false, connection ->
+        {
+            connection.readSequenceResetGapFill(outboundMessageCount + 2);
+        });
+    }
+
+    private void createOutboundMessagesInFlight(
+        final int outboundMessageCount,
+        final boolean logging,
+        final Consumer<FixConnection> fixConnectionConsumer) throws IOException
+    {
+        setupWithLogging(true, true, logging);
         setupLibrary();
 
         try (FixConnection connection = FixConnection.initiate(port))
@@ -1083,14 +1170,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                     assertFalse(decoder.toString(), decoder.header().hasPossDupFlag());
                 }
 
-                connection.readSequenceResetGapFill(2);
-
-                for (int i = 0; i < outboundMessageCount; ++i)
-                {
-                    final ExecutionReportDecoder decoder = connection.readExecutionReport();
-                    assertSell(decoder);
-                    assertTrue(decoder.toString(), decoder.header().hasPossDupFlag() && decoder.header().possDupFlag());
-                }
+                fixConnectionConsumer.accept(connection);
             });
         }
     }
