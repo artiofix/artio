@@ -24,12 +24,9 @@ import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.EpochNanoClock;
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.LogTag;
-import uk.co.real_logic.artio.Pressure;
 import uk.co.real_logic.artio.engine.SenderSequenceNumbers;
 import uk.co.real_logic.artio.messages.*;
-import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.CharFormatter;
-import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
 import java.util.function.Consumer;
 
@@ -38,12 +35,11 @@ import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 
 public abstract class AbstractReplayer implements Agent, FragmentHandler
 {
-    private static final int REPLAY_COMPLETE_LEN =
+    static final int REPLAY_COMPLETE_LEN =
         MessageHeaderEncoder.ENCODED_LENGTH + ReplayCompleteEncoder.BLOCK_LENGTH;
     static final int START_REPLAY_LENGTH =
         MessageHeaderEncoder.ENCODED_LENGTH + StartReplayEncoder.BLOCK_LENGTH;
 
-    final AsciiBuffer asciiBuffer = new MutableAsciiBuffer();
     final MessageHeaderDecoder messageHeader = new MessageHeaderDecoder();
     final ValidResendRequestDecoder validResendRequest = new ValidResendRequestDecoder();
     final StartReplayEncoder startReplayEncoder = new StartReplayEncoder();
@@ -88,26 +84,25 @@ public abstract class AbstractReplayer implements Agent, FragmentHandler
 
     boolean trySendStartReplay(final long sessionId, final long connectionId, final long correlationId)
     {
-        final long position = publication.tryClaim(START_REPLAY_LENGTH, bufferClaim);
-        if (Pressure.isBackPressured(position))
+        if (publication.tryClaim(START_REPLAY_LENGTH, bufferClaim) > 0)
         {
-            return false;
+            final MutableDirectBuffer buffer = bufferClaim.buffer();
+            final int offset = bufferClaim.offset();
+
+            startReplayEncoder
+                .wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+                .session(sessionId)
+                .connection(connectionId)
+                .correlationId(correlationId);
+
+            DebugLogger.logSbeMessage(REPLAY, startReplayEncoder);
+
+            bufferClaim.commit();
+
+            return true;
         }
 
-        final MutableDirectBuffer buffer = bufferClaim.buffer();
-        final int offset = bufferClaim.offset();
-
-        startReplayEncoder
-            .wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
-            .session(sessionId)
-            .connection(connectionId)
-            .correlationId(correlationId);
-
-        DebugLogger.logSbeMessage(REPLAY, startReplayEncoder);
-
-        bufferClaim.commit();
-
-        return true;
+        return false;
     }
 
     public void onStart()

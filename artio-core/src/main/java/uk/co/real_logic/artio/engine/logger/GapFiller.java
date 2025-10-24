@@ -21,6 +21,7 @@ import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
 import org.agrona.collections.Long2ObjectHashMap;
 import org.agrona.concurrent.EpochNanoClock;
+import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.builder.Encoder;
 import uk.co.real_logic.artio.decoder.AbstractResendRequestDecoder;
 import uk.co.real_logic.artio.decoder.SessionHeaderDecoder;
@@ -30,6 +31,7 @@ import uk.co.real_logic.artio.engine.SenderSequenceNumbers;
 import uk.co.real_logic.artio.messages.MessageStatus;
 import uk.co.real_logic.artio.messages.ValidResendRequestDecoder;
 import uk.co.real_logic.artio.protocol.GatewayPublication;
+import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
 import java.util.ArrayDeque;
 
@@ -45,21 +47,25 @@ public class GapFiller extends AbstractReplayer
     private final GatewayPublication publication;
     private final String agentNamePrefix;
     private final ReplayTimestamper timestamper;
+    private final AtomicCounter gapfillerCounter;
 
     public GapFiller(
         final GatewayPublication publication,
+        final BufferClaim bufferClaim,
         final String agentNamePrefix,
         final SenderSequenceNumbers senderSequenceNumbers,
         final ReplayerCommandQueue replayerCommandQueue,
         final FixSessionCodecsFactory fixSessionCodecsFactory,
+        final AtomicCounter gapfillerCounter,
         final EpochNanoClock clock,
         final DutyCycleTracker dutyCycleTracker)
     {
-        super(publication.dataPublication(), fixSessionCodecsFactory, new BufferClaim(), senderSequenceNumbers,
+        super(publication.dataPublication(), fixSessionCodecsFactory, bufferClaim, senderSequenceNumbers,
             clock, dutyCycleTracker);
         this.publication = publication;
         this.agentNamePrefix = agentNamePrefix;
         this.replayerCommandQueue = replayerCommandQueue;
+        this.gapfillerCounter = gapfillerCounter;
 
         timestamper = new ReplayTimestamper(publication.dataPublication(), clock);
     }
@@ -92,10 +98,12 @@ public class GapFiller extends AbstractReplayer
             final int endSeqNo = (int)validResendRequest.endSequenceNumber();
             final int sequenceIndex = validResendRequest.sequenceIndex();
             final long correlationId = validResendRequest.correlationId();
-            validResendRequest.wrapBody(asciiBuffer);
+
+            final MutableAsciiBuffer copiedBuffer = new MutableAsciiBuffer(new byte[validResendRequest.bodyLength()]);
+            validResendRequest.getBody(copiedBuffer, 0, validResendRequest.bodyLength());
 
             onResendRequest(
-                sessionId, connectionId, beginSeqNo, endSeqNo, sequenceIndex, correlationId);
+                sessionId, connectionId, beginSeqNo, endSeqNo, sequenceIndex, correlationId, copiedBuffer);
         }
         else
         {
@@ -103,16 +111,17 @@ public class GapFiller extends AbstractReplayer
         }
     }
 
-    private void onResendRequest(
+    void onResendRequest(
         final long sessionId,
         final long connectionId,
         final int beginSeqNo,
         final int endSeqNo,
         final int sequenceIndex,
-        final long correlationId)
+        final long correlationId,
+        final MutableAsciiBuffer copiedBuffer)
     {
         final GapFillerSession gapFillerSession = new GapFillerSession(
-            sessionId, connectionId, beginSeqNo, endSeqNo, sequenceIndex, correlationId);
+            sessionId, connectionId, beginSeqNo, endSeqNo, sequenceIndex, correlationId, copiedBuffer);
 
         if (gapFillerChannels.containsKey(connectionId))
         {
@@ -124,6 +133,7 @@ public class GapFiller extends AbstractReplayer
             final GapFillerChannel gapFillerChannel = new GapFillerChannel();
             gapFillerChannel.currentSession(gapFillerSession);
             gapFillerChannels.put(connectionId, gapFillerChannel);
+            gapfillerCounter.increment();
         }
     }
 
@@ -157,6 +167,7 @@ public class GapFiller extends AbstractReplayer
             if (checkDisconnected(connectionId))
             {
                 gapFillerChannelIterator.remove();
+                gapfillerCounter.decrement();
             }
             else
             {
@@ -169,6 +180,7 @@ public class GapFiller extends AbstractReplayer
                     if (null == queuedSession)
                     {
                         gapFillerChannelIterator.remove();
+                        gapfillerCounter.decrement();
                     }
                     else
                     {
@@ -237,6 +249,7 @@ public class GapFiller extends AbstractReplayer
         final int endSeqNo;
         final int sequenceIndex;
         final long correlationId;
+        final MutableAsciiBuffer copiedBuffer;
         private State state;
         private FixReplayerCodecs fixReplayerCodecs;
 
@@ -246,7 +259,8 @@ public class GapFiller extends AbstractReplayer
             final int beginSeqNo,
             final int endSeqNo,
             final int sequenceIndex,
-            final long correlationId)
+            final long correlationId,
+            final MutableAsciiBuffer copiedBuffer)
         {
             this.sessionId = sessionId;
             this.connectionId = connectionId;
@@ -254,6 +268,7 @@ public class GapFiller extends AbstractReplayer
             this.endSeqNo = endSeqNo;
             this.sequenceIndex = sequenceIndex;
             this.correlationId = correlationId;
+            this.copiedBuffer = copiedBuffer;
             this.state = State.INIT;
         }
 
@@ -308,7 +323,7 @@ public class GapFiller extends AbstractReplayer
                     final AbstractResendRequestDecoder resendRequest = fixReplayerCodecs.resendRequest();
                     final GapFillEncoder encoder = fixReplayerCodecs.gapFillEncoder();
 
-                    resendRequest.decode(asciiBuffer, 0, asciiBuffer.capacity());
+                    resendRequest.decode(copiedBuffer, 0, copiedBuffer.capacity());
 
                     final SessionHeaderDecoder reqHeader = resendRequest.header();
 

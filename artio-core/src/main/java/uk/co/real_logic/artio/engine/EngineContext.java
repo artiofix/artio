@@ -362,10 +362,12 @@ public class EngineContext implements AutoCloseable
 
             replayer = new GapFiller(
                 replayGatewayPublication,
+                new BufferClaim(),
                 configuration.agentNamePrefix(),
                 senderSequenceNumbers,
                 replayerCommandQueue,
                 new FixSessionCodecsFactory(clock, configuration.sessionEpochFractionFormat()),
+                fixCounters.currentReplayCount(),
                 clock,
                 fixCounters.getIndexerDutyCycleTracker(configuration.indexerCycleThresholdNs()));
         }

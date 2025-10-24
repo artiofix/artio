@@ -82,6 +82,7 @@ public class Replayer extends AbstractReplayer
     final FixMessageDecoder fixMessageDecoder = new FixMessageDecoder();
     final ThrottleRejectDecoder throttleRejectDecoder = new ThrottleRejectDecoder();
     final AsciiBuffer sessionAsciiBuffer = new MutableAsciiBuffer();
+    final AsciiBuffer asciiBuffer = new MutableAsciiBuffer();
 
     // Binary FIXP specific state
     private final IntHashSet gapfillOnRetransmitILinkTemplateIds;
