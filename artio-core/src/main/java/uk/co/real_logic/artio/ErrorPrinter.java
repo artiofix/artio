@@ -97,6 +97,10 @@ public class ErrorPrinter implements MonitoringAgent
 
             if (errorResponse != null && !archiverStopped)
             {
+                if (aeronArchive.state() == AeronArchive.State.CLOSED)
+                {
+                    archiverStopped = true;
+                }
                 System.err.println(errorResponse);
                 work++;
             }
