@@ -407,6 +407,7 @@ project(':artio-ilink3-codecs') {
         }
     }
 
+    shadowJar.enabled = iLink3Enabled
     checkstyleGenerated.enabled = false
 
     publishing {
@@ -839,6 +840,7 @@ project(':artio-ilink-system-tests') {
     compileJava.enabled = iLink3Enabled
     compileTestJava.enabled = iLink3Enabled
     javadoc.enabled = iLink3Enabled
+    shadowJar.enabled = iLink3Enabled
 
     test {
         onlyIf { iLink3Enabled }
