@@ -17,6 +17,7 @@ package uk.co.real_logic.artio;
 
 import io.aeron.archive.client.AeronArchive;
 import io.aeron.archive.client.ArchiveException;
+import org.agrona.Strings;
 import org.agrona.concurrent.*;
 import org.agrona.concurrent.errors.ErrorConsumer;
 import org.agrona.concurrent.errors.ErrorLogReader;
@@ -101,7 +102,7 @@ public class ErrorPrinter implements MonitoringAgent
                 {
                     archiverStopped = true;
                 }
-                System.err.println(errorResponse);
+                System.err.println(formatArchiveError(errorResponse));
                 work++;
             }
         }
@@ -128,5 +129,10 @@ public class ErrorPrinter implements MonitoringAgent
         // This isn't completely thread-safe, but the only result of the race is that
         // "ERROR - client is closed" can be unnecessarily printed out during shutdown
         archiverStopped = true;
+    }
+
+    private String formatArchiveError(final String error)
+    {
+        return (Strings.isEmpty(agentNamePrefix) ? "FIX Engine" : agentNamePrefix) + " Archive error: " + error;
     }
 }
