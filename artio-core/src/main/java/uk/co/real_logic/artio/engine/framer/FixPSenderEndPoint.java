@@ -93,7 +93,7 @@ abstract class FixPSenderEndPoint extends SenderEndPoint
     public abstract Action onMessage(DirectBuffer directBuffer, int offset, boolean retransmit);
 
     protected int writeBuffer(
-        final DirectBuffer directBuffer, final int offset, final int messageSize) throws IOException
+          final DirectBuffer directBuffer, final int offset, final int messageSize) throws IOException
     {
         final int reattemptBytesWritten = this.reattemptBytesWritten;
 
@@ -107,7 +107,9 @@ abstract class FixPSenderEndPoint extends SenderEndPoint
 
         final int written = channel.write(buffer, 0, false);
         ByteBufferUtil.position(buffer, bufferOffset);
-        DebugLogger.logBytes(FIX_MESSAGE_TCP, "Written  ", buffer, startPosition, written);
+
+        DebugLogger.logBytes(FIX_MESSAGE_TCP, "Written  ", buffer,
+                bufferOffset + reattemptBytesWritten, written);
 
         buffer.limit(startLimit).position(startPosition);
 
