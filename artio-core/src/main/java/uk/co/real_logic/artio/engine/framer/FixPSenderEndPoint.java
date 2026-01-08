@@ -107,7 +107,6 @@ abstract class FixPSenderEndPoint extends SenderEndPoint
         ByteBufferUtil.position(buffer, writePosition);
 
         final int written = channel.write(buffer, 0, false);
-        ByteBufferUtil.position(buffer, bufferOffset);
 
         DebugLogger.logBytes(FIX_MESSAGE_TCP, "Written  ", buffer, writePosition, written);
 
