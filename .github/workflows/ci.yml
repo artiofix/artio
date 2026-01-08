@@ -33,6 +33,11 @@ jobs:
         java: [ '17', '25' ]
         os: [ 'ubuntu-24.04', 'windows-latest' ]
     steps:
+      - name: Use faster temporary storage (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "TMP=$env:RUNNER_TEMP" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "TEMP=$env:RUNNER_TEMP" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Checkout code
         uses: actions/checkout@v5
         with:
