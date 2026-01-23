@@ -35,6 +35,8 @@ import uk.co.real_logic.artio.decoder.AbstractLogonDecoder;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
 import uk.co.real_logic.artio.dictionary.SessionConstants;
 import uk.co.real_logic.artio.engine.framer.DefaultTcpChannelSupplier;
+import uk.co.real_logic.artio.engine.framer.IncrementalSessionIdGenerator;
+import uk.co.real_logic.artio.engine.framer.SessionIdGenerator;
 import uk.co.real_logic.artio.engine.framer.TcpChannelSupplier;
 import uk.co.real_logic.artio.engine.logger.FixArchiveScanner;
 import uk.co.real_logic.artio.engine.logger.ReplayIndexDescriptor;
@@ -255,6 +257,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     private MappedFile receivedSequenceNumberIndex;
     private MappedFile sessionIdBuffer;
     private MappedFile fixPBuffer;
+    private SessionIdGenerator sessionIdGenerator;
     private Set<String> gapfillOnReplayMessageTypes = new HashSet<>(DEFAULT_GAPFILL_ON_REPLAY_MESSAGE_TYPES);
     private IntHashSet gapfillOnRetransmitILinkTemplateIds = new IntHashSet();
     private final AeronArchive.Context archiveContext = new AeronArchive.Context();
@@ -1846,6 +1849,34 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
             fixPBuffer = mapFile(DEFAULT_FIXP_ID_FILE, sessionIdBufferSize);
         }
         return fixPBuffer;
+    }
+
+    /**
+     * Gets the SessionIdGenerator used for generating unique session identifiers.
+     * If not explicitly set, returns a default IncrementalSessionIdGenerator.
+     *
+     * @return the session ID generator
+     */
+    public SessionIdGenerator sessionIdGenerator()
+    {
+        if (sessionIdGenerator == null)
+        {
+            sessionIdGenerator = new IncrementalSessionIdGenerator();
+        }
+        return sessionIdGenerator;
+    }
+
+    /**
+     * Sets a custom SessionIdGenerator for generating session identifiers.
+     * This allows for distributed session ID generation strategies like Snowflake IDs.
+     *
+     * @param sessionIdGenerator the session ID generator to use
+     * @return this configuration for method chaining
+     */
+    public EngineConfiguration sessionIdGenerator(final SessionIdGenerator sessionIdGenerator)
+    {
+        this.sessionIdGenerator = sessionIdGenerator;
+        return this;
     }
 
     public Set<String> gapfillOnReplayMessageTypes()
