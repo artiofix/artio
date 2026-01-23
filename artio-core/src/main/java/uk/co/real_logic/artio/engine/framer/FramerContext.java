@@ -75,13 +75,14 @@ public class FramerContext
         this.configuration = configuration;
 
         final SessionIdStrategy sessionIdStrategy = configuration.sessionIdStrategy();
+        final SessionIdGenerator sessionIdGenerator = configuration.sessionIdGenerator();
 
         final IdleStrategy idleStrategy = configuration.framerIdleStrategy();
         final Streams outboundLibraryStreams = engineContext.outboundLibraryStreams();
 
         this.fixContexts = new FixContexts(
             configuration.sessionIdBuffer(), sessionIdStrategy, configuration.initialSequenceIndex(), errorHandler,
-            configuration.isReproductionEnabled());
+            configuration.isReproductionEnabled(), sessionIdGenerator);
         this.fixPContexts = new FixPContexts(
             configuration.fixPIdBuffer(),
             errorHandler,

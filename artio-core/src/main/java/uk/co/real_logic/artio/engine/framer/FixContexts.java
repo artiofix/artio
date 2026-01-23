@@ -77,7 +77,6 @@ public class FixContexts implements SessionContexts
         OUT_OF_SPACE,
         DEFAULT_INITIAL_SEQUENCE_INDEX,
         null, false);
-    static final long LOWEST_VALID_SESSION_ID = 1L;
     static final int VERSION_WITHOUT_FIX_DICTIONARY = 2;
 
     private static final int HEADER_SIZE = MessageHeaderDecoder.ENCODED_LENGTH;
@@ -106,16 +105,17 @@ public class FixContexts implements SessionContexts
     private final ErrorHandler errorHandler;
     private final MappedFile mappedFile;
     private final int initialSequenceIndex;
+    private final SessionIdGenerator sessionIdGenerator;
 
     private int filePosition;
-    private long counter = LOWEST_VALID_SESSION_ID;
 
     public FixContexts(
         final MappedFile mappedFile,
         final SessionIdStrategy idStrategy,
         final int initialSequenceIndex,
         final ErrorHandler errorHandler,
-        final boolean reproductionEnabled)
+        final boolean reproductionEnabled,
+        final SessionIdGenerator sessionIdGenerator)
     {
         this.mappedFile = mappedFile;
         this.buffer = mappedFile.buffer();
@@ -125,6 +125,7 @@ public class FixContexts implements SessionContexts
         this.idStrategy = idStrategy;
         this.initialSequenceIndex = initialSequenceIndex;
         this.errorHandler = errorHandler;
+        this.sessionIdGenerator = sessionIdGenerator;
         loadBuffer();
         allSessions.addAll(compositeToContext.values());
     }
@@ -221,7 +222,7 @@ public class FixContexts implements SessionContexts
                     errorHandler.onError(e);
                 }
 
-                counter = Math.max(counter, sessionId + 1);
+                sessionIdGenerator.onExistingSessionId(sessionId);
 
                 filePosition += compositeKeyLength;
             }
@@ -307,7 +308,7 @@ public class FixContexts implements SessionContexts
 
     private SessionContext onNewLogon(final CompositeKey compositeKey, final FixDictionary fixDictionary)
     {
-        final long sessionId = counter++;
+        final long sessionId = sessionIdGenerator.nextId();
         final SessionContext sessionContext = assignSessionId(
             compositeKey,
             sessionId,
@@ -458,7 +459,7 @@ public class FixContexts implements SessionContexts
                 "There are currently authenticated sessions: " + currentlyAuthenticatedSessionIds);
         }
 
-        counter = LOWEST_VALID_SESSION_ID;
+        sessionIdGenerator.reset();
         compositeToContext.clear();
         allSessions.clear();
 
