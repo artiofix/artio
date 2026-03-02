@@ -18,6 +18,7 @@ package uk.co.real_logic.artio.engine.logger;
 import io.aeron.Aeron;
 import io.aeron.CommonContext;
 import io.aeron.archive.client.AeronArchive;
+import org.agrona.Strings;
 import org.agrona.collections.IntHashSet;
 import org.agrona.concurrent.IdleStrategy;
 import uk.co.real_logic.artio.DebugLogger;
@@ -204,7 +205,9 @@ public class FixArchiveScanner implements AutoCloseable
     {
         configuration.conclude();
 
-        final Aeron.Context aeronContext = new Aeron.Context().aeronDirectoryName(configuration.aeronDirectoryName());
+        final Aeron.Context aeronContext = new Aeron.Context()
+            .aeronDirectoryName(configuration.aeronDirectoryName())
+            .clientName("fix-archive-scanner");
         final Aeron aeron = Aeron.connect(aeronContext);
 
         AeronArchive.Context archiveContext = configuration.archiveContext;
@@ -221,6 +224,12 @@ public class FixArchiveScanner implements AutoCloseable
                 archiveContext.controlResponseChannel(CommonContext.IPC_CHANNEL);
             }
         }
+
+        if (Strings.isEmpty(archiveContext.clientName()))
+        {
+            archiveContext.clientName("fix-archive-scanner");
+        }
+
         // Context closes Aeron instance if this fails to connect.
         final AeronArchive aeronArchive = AeronArchive.connect(archiveContext.aeron(aeron).ownsAeronClient(true));
 

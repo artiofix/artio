@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.library;
 
+import org.agrona.Strings;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
 import uk.co.real_logic.artio.CommonConfiguration;
@@ -396,6 +397,11 @@ public final class LibraryConfiguration extends CommonConfiguration
         if (libraryAeronChannels.isEmpty())
         {
             throw new IllegalArgumentException("You must specify at least one channel to connect to");
+        }
+
+        if (Strings.isEmpty(aeronContext().clientName()))
+        {
+            aeronContext().clientName("fix-library-" + libraryId);
         }
 
         return this;

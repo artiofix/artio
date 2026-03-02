@@ -19,6 +19,7 @@ import io.aeron.Aeron;
 import io.aeron.archive.client.AeronArchive;
 import org.agrona.CloseHelper;
 import org.agrona.IoUtil;
+import org.agrona.Strings;
 import org.agrona.Verify;
 import org.agrona.collections.IntHashSet;
 import org.agrona.collections.Long2ObjectCache;
@@ -66,6 +67,7 @@ import static org.agrona.BitUtil.findNextPositivePowerOfTwo;
 import static uk.co.real_logic.artio.admin.ArtioAdminConfiguration.DEFAULT_INBOUND_ADMIN_STREAM_ID;
 import static uk.co.real_logic.artio.admin.ArtioAdminConfiguration.DEFAULT_OUTBOUND_ADMIN_STREAM_ID;
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_INT;
+import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 import static uk.co.real_logic.artio.engine.logger.ReplayIndexDescriptor.HEADER_FILE_SIZE;
 import static uk.co.real_logic.artio.engine.logger.ReplayIndexDescriptor.MAX_FILE_SEGMENT_CAPACITY;
 import static uk.co.real_logic.artio.library.SessionConfiguration.*;
@@ -2092,6 +2094,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     // END GETTERS
     // ---------------------
 
+    @SuppressWarnings("methodLength")
     public EngineConfiguration conclude()
     {
         super.conclude("engine");
@@ -2179,6 +2182,16 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
         if (lookupDefaultAcceptorfixDictionary && acceptorfixDictionary() == null)
         {
             acceptorfixDictionary(FixDictionary.findDefault());
+        }
+
+        if (Strings.isEmpty(aeronContext().clientName()))
+        {
+            aeronContext().clientName("fix-library-" + ENGINE_LIBRARY_ID);
+        }
+
+        if (Strings.isEmpty(archiveContext.clientName()))
+        {
+            archiveContext.clientName("fix-library-" + ENGINE_LIBRARY_ID);
         }
 
         aeronContextClone = aeronContext().clone();

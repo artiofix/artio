@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.admin;
 
 import io.aeron.Aeron;
+import org.agrona.Strings;
 import org.agrona.SystemUtil;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
@@ -222,6 +223,11 @@ public final class ArtioAdminConfiguration
             if (connectTimeoutNs < 0)
             {
                 throw new IllegalArgumentException("connectTimeoutNs cannot be negative: " + connectTimeoutNs);
+            }
+
+            if (Strings.isEmpty(aeronContext.clientName()))
+            {
+                aeronContext.clientName("fix-artio-admin");
             }
         }
         else

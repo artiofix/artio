@@ -83,8 +83,11 @@ class ResetArchiveState
 
     private void createArchiver()
     {
-        aeron = Aeron.connect(configuration.aeronContextClone());
-        final AeronArchive.Context archiveContext = configuration.archiveContextClone();
+        final Aeron.Context aeronContext = configuration.aeronContextClone()
+            .clientName("fix-reset-archive-state");
+        aeron = Aeron.connect(aeronContext);
+        final AeronArchive.Context archiveContext = configuration.archiveContextClone()
+            .clientName("fix-reset-archive-state");
         archive = AeronArchive.connect(archiveContext.aeron(aeron));
     }
 

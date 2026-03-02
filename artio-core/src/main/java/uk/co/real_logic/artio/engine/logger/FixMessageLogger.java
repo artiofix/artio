@@ -21,6 +21,7 @@ import io.aeron.Subscription;
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.LangUtil;
+import org.agrona.Strings;
 import org.agrona.Verify;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
@@ -248,6 +249,10 @@ public class FixMessageLogger implements Agent
                 if (context == null)
                 {
                     context(new Aeron.Context());
+                }
+                if (Strings.isEmpty(context.clientName()))
+                {
+                    context.clientName("fix-message-logger");
                 }
 
                 aeron = Aeron.connect(context);
