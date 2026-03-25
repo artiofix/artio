@@ -17,6 +17,14 @@ package uk.co.real_logic.artio;
 
 import io.aeron.Aeron;
 import io.aeron.archive.client.AeronArchive;
+import uk.co.real_logic.artio.engine.EngineConfiguration;
+import uk.co.real_logic.artio.fields.EpochFractionFormat;
+import uk.co.real_logic.artio.session.ResendRequestController;
+import uk.co.real_logic.artio.session.SessionCustomisationStrategy;
+import uk.co.real_logic.artio.session.SessionIdStrategy;
+import uk.co.real_logic.artio.timing.HistogramHandler;
+import uk.co.real_logic.artio.util.MessageTypeEncoding;
+import uk.co.real_logic.artio.validation.MessageValidationStrategy;
 import org.agrona.ErrorHandler;
 import org.agrona.IoUtil;
 import org.agrona.Verify;
@@ -27,14 +35,6 @@ import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.OffsetEpochNanoClock;
 import org.agrona.concurrent.errors.DistinctErrorLog;
 import org.agrona.concurrent.errors.ErrorConsumer;
-import uk.co.real_logic.artio.engine.EngineConfiguration;
-import uk.co.real_logic.artio.fields.EpochFractionFormat;
-import uk.co.real_logic.artio.session.ResendRequestController;
-import uk.co.real_logic.artio.session.SessionCustomisationStrategy;
-import uk.co.real_logic.artio.session.SessionIdStrategy;
-import uk.co.real_logic.artio.timing.HistogramHandler;
-import uk.co.real_logic.artio.util.MessageTypeEncoding;
-import uk.co.real_logic.artio.validation.MessageValidationStrategy;
 
 import java.io.File;
 import java.util.Collections;
@@ -79,6 +79,11 @@ public class CommonConfiguration
      * Property name for the flag to enable or disable debug logging
      */
     public static final String DEBUG_PRINT_MESSAGES_PROPERTY = "fix.core.debug";
+    /**
+     * Property name for the flag to enable or disable printing of Aeron stream identifiers and registration
+     * identifiers.
+     */
+    public static final String DEBUG_PRINT_AERON_STREAM_IDENTIFIERS_PROPERTY = "fix.core.debug.print_aeron_stream_ids";
     /**
      * Property name for the flag to specify a subset of message types to debug print, this can be used in
      * conjunction with the FIX_MESSAGE logtag. Note: this message type filter only applies to valid fix messages.
@@ -248,7 +253,6 @@ public class CommonConfiguration
     public static final int DEFAULT_REASONABLE_TRANSMISSION_TIME_IN_S = 3;
     public static final long DEFAULT_REASONABLE_TRANSMISSION_TIME_IN_MS =
         SECONDS.toMillis(DEFAULT_REASONABLE_TRANSMISSION_TIME_IN_S);
-    public static final boolean DEFAULT_PRINT_AERON_STREAM_IDENTIFIERS = false;
 
     public static final int DEFAULT_INBOUND_MAX_CLAIM_ATTEMPTS = BACKOFF_SPINS + BACKOFF_YIELDS + 1000;
     public static final int DEFAULT_OUTBOUND_MAX_CLAIM_ATTEMPTS = DEFAULT_INBOUND_MAX_CLAIM_ATTEMPTS;
@@ -273,7 +277,7 @@ public class CommonConfiguration
     public static final boolean RUNNING_ON_WINDOWS = System.getProperty("os.name").startsWith("Windows");
 
     private long reasonableTransmissionTimeInMs = DEFAULT_REASONABLE_TRANSMISSION_TIME_IN_MS;
-    private boolean printAeronStreamIdentifiers = DEFAULT_PRINT_AERON_STREAM_IDENTIFIERS;
+    private boolean printAeronStreamIdentifiers = Boolean.getBoolean(DEBUG_PRINT_AERON_STREAM_IDENTIFIERS_PROPERTY);
     private EpochNanoClock epochNanoClock = new OffsetEpochNanoClock();
     private ErrorHandlerFactory errorHandlerFactory = ErrorHandlerFactory.saveDistinctErrors();
     private MonitoringAgentFactory monitoringAgentFactory = MonitoringAgentFactory.printDistinctErrors();
