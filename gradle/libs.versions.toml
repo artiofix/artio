@@ -1,5 +1,5 @@
 [versions]
-aeron = "1.50.3"
+aeron = "1.50.4"
 agrona = "2.4.0"
 checkstyle = "12.3.1"
 commons-codec = "1.15"
