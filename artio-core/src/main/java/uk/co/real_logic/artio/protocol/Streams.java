@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.protocol;
 
 import io.aeron.Aeron;
+import io.aeron.ChannelUriStringBuilder;
 import io.aeron.ExclusivePublication;
 import io.aeron.Subscription;
 import org.agrona.LangUtil;
@@ -89,7 +90,10 @@ public final class Streams
         {
             try
             {
-                final Subscription subscription = aeron.addSubscription(aeronChannel, streamId);
+                final String channel = new ChannelUriStringBuilder(aeronChannel)
+                    .alias(name)
+                    .build();
+                final Subscription subscription = aeron.addSubscription(channel, streamId);
                 StreamInformation.print(name, subscription, printAeronStreamIdentifiers);
                 return subscription;
             }

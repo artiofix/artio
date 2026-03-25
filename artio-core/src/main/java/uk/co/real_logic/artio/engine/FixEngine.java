@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.engine;
 
+import io.aeron.ChannelUriStringBuilder;
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
 import io.aeron.Subscription;
@@ -364,8 +365,11 @@ public final class FixEngine extends GatewayProcess
 
     private Image replayImage(final String name, final int replaySessionId)
     {
+        final String channel = new ChannelUriStringBuilder(IPC_CHANNEL)
+            .alias(name)
+            .build();
         final Subscription subscription = aeron.addSubscription(
-            IPC_CHANNEL, configuration.outboundReplayStream());
+            channel, configuration.outboundReplayStream());
         StreamInformation.print(name, subscription, configuration);
 
         // Await replay publication

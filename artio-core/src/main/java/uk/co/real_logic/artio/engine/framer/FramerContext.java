@@ -45,6 +45,7 @@ import java.util.List;
 public class FramerContext
 {
     private static final int ADMIN_COMMAND_CAPACITY = 64;
+    private static final String ADMIN_ENGINE_SUBSCRIPTION_ALIAS = "adminEngineSubscription";
 
     private final QueuedPipe<AdminCommand> adminCommands = new ManyToOneConcurrentArrayQueue<>(ADMIN_COMMAND_CAPACITY);
 
@@ -199,10 +200,13 @@ public class FramerContext
 
     private Subscription newAdminEngineSubscription(final Aeron aeron)
     {
+        final String channel = new ChannelUriStringBuilder(configuration.libraryAeronChannel())
+            .alias(ADMIN_ENGINE_SUBSCRIPTION_ALIAS)
+            .build();
         final Subscription adminEngineSubscription = aeron.addSubscription(
-            configuration.libraryAeronChannel(), configuration.outboundAdminStream());
+            channel, configuration.outboundAdminStream());
         StreamInformation.print(
-            "adminEngineSubscription", adminEngineSubscription, configuration.printAeronStreamIdentifiers());
+            ADMIN_ENGINE_SUBSCRIPTION_ALIAS, adminEngineSubscription, configuration.printAeronStreamIdentifiers());
         return adminEngineSubscription;
     }
 

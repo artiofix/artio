@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.library;
 
 import io.aeron.Aeron;
+import io.aeron.ChannelUriStringBuilder;
 import io.aeron.ExclusivePublication;
 import io.aeron.Subscription;
 import org.agrona.concurrent.EpochNanoClock;
@@ -79,9 +80,12 @@ class LibraryTransport
             inboundPublication.close();
         }
 
-        inboundSubscription = aeron.addSubscription(aeronChannel, inboundLibraryStream);
-        StreamInformation.print(
-            "library " + configuration.libraryId() + " inboundSubscription", inboundSubscription, configuration);
+        final String name = "library" + configuration.libraryId() + "InboundSubscription";
+        final String channel = new ChannelUriStringBuilder(aeronChannel)
+            .alias(name)
+            .build();
+        inboundSubscription = aeron.addSubscription(channel, inboundLibraryStream);
+        StreamInformation.print(name, inboundSubscription, configuration);
 
         outboundPublication = outboundLibraryStreams.gatewayPublication(
             idleStrategy, outboundDataPublication(aeronChannel));

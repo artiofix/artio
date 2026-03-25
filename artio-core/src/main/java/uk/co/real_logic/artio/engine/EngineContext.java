@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine;
 
 import io.aeron.Aeron;
+import io.aeron.ChannelUriStringBuilder;
 import io.aeron.ExclusivePublication;
 import io.aeron.Subscription;
 import io.aeron.UnavailableImageHandler;
@@ -399,8 +400,11 @@ public class EngineContext implements AutoCloseable
     public Subscription outboundLibrarySubscription(
         final String name, final UnavailableImageHandler unavailableImageHandler)
     {
+        final String channel = new ChannelUriStringBuilder(configuration.libraryAeronChannel())
+            .alias(name)
+            .build();
         final Subscription subscription = aeron.addSubscription(
-            configuration.libraryAeronChannel(),
+            channel,
             configuration.outboundLibraryStream(),
             null,
             unavailableImageHandler);
