@@ -229,14 +229,16 @@ public class ReplayOperation
                     }
                 }
 
-                logClosed();
                 state = State.CLOSED;
-                return true;
+                return false;
             }
 
-            default:
+            case CLOSED:
                 logClosed();
                 return true;
+
+            default:
+                throw new IllegalStateException("Illegal state: " + state);
         }
     }
 

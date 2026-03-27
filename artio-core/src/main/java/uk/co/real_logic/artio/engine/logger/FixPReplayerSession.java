@@ -55,6 +55,7 @@ public class FixPReplayerSession extends ReplayerSession
     private final FixPRetransmitHandler fixPRetransmitHandler;
 
     private boolean mustSendSequenceMessage = false;
+    private boolean replayClosed;
 
     private enum State
     {
@@ -112,6 +113,16 @@ public class FixPReplayerSession extends ReplayerSession
         {
             case SEND_COMPLETE_MESSAGE:
             {
+                // Ensure replay operation has fully closed (stopReplay + drain image)
+                if (!replayClosed)
+                {
+                    if (!replayOperation.pollReplay())
+                    {
+                        return false;
+                    }
+                    replayClosed = true;
+                }
+
                 if (mustSendSequenceMessage)
                 {
                     if (sendSequence(endSeqNo + 1))
@@ -132,6 +143,10 @@ public class FixPReplayerSession extends ReplayerSession
                 if (replayOperation.pollReplay())
                 {
                     DebugLogger.log(REPLAY_ATTEMPT, "ReplayerSession: REPLAYING step");
+                    // Finished replaying all ranges – start closing
+                    replayOperation.startClose();
+                    replayClosed = false;
+
                     state = State.SEND_COMPLETE_MESSAGE;
                 }
                 return false;

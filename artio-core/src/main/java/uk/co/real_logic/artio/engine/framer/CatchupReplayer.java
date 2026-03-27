@@ -148,6 +148,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         AWAITING_INDEX,
         REPLAY_QUERY,
         REPLAYING,
+        CLOSING,
         SEND_MISSING,
         SEND_OK
     }
@@ -190,6 +191,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     private int heartbeatRangeSequenceNumberStart = OUT_OF_RANGE;
 
     private ReplayOperation replayOperation = null;
+    private boolean replayHadMissingMessages;
 
     CatchupReplayer(
         final SequenceNumberIndexReader receivedSequenceNumberIndex,
@@ -433,15 +435,13 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
 
                 if (replayOperation.pollReplay())
                 {
-                    if (hasMissingMessages())
-                    {
-                        return switchToMissingMessages("Is missing messages from replay index query");
-                    }
-                    else
-                    {
-                        state = State.SEND_OK;
-                        return sendOk(inboundPublication, correlationId, session);
-                    }
+                    // Replay of all ranges is complete, now decide OK vs MISSING
+                    replayHadMissingMessages = hasMissingMessages();
+
+                    // Start closing the Aeron replay session / image
+                    replayOperation.startClose();
+                    state = State.CLOSING;
+                    return BACK_PRESSURED;
                 }
                 else
                 {
@@ -458,6 +458,26 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
             case SEND_OK:
             {
                 return sendOk(inboundPublication, correlationId, session);
+            }
+
+            case CLOSING:
+            {
+                // Drive ReplayOperation through its close state machine
+                if (!replayOperation.pollReplay())
+                {
+                    return BACK_PRESSURED;
+                }
+
+                // Close complete; now send reply
+                if (replayHadMissingMessages)
+                {
+                    return switchToMissingMessages("Is missing messages from replay index query");
+                }
+                else
+                {
+                    state = State.SEND_OK;
+                    return sendOk(inboundPublication, correlationId, session);
+                }
             }
 
             // Javac required fall-through case that should never be reached

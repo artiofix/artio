@@ -84,6 +84,7 @@ class FixReplayerSession extends ReplayerSession
     private int beginGapFillSeqNum = NONE;
 
     private State state;
+    private boolean replayClosed;
 
     FixReplayerSession(
         final BufferClaim bufferClaim,
@@ -415,11 +416,27 @@ class FixReplayerSession extends ReplayerSession
                 DebugLogger.log(REPLAY_ATTEMPT, "ReplayerSession: CHECK_REPLAY step");
                 if (completeReplay())
                 {
+                    // Now that we’ve consumed all messages and sent any gap fills,
+                    // initiate closing of the Aeron replay session/image.
+                    replayOperation.startClose();
+                    replayClosed = false;
                     state = State.SEND_COMPLETE_MESSAGE;
                 }
                 return false;
 
             case SEND_COMPLETE_MESSAGE:
+                // First, ensure the ReplayOperation has fully closed
+                if (!replayClosed)
+                {
+                    if (!replayOperation.pollReplay())
+                    {
+                        // Still closing
+                        return false;
+                    }
+                    replayClosed = true;
+                }
+
+                // Once closed, behave as today
                 return sendCompleteMessage();
 
             case CLOSING:
