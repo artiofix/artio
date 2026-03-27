@@ -222,6 +222,7 @@ public class GatewayPublication extends ClaimablePublication
             clock.nanoTime());
     }
 
+    // only used by test
     public long saveMessage(
         final DirectBuffer srcBuffer,
         final int srcOffset,
