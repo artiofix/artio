@@ -130,6 +130,7 @@ public class RequestSessionReplaySubscriberLeakTest extends AbstractGatewayToGat
     public void subscriberPositionsShouldNotGrowOverRepeatedCycles()
     {
         final int cycles = 5;
+        final int subPosBefore = countSubscriberPositions();
 
         for (int i = 0; i < cycles; i++)
         {
@@ -158,19 +159,11 @@ public class RequestSessionReplaySubscriberLeakTest extends AbstractGatewayToGat
             testSystem.poll();
         }
 
-        final int subPosCount = countSubscriberPositions();
-
-        // With the leak, each cycle adds stale subscriber positions.  A healthy system should have a bounded, small number.
-        // Typically, 2-4 subscriber positions are expected (engine + library streams).
-        // With the leak we see subPosCount grow linearly with cycles.
-        if (subPosCount > 10)
-        {
-            throw new AssertionError(
-                "Subscriber position count (" + subPosCount + ") grew beyond expected bounds " +
-                    "after " + cycles + " release/acquire-with-replay cycles. " +
-                    "This indicates IpcPublication subscriber positions are leaking because " +
-                    "ReplayOperation.stopReplay() is never called after successful catchup replay.");
-        }
+        final int subPosAfter = countSubscriberPositions();
+        assertEquals(subPosBefore, subPosAfter,
+            "Subscriber positions leaked over repeated catchup replays: before=" + subPosBefore +
+                " after=" + subPosAfter +
+                " after cycles=" + cycles + ".");
     }
 
     private int countSubscriberPositions()

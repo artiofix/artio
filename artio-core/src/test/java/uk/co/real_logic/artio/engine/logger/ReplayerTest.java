@@ -158,6 +158,11 @@ public class ReplayerTest extends AbstractLogTest
         return when(replayOperation.pollReplay());
     }
 
+    private void whenReplayCompletes(final Answer<Boolean> answer)
+    {
+        whenReplayQueried().then(answer).thenReturn(true);
+    }
+
     @Test
     public void shouldParseResendRequest()
     {
@@ -269,7 +274,7 @@ public class ReplayerTest extends AbstractLogTest
         backpressureTryClaim();
 
         setReplayedMessages(2);
-        whenReplayQueried().then(inv ->
+        whenReplayCompletes(inv ->
         {
             onTestRequest(SEQUENCE_NUMBER);
 
@@ -423,7 +428,7 @@ public class ReplayerTest extends AbstractLogTest
         final int endSeqNo = endSeqNoForTwoMessages();
         setReplayedMessages(2);
 
-        whenReplayQueried().then(inv ->
+        whenReplayCompletes(inv ->
         {
             setupCapturingClaim();
             final int srcLength = onExampleMessage(BEGIN_SEQ_NO);
@@ -543,7 +548,7 @@ public class ReplayerTest extends AbstractLogTest
     @Test
     public void shouldReplayMessageWithExpandingBodyLengthWhenBackPressured()
     {
-        whenReplayQueried().then(inv ->
+        whenReplayCompletes(inv ->
         {
             bufferContainsMessage(MESSAGE_REQUIRING_LONGER_BODY_LENGTH);
 
@@ -678,7 +683,7 @@ public class ReplayerTest extends AbstractLogTest
 
     private void onReplay(final int endSeqNo, final int overriddenBeginSeqNo, final Answer<Boolean> answer)
     {
-        whenReplayQueried().then(answer);
+        whenReplayCompletes(answer);
 
         final long result = bufferHasResendRequest(endSeqNo);
         onRequestResendMessage(result, endSeqNo, overriddenBeginSeqNo);

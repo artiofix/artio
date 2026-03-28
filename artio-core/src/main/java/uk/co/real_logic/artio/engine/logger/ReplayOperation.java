@@ -81,6 +81,7 @@ public class ReplayOperation
     private final LogTag logTag;
     private final CountersReader countersReader;
     private final Subscription subscription;
+    private final Runnable onClosed;
 
     // fields reset for each recordingRange
     private int replayedMessages = 0;
@@ -89,6 +90,7 @@ public class ReplayOperation
     private long replaySessionId;
     private int aeronSessionId;
     private Image image;
+    private boolean closeNotified;
 
     private enum State
     {
@@ -108,7 +110,8 @@ public class ReplayOperation
         final Subscription subscription,
         final int archiveReplayStream,
         final LogTag logTag,
-        final MessageTracker messageTracker)
+        final MessageTracker messageTracker,
+        final Runnable onClosed)
     {
         this.messageTracker = messageTracker;
         assembler = new ControlledFragmentAssembler(this.messageTracker);
@@ -122,6 +125,7 @@ public class ReplayOperation
         final Aeron aeron = aeronArchive.context().aeron();
         countersReader = aeron.countersReader();
         this.subscription = subscription;
+        this.onClosed = onClosed;
 
         logTagEnabled = DebugLogger.isEnabled(logTag);
     }
@@ -174,7 +178,7 @@ public class ReplayOperation
                     // There isn't a current replay in progress.
                     logClosed();
                     state = State.CLOSED;
-                    return true;
+                    return notifyClosed();
                 }
             }
 
@@ -235,7 +239,7 @@ public class ReplayOperation
 
             case CLOSED:
                 logClosed();
-                return true;
+                return notifyClosed();
 
             default:
                 throw new IllegalStateException("Illegal state: " + state);
@@ -245,6 +249,17 @@ public class ReplayOperation
     private void logClosed()
     {
         DebugLogger.log(logTag, CLOSED_FORMATTER.get(), replaySessionId);
+    }
+
+    private boolean notifyClosed()
+    {
+        if (!closeNotified)
+        {
+            closeNotified = true;
+            onClosed.run();
+        }
+
+        return true;
     }
 
     private boolean attemptReplay()
@@ -447,5 +462,6 @@ public class ReplayOperation
     {
         startClose();
         attemptClose();
+        notifyClosed();
     }
 }

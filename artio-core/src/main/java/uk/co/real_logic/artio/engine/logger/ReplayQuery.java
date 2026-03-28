@@ -78,6 +78,7 @@ public class ReplayQuery implements AutoCloseable
     private final long indexFileSize;
 
     private Subscription replaySubscription;
+    private int activeReplayOperations;
 
     public ReplayQuery(
         final String logFileDir,
@@ -197,8 +198,10 @@ public class ReplayQuery implements AutoCloseable
     public void close()
     {
         fixSessionToIndex.clear();
+        activeReplayOperations = 0;
 
         CloseHelper.close(replaySubscription);
+        replaySubscription = null;
     }
 
     public void onReset(final long fixSessionId)
@@ -230,6 +233,8 @@ public class ReplayQuery implements AutoCloseable
                 IPC_CHANNEL, archiveReplayStream);
         }
 
+        activeReplayOperations++;
+
         return new ReplayOperation(
             ranges,
             aeronArchive,
@@ -237,7 +242,17 @@ public class ReplayQuery implements AutoCloseable
             replaySubscription,
             archiveReplayStream,
             logTag,
-            messageTracker);
+            messageTracker,
+            this::onReplayOperationClosed);
+    }
+
+    private void onReplayOperationClosed()
+    {
+        if (activeReplayOperations > 0 && --activeReplayOperations == 0)
+        {
+            CloseHelper.close(replaySubscription);
+            replaySubscription = null;
+        }
     }
 
     private final class SessionQuery implements AutoCloseable
