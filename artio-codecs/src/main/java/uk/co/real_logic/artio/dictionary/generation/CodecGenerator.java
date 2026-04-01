@@ -180,6 +180,7 @@ public final class CodecGenerator
             RejectUnknownEnumValue.class,
             false,
             configuration.wrapEmptyBuffer(),
+            configuration.allowEmptyTags(),
             codecRejectUnknownEnumValueEnabled,
             configuration.fixTagsInJavadoc(),
             configuration.getDecimalFloatOverflowHandler()).generate();
@@ -203,6 +204,7 @@ public final class CodecGenerator
                 RejectUnknownEnumValue.class,
                 true,
                 configuration.wrapEmptyBuffer(),
+                configuration.allowEmptyTags(),
                 codecRejectUnknownEnumValueEnabled,
                 configuration.fixTagsInJavadoc(),
                 configuration.getDecimalFloatOverflowHandler()).generate();
