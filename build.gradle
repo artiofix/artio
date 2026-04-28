@@ -102,6 +102,20 @@ allprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+        maven {
+            name = "maven central snapshots"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            content {
+                includeModule("io.aeron", "aeron-agent")
+                includeModule("io.aeron", "aeron-annotations")
+                includeModule("io.aeron", "aeron-archive")
+                includeModule("io.aeron", "aeron-client")
+                includeModule("io.aeron", "aeron-driver")
+                includeModule("io.aeron", "aeron-cluster")
+                includeModule("io.aeron", "aeron-samples")
+                includeModule("io.aeron", "aeron-test-support")
+            }
+        }
     }
 
     configurations.configureEach {
