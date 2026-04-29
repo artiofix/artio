@@ -18,10 +18,6 @@ plugins {
     alias(libs.plugins.versions)
 }
 
-import org.gradle.api.tasks.testing.TestListener
-import org.gradle.api.tasks.testing.TestDescriptor
-import org.gradle.api.tasks.testing.TestResult
-
 def artioGroup = 'uk.co.real-logic'
 def iLink3Enabled = false
 
