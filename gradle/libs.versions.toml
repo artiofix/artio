@@ -12,7 +12,7 @@ json = "20250517"
 junit = "6.0.3"
 mockito = "5.23.0"
 plexus = "3.3.0"
-sbe = "1.37.1"
+sbe = "1.38.1"
 shadow = "9.4.0"
 versions = "0.53.0"
 
