@@ -18,6 +18,10 @@ plugins {
     alias(libs.plugins.versions)
 }
 
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestResult
+
 def artioGroup = 'uk.co.real-logic'
 def iLink3Enabled = false
 
@@ -194,15 +198,36 @@ subprojects {
             events 'skipped', 'failed'
             showStandardStreams = true
             exceptionFormat = 'full'
-            afterSuite { desc, result ->
-                if (!desc.parent) {
+        }
+
+        addTestListener(new TestListener()
+        {
+            void beforeSuite(final TestDescriptor suite)
+            {
+            }
+
+            void afterSuite(final TestDescriptor suite, final TestResult result)
+            {
+                if (!suite.parent) {
                     println "Results: ${result.resultType} (${result.testCount} tests, " +
                             "${result.successfulTestCount} successes, " +
                             "${result.failedTestCount} failures, " +
                             "${result.skippedTestCount} skipped)"
                 }
             }
-        }
+
+            void beforeTest(final TestDescriptor testDescriptor) {
+                if (System.properties["printTestNames"] != null) {
+                    print "Executing test ${testDescriptor.name} [${testDescriptor.className}]"
+                }
+            }
+
+            void afterTest(final TestDescriptor testDescriptor, final TestResult result) {
+                if (System.properties["printTestNames"] != null) {
+                    println " with result: ${result.resultType}"
+                }
+            }
+        })
 
         systemProperties(
             'fix.core.close_checker': 'true',
@@ -217,18 +242,6 @@ subprojects {
 
         def threshold = System.getProperty("org.agrona.transport.iteration.threshold")
         systemProperty "org.agrona.transport.iteration.threshold", threshold
-
-        beforeTest { desc ->
-            if (System.properties["printTestNames"] != null) {
-                print "Executing test ${desc.name} [${desc.className}]"
-            }
-        }
-
-        afterTest { desc, result ->
-            if (System.properties["printTestNames"] != null) {
-                println " with result: ${result.resultType}"
-            }
-        }
 
         javaLauncher.set(toolchainLauncher)
     }
