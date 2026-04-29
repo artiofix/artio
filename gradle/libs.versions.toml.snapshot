@@ -13,8 +13,8 @@ junit = "6.0.3"
 mockito = "5.23.0"
 plexus = "3.3.0"
 sbe = "1.38.1"
-shadow = "9.4.0"
-versions = "0.53.0"
+shadow = "9.4.1"
+versions = "0.54.0"
 
 [libraries]
 agrona = { group = "org.agrona", name = "agrona", version.ref = "agrona" }
