@@ -97,7 +97,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
         run: |
-          cp gradle/libs.versions.toml.snapshot gradle/libs.versions.toml
+          ./use-snapshots.sh
           ./gradlew clean build
       - name: Copy test logs
         id: copy_test_logs
