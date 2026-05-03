@@ -51,7 +51,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_INITIAL_SEQUENCE_INDEX;
 import static uk.co.real_logic.artio.engine.framer.FixContexts.DUPLICATE_SESSION;
-import static uk.co.real_logic.artio.engine.framer.FixContexts.LOWEST_VALID_SESSION_ID;
+import static uk.co.real_logic.artio.engine.framer.IncrementalSessionIdGenerator.LOWEST_VALID_SESSION_ID;
 
 public class FixContextsTest
 {
@@ -357,7 +357,8 @@ public class FixContextsTest
     private FixContexts newSessionContexts(final AtomicBuffer buffer, final int initialSequenceIndex)
     {
         when(mappedFile.buffer()).thenReturn(buffer);
-        return new FixContexts(mappedFile, idStrategy, initialSequenceIndex, errorHandler, false);
+        return new FixContexts(mappedFile, idStrategy, initialSequenceIndex, errorHandler, false,
+            new IncrementalSessionIdGenerator());
     }
 
     private void assertValuesEqual(
