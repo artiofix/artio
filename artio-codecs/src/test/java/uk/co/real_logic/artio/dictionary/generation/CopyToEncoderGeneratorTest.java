@@ -76,7 +76,7 @@ public class CopyToEncoderGeneratorTest
         final DecoderGenerator decoderGenerator = new DecoderGenerator(
             MESSAGE_EXAMPLE, 1, TEST_PACKAGE,
             TEST_PARENT_PACKAGE, TEST_PACKAGE, outputManager, ValidationOn.class,
-            RejectUnknownFieldOn.class, RejectUnknownEnumValueOn.class, false, false,
+            RejectUnknownFieldOn.class, RejectUnknownEnumValueOn.class, false, false, false,
             RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true, null);
         final EncoderGenerator encoderGenerator = new EncoderGenerator(MESSAGE_EXAMPLE, TEST_PACKAGE,
             TEST_PARENT_PACKAGE, outputManager, ValidationOn.class, RejectUnknownFieldOn.class,
