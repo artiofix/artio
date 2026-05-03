@@ -30,6 +30,7 @@ public final class GenerationUtil
 
     public static final String INDENT = "    ";
     public static final String GENERATED_ANNOTATION = "@Generated(\"uk.co.real_logic.artio\")\n";
+    public static final String SUPPRESS_THIS_ESCAPE_ANNOTATION = "@SuppressWarnings(\"this-escape\")\n";
 
     private GenerationUtil()
     {
