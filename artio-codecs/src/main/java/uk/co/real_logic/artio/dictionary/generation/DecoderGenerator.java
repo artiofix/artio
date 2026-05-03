@@ -468,7 +468,7 @@ class DecoderGenerator extends Generator
         return String.format(
             "    public void %1$s()\n" +
             "    {\n" +
-            "        %2$sLength = 0;\n" +
+            "        this.%2$sLength = 0;\n" +
             "    }\n\n",
             nameOfResetMethod(name),
             formatPropertyName(name));
@@ -476,7 +476,7 @@ class DecoderGenerator extends Generator
 
     protected String resetRequiredFloat(final String name)
     {
-        final String lengthReset = flyweightsEnabled ? "        %1$sLength = 0;\n" : "";
+        final String lengthReset = flyweightsEnabled ? "        this.%1$sLength = 0;\n" : "";
 
         return String.format(
             "    public void %2$s()\n" +
@@ -2081,14 +2081,14 @@ class DecoderGenerator extends Generator
     private String storeLengthForVariableLengthFields(final Type type, final String fieldName)
     {
         return type.hasLengthField(flyweightsEnabled) ?
-            String.format("                %sLength = valueLength;\n", fieldName) :
+            String.format("                this.%sLength = valueLength;\n", fieldName) :
             "";
     }
 
     private String storeOffsetForVariableLengthFields(final Type type, final String fieldName)
     {
         return type.hasOffsetField(flyweightsEnabled) ?
-            String.format("                %sOffset = valueOffset;\n", fieldName) :
+            String.format("                this.%sOffset = valueOffset;\n", fieldName) :
             "";
     }
 
@@ -2255,8 +2255,8 @@ class DecoderGenerator extends Generator
         return String.format(
             "    public void %1$s()\n" +
                     "    {\n" +
-                    "        %2$sOffset = 0;\n" +
-                    "        %2$sLength = 0;\n" +
+                    "        this.%2$sOffset = 0;\n" +
+                    "        this.%2$sLength = 0;\n" +
                     "    }\n\n",
             nameOfResetMethod(name),
             formatPropertyName(name));
