@@ -50,10 +50,10 @@ jobs:
           echo "BUILD_JAVA_VERSION=${{ env.JAVA_VERSION }}" >> $GITHUB_ENV
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Publish with Gradle to Open Source
-        run: ./gradlew publishAllPublicationsToOssRepository
+      - name: Publish with Gradle
+        run: ./gradlew publish uploadArtifactsToCentralPortal
         env:
-          ORG_GRADLE_PROJECT_repoUsername: ${{ secrets.SONATYPE_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_repoPassword: ${{ secrets.SONATYPE_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_RSA_SIGN_KEY }}
-          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_RSA_SIGN_KEYPASS }}
+          SIGNING_GPG_SECRET_KEY: ${{ secrets.GPG_RSA_SIGN_KEY }}
+          SIGNING_GPG_PASSWORD: ${{ secrets.GPG_RSA_SIGN_KEYPASS }}
+          SONATYPE_CENTRAL_PORTAL_USERNAME: ${{ secrets.SONATYPE_CENTRAL_PORTAL_USERNAME }}
+          SONATYPE_CENTRAL_PORTAL_PASSWORD: ${{ secrets.SONATYPE_CENTRAL_PORTAL_PASSWORD }}

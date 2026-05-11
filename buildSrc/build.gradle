@@ -1,0 +1,19 @@
+repositories {
+    mavenCentral()
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        failOnVersionConflict()
+    }
+}
+
+dependencies {
+    implementation("org.json:json:20250517")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    configure(options) {
+        options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked' // examples
+    }
+}
