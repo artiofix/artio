@@ -12,7 +12,7 @@ concurrency:
 
 env:
   GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.java.installations.auto-detect=false'
-  JAVA_VERSION: '8'
+  JAVA_VERSION: '17'
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.ref }}
-      - name: Setup java 8 to run the Gradle script
+      - name: Setup java 17 to run the Gradle script
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: 'zulu'
@@ -39,8 +39,6 @@ jobs:
       - name: Setup BUILD_JAVA_HOME & BUILD_JAVA_VERSION
         run: |
           java -Xinternalversion
-          echo "BUILD_JAVA_HOME=${JAVA_HOME}" >> $GITHUB_ENV
-          echo "BUILD_JAVA_VERSION=${{ env.JAVA_VERSION }}" >> $GITHUB_ENV
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
       - name: Publish with Gradle
