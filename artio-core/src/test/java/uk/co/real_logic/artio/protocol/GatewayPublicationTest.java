@@ -159,7 +159,7 @@ public class GatewayPublicationTest
         private final long messageType;
         private final int sequenceNumber;
 
-        private CapturedMessage(byte[] body, long messageType, int sequenceNumber)
+        private CapturedMessage(final byte[] body, final long messageType, final int sequenceNumber)
         {
             this.body = body;
             this.messageType = messageType;
