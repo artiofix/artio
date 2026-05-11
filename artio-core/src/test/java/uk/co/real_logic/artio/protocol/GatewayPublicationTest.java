@@ -11,38 +11,47 @@ import org.agrona.collections.MutableLong;
 import org.agrona.concurrent.NoOpIdleStrategy;
 import org.agrona.concurrent.SystemEpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import uk.co.real_logic.artio.messages.DisconnectReason;
 import uk.co.real_logic.artio.messages.MessageStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.aeron.logbuffer.FrameDescriptor.FRAME_ALIGNMENT;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static uk.co.real_logic.artio.TestFixtures.mediaDriverContext;
 import static uk.co.real_logic.artio.protocol.GatewayPublication.FRAMED_MESSAGE_SIZE;
 
-class GatewayPublicationTest
+@RunWith(Parameterized.class)
+public class GatewayPublicationTest
 {
     private static final int MAX_UNFRAGMENTED_BODY_LENGTH = 1305;
+    private final int bodyLength;
 
-    static IntStream bodyLengthRange()
+    public GatewayPublicationTest(final int bodyLength)
+    {
+        this.bodyLength = bodyLength;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object> bodyLengthRange()
     {
         return IntStream.rangeClosed(
             MAX_UNFRAGMENTED_BODY_LENGTH,
             MAX_UNFRAGMENTED_BODY_LENGTH + DataHeaderFlyweight.HEADER_LENGTH
-        );
+        ).boxed().collect(Collectors.toList());
     }
 
-    @Timeout(2)
-    @ParameterizedTest
-    @MethodSource("bodyLengthRange")
-    void testSavingMessagesOverTermBoundary(final int bodyLength)
+    @Test(timeout = 2_000L)
+    public void testSavingMessagesOverTermBoundary()
     {
         final int termBufferLength = 64 * 1024;
         try (
@@ -144,8 +153,33 @@ class GatewayPublicationTest
         }
     }
 
-    private record CapturedMessage(byte[] body, long messageType, int sequenceNumber)
+    private static final class CapturedMessage
     {
+        private final byte[] body;
+        private final long messageType;
+        private final int sequenceNumber;
+
+        private CapturedMessage(byte[] body, long messageType, int sequenceNumber)
+        {
+            this.body = body;
+            this.messageType = messageType;
+            this.sequenceNumber = sequenceNumber;
+        }
+
+        private byte[] body()
+        {
+            return body;
+        }
+
+        private long messageType()
+        {
+            return messageType;
+        }
+
+        private int sequenceNumber()
+        {
+            return sequenceNumber;
+        }
     }
 
     private static final class MessageCapturingProtocolHandler implements ProtocolHandler

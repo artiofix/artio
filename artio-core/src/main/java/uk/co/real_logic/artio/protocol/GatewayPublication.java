@@ -17,6 +17,9 @@ package uk.co.real_logic.artio.protocol;
 
 import io.aeron.ExclusivePublication;
 import io.aeron.logbuffer.BufferClaim;
+import io.aeron.logbuffer.FrameDescriptor;
+import io.aeron.protocol.DataHeaderFlyweight;
+import org.agrona.BitUtil;
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.MutableDirectBuffer;
@@ -36,7 +39,6 @@ import uk.co.real_logic.artio.util.CharFormatter;
 
 import java.util.List;
 
-import static io.aeron.logbuffer.LogBufferDescriptor.computeFragmentedFrameLength;
 import static io.aeron.protocol.DataHeaderFlyweight.BEGIN_FLAG;
 import static io.aeron.protocol.DataHeaderFlyweight.END_FLAG;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
@@ -306,7 +308,14 @@ public class GatewayPublication extends ClaimablePublication
         if (fragmented)
         {
             // Add a padding message at the end of the term buffer if needed.
-            final int requiredLength = computeFragmentedFrameLength(framedLength, maxPayloadLength);
+            final int length = framedLength;
+            final int numMaxPayloads = length / maxPayloadLength;
+            final int remainingPayload = length % maxPayloadLength;
+            final int lastFrameLength = remainingPayload > 0 ?
+                BitUtil.align(remainingPayload + DataHeaderFlyweight.HEADER_LENGTH, FrameDescriptor.FRAME_ALIGNMENT) :
+                0;
+            final int requiredLength =
+                (numMaxPayloads * (maxPayloadLength + DataHeaderFlyweight.HEADER_LENGTH)) + lastFrameLength;
             final int termLength = dataPublication.termBufferLength();
             final int termOffset = dataPublication.termOffset();
             final int resultingOffset = termOffset + requiredLength;
