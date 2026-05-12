@@ -124,6 +124,7 @@ public class SlowConsumerTest
         setup(senderMaxBytesInBuffer, null);
 
         initiateConnection();
+        socket.configureBlocking(false);
 
         final long sessionId = handler.awaitSessionId(testSystem::poll);
         session = acquireSession(handler, library, sessionId, testSystem);
@@ -137,40 +138,18 @@ public class SlowConsumerTest
         assertNotSlow();
 
         boolean hasBecomeSlow = false;
+        while (!hasBecomeSlow)
+        {
+            sendMessage();
+            testSystem.poll();
+            hasBecomeSlow = handler.isSlow(session) && session.isSlowConsumer();
+        }
 
         while (socketIsConnected())
         {
-            if (session.isActive())
-            {
-                if (handler.isSlow(session))
-                {
-                    assertTrue(session.isSlowConsumer());
-                    hasBecomeSlow = true;
-                }
-
-                sendMessage();
-            }
-
+            sendMessage();
             testSystem.poll();
         }
-
-        bytesInBufferAtLeast(sessionInfo, senderMaxBytesInBuffer);
-
-        // Poll the slow consumer here in case there's a bit of lag receiving the callback.
-        if (!hasBecomeSlow)
-        {
-            sessionBecomesSlow();
-        }
-    }
-
-    private void sessionBecomesSlow()
-    {
-        while (!handler.isSlow(session))
-        {
-            testSystem.poll();
-        }
-
-        assertTrue(session.isSlowConsumer());
     }
 
     private void sendMessage()
@@ -215,7 +194,18 @@ public class SlowConsumerTest
 
         final int lastSentMsgSeqNum = session.lastSentMsgSeqNum();
         testSystem.await("Failed to find the messages", () ->
-            messageTimingCaptor.count() >= lastSentMsgSeqNum);
+        {
+            try
+            {
+                byteBuffer.position(0).limit(BUFFER_CAPACITY);
+                socket.read(byteBuffer);
+            }
+            catch (final IOException ex)
+            {
+            }
+
+            return messageTimingCaptor.count() >= lastSentMsgSeqNum;
+        });
 
         messageTimingCaptor.verifyConsecutiveSequenceNumbers(lastSentMsgSeqNum);
         if (sendMetadata)
