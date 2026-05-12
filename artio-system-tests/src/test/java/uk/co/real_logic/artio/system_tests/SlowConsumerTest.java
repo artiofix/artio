@@ -117,13 +117,14 @@ public class SlowConsumerTest
         testRequest = newTestRequest();
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
     public void shouldQuarantineThenDisconnectASlowConsumer() throws IOException
     {
         final int senderMaxBytesInBuffer = 8 * 1024;
         setup(senderMaxBytesInBuffer, null);
 
         initiateConnection();
+        socket.configureBlocking(false);
 
         final long sessionId = handler.awaitSessionId(testSystem::poll);
         session = acquireSession(handler, library, sessionId, testSystem);
@@ -138,10 +139,8 @@ public class SlowConsumerTest
 
         boolean hasBecomeSlow = false;
 
-        int attempts = 0;
         while (socketIsConnected())
         {
-            System.err.println(System.currentTimeMillis() + " -attempt " + ++attempts);
             if (session.isActive())
             {
                 if (handler.isSlow(session))
