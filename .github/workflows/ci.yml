@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         java: [ '8' ]
-        os: [ 'ubuntu-24.04' ]
+        os: [ 'ubuntu-24.04', 'windows-latest' ]
     steps:
       - name: Use faster temporary storage (Windows)
         if: runner.os == 'Windows'
