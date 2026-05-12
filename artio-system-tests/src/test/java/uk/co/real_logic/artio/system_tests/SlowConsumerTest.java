@@ -215,7 +215,11 @@ public class SlowConsumerTest
 
         final int lastSentMsgSeqNum = session.lastSentMsgSeqNum();
         testSystem.await("Failed to find the messages", () ->
-            messageTimingCaptor.count() >= lastSentMsgSeqNum);
+        {
+            final long messageTimingCaptorCount = messageTimingCaptor.count();
+            System.err.println("Captor " + messageTimingCaptorCount + "last sent " + lastSentMsgSeqNum);
+            return messageTimingCaptorCount >= lastSentMsgSeqNum;
+        });
 
         messageTimingCaptor.verifyConsecutiveSequenceNumbers(lastSentMsgSeqNum);
         if (sendMetadata)
