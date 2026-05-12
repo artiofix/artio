@@ -138,8 +138,10 @@ public class SlowConsumerTest
 
         boolean hasBecomeSlow = false;
 
+        int attempts = 0;
         while (socketIsConnected())
         {
+            System.err.println("Attempt " + ++attempts);
             if (session.isActive())
             {
                 if (handler.isSlow(session))
@@ -225,9 +227,7 @@ public class SlowConsumerTest
             {
             }
 
-            final long messageTimingCaptorCount = messageTimingCaptor.count();
-            System.err.println("Captor " + messageTimingCaptorCount + "last sent " + lastSentMsgSeqNum);
-            return messageTimingCaptorCount >= lastSentMsgSeqNum;
+            return messageTimingCaptor.count() >= lastSentMsgSeqNum;
         });
 
         messageTimingCaptor.verifyConsecutiveSequenceNumbers(lastSentMsgSeqNum);
