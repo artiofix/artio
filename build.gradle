@@ -125,6 +125,13 @@ subprojects {
     group = artioGroup
     version = version
 
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+            vendor = JvmVendorSpec.AZUL
+        }
+    }
+
     tasks.withType(JavaCompile) {
         sourceCompatibility = artioJavaVersion
         targetCompatibility = artioJavaVersion
@@ -147,9 +154,9 @@ subprojects {
     checkstyle.toolVersion = "${checkstyleVersion}"
 
     tasks.withType(Test) {
-        if (JavaVersion.current().isJava9Compatible()) {
-            jvmArgs('--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED')
-        }
+//        if (JavaVersion.current().isJava9Compatible()) {
+//            jvmArgs('--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED')
+//        }
 
         testLogging {
             events 'skipped', 'failed'
@@ -198,9 +205,9 @@ subprojects {
         options.encoding = 'UTF-8'
         options.docEncoding = 'UTF-8'
         options.charSet = 'UTF-8'
-        if (JavaVersion.current().isJava10Compatible()) {
-            options.addBooleanOption 'html5', true
-        }
+//        if (JavaVersion.current().isJava10Compatible()) {
+//            options.addBooleanOption 'html5', true
+//        }
         options.addStringOption('Xdoclint:all,-missing', '-quiet')
     }
 
@@ -908,6 +915,13 @@ subprojects {
             }
         }
     }
+}
+
+tasks.register('uploadArtifactsToCentralPortal', uk.co.real_logic.artio.build.SonatypeCentralPortalUploadRepositoryTask) {
+    portalUsername.set(sonatypeCentralPortalUsername)
+    portalPassword.set(sonatypeCentralPortalPassword)
+    groupId.set(artioGroup)
+    snapshotRelease.set(!isReleaseVersion)
 }
 
 wrapper {
