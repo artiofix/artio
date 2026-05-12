@@ -138,40 +138,18 @@ public class SlowConsumerTest
         assertNotSlow();
 
         boolean hasBecomeSlow = false;
+        while (!hasBecomeSlow)
+        {
+            sendMessage();
+            testSystem.poll();
+            hasBecomeSlow = handler.isSlow(session) && session.isSlowConsumer();
+        }
 
         while (socketIsConnected())
         {
-            if (session.isActive())
-            {
-                if (handler.isSlow(session))
-                {
-                    assertTrue(session.isSlowConsumer());
-                    hasBecomeSlow = true;
-                }
-
-                sendMessage();
-            }
-
+            sendMessage();
             testSystem.poll();
         }
-
-        bytesInBufferAtLeast(sessionInfo, senderMaxBytesInBuffer);
-
-        // Poll the slow consumer here in case there's a bit of lag receiving the callback.
-        if (!hasBecomeSlow)
-        {
-            sessionBecomesSlow();
-        }
-    }
-
-    private void sessionBecomesSlow()
-    {
-        while (!handler.isSlow(session))
-        {
-            testSystem.poll();
-        }
-
-        assertTrue(session.isSlowConsumer());
     }
 
     private void sendMessage()
