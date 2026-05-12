@@ -216,6 +216,7 @@ public class SlowConsumerTest
         final int lastSentMsgSeqNum = session.lastSentMsgSeqNum();
         testSystem.await("Failed to find the messages", () ->
         {
+            assertNotSlow();
             final long messageTimingCaptorCount = messageTimingCaptor.count();
             System.err.println("Captor " + messageTimingCaptorCount + "last sent " + lastSentMsgSeqNum);
             return messageTimingCaptorCount >= lastSentMsgSeqNum;
