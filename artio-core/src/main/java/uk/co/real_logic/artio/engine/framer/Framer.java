@@ -1642,6 +1642,8 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         final boolean online = fixSenderEndPoints.onMessage(
             libraryId, connectionId, buffer, offset, length, sequenceNumber, metaDataLength);
 
+        DebugLogger.logFixMessage(FIX_MESSAGE_FLOW, messageType, "Received ", buffer, offset, length);
+
         if (!online)
         {
             checkOfflineSequenceReset(sessionId, messageType, buffer, offset, length, sequenceIndex);
