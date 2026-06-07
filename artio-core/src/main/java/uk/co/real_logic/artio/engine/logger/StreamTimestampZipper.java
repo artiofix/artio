@@ -225,6 +225,7 @@ public class StreamTimestampZipper implements AutoCloseable
         for (final StreamPoller poller : pollers)
         {
             poller.elementsInBuffer = 0;
+            poller.nothingBuffered();
         }
         reorderBufferOffset = 0;
 
