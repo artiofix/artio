@@ -242,9 +242,9 @@ public class FixArchiveScanner implements AutoCloseable
         idleStrategy = configuration.idleStrategy();
         agent = new FixArchiveScanningAgent(
             idleStrategy,
-            configuration.compactionSize,
-            configuration.maximumBufferSize,
-            configuration.fragmentLimit,
+            configuration.compactionSize(),
+            configuration.maximumBufferSize(),
+            configuration.fragmentLimit(),
             logFileDir,
             aeron,
             aeronArchive);

@@ -37,6 +37,8 @@ import static java.lang.Long.parseLong;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_INBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_OUTBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_ARCHIVE_SCANNER_STREAM;
+import static uk.co.real_logic.artio.engine.logger.FixMessageLogger.Configuration.DEFAULT_COMPACTION_SIZE;
+import static uk.co.real_logic.artio.engine.logger.FixMessageLogger.Configuration.DEFAULT_MAXIMUM_BUFFER_SIZE;
 import static uk.co.real_logic.artio.engine.logger.FixMessagePredicates.*;
 
 /**
@@ -68,6 +70,8 @@ public final class FixArchivePrinter
     private char delimiter = SOH;
     private Class<? extends FixDictionary> fixDictionaryType = null;
     private Predicate<SessionHeaderDecoder> headerPredicate = null;
+    private int compactionSize = DEFAULT_COMPACTION_SIZE;
+    public int maximumBufferSize = DEFAULT_MAXIMUM_BUFFER_SIZE;
     private final PrintStream out;
     private final PrintStream err;
 
@@ -86,7 +90,8 @@ public final class FixArchivePrinter
         try
         {
             scanArchive(aeronDirectoryName, aeronChannel, queryStreamIds, predicate, follow, headerPredicate,
-                archiveScannerStreamId, fixDictionaryType, fixPProtocolType, logFileDir);
+                archiveScannerStreamId, fixDictionaryType, fixPProtocolType, logFileDir,
+                compactionSize, maximumBufferSize);
         }
         finally
         {
@@ -206,6 +211,12 @@ public final class FixArchivePrinter
                 case "delimiter":
                     delimiter = optionValue.charAt(0);
                     break;
+                case "compaction-size":
+                    compactionSize = Integer.parseInt(optionValue);
+                    break;
+                case "maximum-buffer-size":
+                    maximumBufferSize = Integer.parseInt(optionValue);
+                    break;
             }
         }
     }
@@ -246,7 +257,9 @@ public final class FixArchivePrinter
         final int archiveScannerStreamId,
         final Class<? extends FixDictionary> fixDictionaryType,
         final FixPProtocolType fixPProtocolType,
-        final String logFileDir)
+        final String logFileDir,
+        final int compactionSize,
+        final int maximumBufferSize)
     {
         final FixDictionary fixDictionary = fixDictionaryType == null ? null : FixDictionary.of(fixDictionaryType);
         FixMessagePredicate predicate = otherPredicate;
@@ -257,7 +270,9 @@ public final class FixArchivePrinter
 
         final FixArchiveScanner.Configuration configuration = new FixArchiveScanner.Configuration()
             .aeronDirectoryName(aeronDirectoryName)
-            .idleStrategy(CommonConfiguration.backoffIdleStrategy());
+            .idleStrategy(CommonConfiguration.backoffIdleStrategy())
+            .compactionSize(compactionSize)
+            .maximumBufferSize(maximumBufferSize);
 
         if (logFileDir != null)
         {
@@ -287,6 +302,7 @@ public final class FixArchivePrinter
         }
     }
 
+    @SuppressWarnings("checkstyle:methodLength")
     private void printHelp()
     {
         out.println("FixArchivePrinter Options");
@@ -382,6 +398,19 @@ public final class FixArchivePrinter
         printOption(
             "delimiter",
             "Specifies the character which will replace the field delimiter (SOH) in printed messages",
+            false);
+        printOption(
+            "compaction-size",
+            "Provide the compaction size to within the reorder buffer. The FixArchivePrinter re-orders " +
+            "its messages internally in order to hand them off the consumer in timestamp order. A larger " +
+            "compaction size allows it's internal reorder buffer to grow larger before compaction is " +
+            "attempted. A larger compaction size results in less compaction and thus less CPU usage at the " +
+            "cost of more memory being consumed.",
+            false);
+        printOption(
+            "maximum-buffer-size",
+            "Sets the maximum size that the internal reorder buffer can grow to. If this is exceeded then " +
+            "all the messages within the reorder buffer are simply dumped out in their current order.",
             false);
     }
 
