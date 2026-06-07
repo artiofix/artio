@@ -108,4 +108,40 @@ public class FixMessageLoggerTest extends AbstractFixMessageLoggerTest
         assertThat(timestamps, contains(1L, 1L));
         assertThat(sequenceNumbers, contains(1, 2));
     }
+
+    @Test
+    public void shouldDumpingBufferMaintainOriginalOwner()
+    {
+        for (int i = 1; i <= 55; ++i)
+        {
+            onMessage(inboundPublication, i);
+            onMessage(outboundPublication, i);
+        }
+
+        onReplayerTimestamp(replayPublication, 100);
+
+        assertEventuallyReceives(110);
+    }
+
+    @Test
+    public void shouldDumpingUpdateMinAndMaxTimestamps()
+    {
+        for (int i = 1; i <= 50; ++i)
+        {
+            onMessage(inboundPublication, i);
+            onMessage(outboundPublication, i);
+        }
+
+        for (int i = 51; i <= 60; ++i)
+        {
+            onMessage(outboundPublication, i);
+        }
+
+        onReplayerTimestamp(replayPublication, 100);
+
+        assertEventuallyReceives(109);
+
+        onMessage(inboundPublication, 100);
+        assertEventuallyReceives(110);
+    }
 }
