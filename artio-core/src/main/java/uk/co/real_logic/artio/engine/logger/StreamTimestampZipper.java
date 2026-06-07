@@ -121,7 +121,6 @@ public class StreamTimestampZipper implements AutoCloseable
                 owner.elementsInBuffer--;
                 logEntryHandler.owner = owner;
                 logEntryHandler.onBufferedMessage(position.offset, position.length);
-                logEntryHandler.owner.handledTimestamp(position.timestamp);
                 read++;
 
                 updateOwnerTimestamp(positions, i, owner);
@@ -218,9 +217,9 @@ public class StreamTimestampZipper implements AutoCloseable
         for (int i = 0; i < size; i++)
         {
             final BufferedPosition position = positions.get(i);
+            position.owner.handledTimestamp(position.timestamp);
             logEntryHandler.owner = position.owner;
             logEntryHandler.onBufferedMessage(position.offset, position.length);
-            logEntryHandler.owner.handledTimestamp(position.timestamp);
         }
 
         positions.clear();
