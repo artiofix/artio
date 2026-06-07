@@ -236,7 +236,11 @@ public abstract class AbstractFixMessageLoggerTest
     void assertEventuallyReceives(final int messageCount)
     {
         assertEventuallyTrue(
-            () -> "Failed to receive a message: " + timestamps,
+            () ->
+            {
+                aeron.printCounters(System.err);
+                return "Failed to receive a message: " + timestamps;
+            },
             () ->
             {
                 logger.doWork();
