@@ -206,6 +206,8 @@ public class StreamTimestampZipper implements AutoCloseable
 
     private void dumpBuffer()
     {
+        final StreamPoller originalOwner = this.logEntryHandler.owner;
+
         final LogEntryHandler logEntryHandler = this.logEntryHandler;
         final List<BufferedPosition> positions = this.positions;
         final int size = positions.size();
@@ -225,6 +227,8 @@ public class StreamTimestampZipper implements AutoCloseable
             poller.elementsInBuffer = 0;
         }
         reorderBufferOffset = 0;
+
+        this.logEntryHandler.owner = originalOwner;
     }
 
     public void close()
