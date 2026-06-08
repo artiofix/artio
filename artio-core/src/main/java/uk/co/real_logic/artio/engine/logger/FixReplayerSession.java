@@ -158,6 +158,7 @@ class FixReplayerSession extends ReplayerSession
         replayer.fixMessageEncoder
             .wrap(buffer, frameOffset)
             .connection(connectionId)
+            .timestamp(clock.nanoTime())
             .sequenceNumber(headerSeqNum);
     }
 
