@@ -237,8 +237,9 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         messageEncoder
             .wrap(buffer, frameOffset)
             .connection(connectionId)
-            .libraryId(libraryId)
-            .status(CATCHUP_REPLAY);
+            .timestamp(nanoClock.nanoTime())
+            .status(CATCHUP_REPLAY)
+            .libraryId(libraryId);
     }
 
     public Action onFragment(
