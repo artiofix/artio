@@ -488,10 +488,50 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
         final int streamId, final String strippedChannel, final String originalChannel,
         final String sourceIdentity)
     {
-        final int newSessionId = ThreadLocalRandom.current().nextInt(
-            publicationReservedSessionIdLow(), publicationReservedSessionIdHigh());
+        final int newSessionId = nextReservedSessionId();
         this.libraryExtendPosition = new LibraryExtendPosition(
             newSessionId, recordingId, streamId, stopPosition, initialTermId, termBufferLength, mtuLength);
+    }
+
+    private int nextReservedSessionId()
+    {
+        final int low = publicationReservedSessionIdLow();
+        final int high = publicationReservedSessionIdHigh();
+        final long range = (long)high - (long)low;
+        if (range <= 0)
+        {
+            return low;
+        }
+
+        final int start = ThreadLocalRandom.current().nextInt(low, high);
+        int candidate = start;
+        for (long i = 0; i < range; i++)
+        {
+            if (!reservedSessionIdInUse(candidate))
+            {
+                return candidate;
+            }
+
+            if (++candidate >= high)
+            {
+                candidate = low;
+            }
+        }
+
+        return start;
+    }
+
+    private boolean reservedSessionIdInUse(final int sessionId)
+    {
+        for (final LibraryExtendPosition pending : libraryIdToExtendPosition.values())
+        {
+            if (pending.newSessionId == sessionId)
+            {
+                return true;
+            }
+        }
+
+        return counters != null && recordingAlreadyStarted(sessionId);
     }
 
     private boolean startRecording(
