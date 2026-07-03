@@ -35,7 +35,7 @@ import static io.aeron.CommonContext.IPC_CHANNEL;
 
 /**
  * A continuable replay operation that can retried.
- *
+ * <p>
  * Each object is single threaded, but different objects used on different threads.
  */
 public class ReplayOperation
@@ -203,23 +203,6 @@ public class ReplayOperation
                 {
                     if (!(image.isClosed() || image.isEndOfStream()))
                     {
-                        // Try to skip as far ahead as possible
-                        final long currentPosition = image.position();
-                        if (endPosition > currentPosition)
-                        {
-                            final int termLengthMask = image.termBufferLength() - 1;
-                            final long limit =
-                                (currentPosition - (currentPosition & termLengthMask)) + termLengthMask + 1;
-                            final long pos = Math.min(limit, endPosition);
-                            try
-                            {
-                                image.position(pos);
-                            }
-                            catch (final Throwable e)
-                            {
-                                errorHandler.onError(e);
-                            }
-                        }
                         image.poll(EMPTY_FRAGMENT_HANDLER, Integer.MAX_VALUE);
                     }
 
