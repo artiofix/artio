@@ -1,5 +1,5 @@
 [versions]
-aeron = "1.51.0" # snapshot="1.52.0-SNAPSHOT"
+aeron = "1.52.0" # snapshot="1.52.0-SNAPSHOT"
 agrona = "2.5.0"
 checkstyle = "12.3.1"
 commons-codec = "1.15"
