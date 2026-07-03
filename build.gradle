@@ -796,7 +796,7 @@ project(':artio-system-tests') {
         testImplementation project(path: ':artio-session-codecs', configuration: 'tests')
         testImplementation project(path: ':artio-session-fixt-codecs', configuration: 'tests')
 
-        perfImplementation project(':artio-core')
+        perfImplementation project(':artio-system-tests')
         perfImplementation libs.jmh.core
         // For IDEA:
         implementation libs.jmh.core
