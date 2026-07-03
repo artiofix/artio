@@ -85,7 +85,7 @@ def getConfigProperty(final String projectPropertyName, final String envVarName)
 }
 
 def isReleaseVersion = !version.endsWith('-SNAPSHOT')
-def iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
+def iLink3Enabled = false
 def sonatypeCentralPortalReleasesRepoUrl = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
 def sonatypeCentralPortalSnapshotsRepoUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
 def sonatypeCentralPortalUsername = getConfigProperty('sonatypeCentralPortalUsername', 'SONATYPE_CENTRAL_PORTAL_USERNAME')
