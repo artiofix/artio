@@ -13,7 +13,7 @@ junit = "6.1.1"
 mockito = "5.23.0"
 plexus = "3.3.0"
 sbe = "1.39.0"
-shadow = "9.4.3"
+shadow = "9.5.1"
 versions = "0.54.0"
 
 [libraries]
