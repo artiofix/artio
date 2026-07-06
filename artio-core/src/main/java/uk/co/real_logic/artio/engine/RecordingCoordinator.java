@@ -52,7 +52,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static io.aeron.Aeron.NULL_VALUE;
 import static io.aeron.CommonContext.IPC_CHANNEL;
@@ -61,8 +60,6 @@ import static io.aeron.archive.client.AeronArchive.NULL_POSITION;
 import static io.aeron.archive.codecs.SourceLocation.LOCAL;
 import static io.aeron.archive.codecs.SourceLocation.REMOTE;
 import static io.aeron.archive.status.RecordingPos.NULL_RECORDING_ID;
-import static io.aeron.driver.Configuration.publicationReservedSessionIdHigh;
-import static io.aeron.driver.Configuration.publicationReservedSessionIdLow;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.agrona.concurrent.status.CountersReader.NULL_COUNTER_ID;
@@ -488,50 +485,9 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
         final int streamId, final String strippedChannel, final String originalChannel,
         final String sourceIdentity)
     {
-        final int newSessionId = nextReservedSessionId();
+        final int newSessionId = aeron.nextSessionId(streamId);
         this.libraryExtendPosition = new LibraryExtendPosition(
             newSessionId, recordingId, streamId, stopPosition, initialTermId, termBufferLength, mtuLength);
-    }
-
-    private int nextReservedSessionId()
-    {
-        final int low = publicationReservedSessionIdLow();
-        final int high = publicationReservedSessionIdHigh();
-        final long range = (long)high - (long)low;
-        if (range <= 0)
-        {
-            return low;
-        }
-
-        final int start = ThreadLocalRandom.current().nextInt(low, high);
-        int candidate = start;
-        for (long i = 0; i < range; i++)
-        {
-            if (!reservedSessionIdInUse(candidate))
-            {
-                return candidate;
-            }
-
-            if (++candidate >= high)
-            {
-                candidate = low;
-            }
-        }
-
-        return start;
-    }
-
-    private boolean reservedSessionIdInUse(final int sessionId)
-    {
-        for (final LibraryExtendPosition pending : libraryIdToExtendPosition.values())
-        {
-            if (pending.newSessionId == sessionId)
-            {
-                return true;
-            }
-        }
-
-        return counters != null && recordingAlreadyStarted(sessionId);
     }
 
     private boolean startRecording(
