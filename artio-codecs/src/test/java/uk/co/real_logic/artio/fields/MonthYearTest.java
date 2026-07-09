@@ -27,6 +27,7 @@ import static java.time.Month.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasToString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.of;
 
@@ -110,6 +111,22 @@ public class MonthYearTest
     public void shouldDecodeValidDatesWithWeek(final String input, final MonthYear expectedMonthYear)
     {
         assertDecodesMonthYear(input, expectedMonthYear);
+    }
+
+    public static Stream<Arguments> invalidMonthYearsWithWeek()
+    {
+        return Stream.of(of("201502w0"), of("201502w6"), of("999912w9"));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "invalidMonthYearsWithWeek")
+    public void shouldRejectInvalidWeekOfMonth(final String input)
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(new byte[input.length()]);
+        final MutableAsciiBuffer asciiFlyweight = new MutableAsciiBuffer(buffer);
+        asciiFlyweight.putAscii(0, input);
+
+        assertFalse(monthYear.decode(asciiFlyweight, 0, input.length()));
     }
 
     @ParameterizedTest

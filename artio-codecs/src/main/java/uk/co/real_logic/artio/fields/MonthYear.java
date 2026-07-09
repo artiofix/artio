@@ -22,6 +22,7 @@ import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 import java.time.Month;
 
 import static uk.co.real_logic.artio.fields.CalendricalUtil.isValidDayOfMonth;
+import static uk.co.real_logic.artio.fields.CalendricalUtil.isValidWeekOfMonth;
 import static uk.co.real_logic.artio.fields.CalendricalUtil.isValidMonth;
 
 /**
@@ -157,7 +158,7 @@ public final class MonthYear
                 final int endWeek = startWeek + SIZE_OF_WEEK_OF_MONTH;
                 final int weekOfMonth = buffer.getNatural(startWeek, endWeek);
 
-                if (!isValidDayOfMonth(weekOfMonth))
+                if (!isValidWeekOfMonth(weekOfMonth))
                 {
                     return false;
                 }
