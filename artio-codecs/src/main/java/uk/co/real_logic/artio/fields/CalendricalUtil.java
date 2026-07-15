@@ -54,6 +54,9 @@ public final class CalendricalUtil
     private static final int MIN_DAY_OF_MONTH = 1;
     private static final int MAX_DAY_OF_MONTH = 31;
 
+    private static final int MIN_WEEK_OF_MONTH = 1;
+    private static final int MAX_WEEK_OF_MONTH = 5;
+
     // ------------ Decoding ------------
 
     public static boolean isValidMonth(final int month)
@@ -64,6 +67,11 @@ public final class CalendricalUtil
     public static boolean isValidDayOfMonth(final int dayOfMonth)
     {
         return dayOfMonth >= MIN_DAY_OF_MONTH && dayOfMonth <= MAX_DAY_OF_MONTH;
+    }
+
+    public static boolean isValidWeekOfMonth(final int weekOfMonth)
+    {
+        return weekOfMonth >= MIN_WEEK_OF_MONTH && weekOfMonth <= MAX_WEEK_OF_MONTH;
     }
 
     static int getValidInt(
