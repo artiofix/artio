@@ -72,6 +72,7 @@ public abstract class AbstractDecoderGeneratorTest
     private static Class<?> heartbeatWithoutValidation;
     private static Class<?> heartbeatWithoutEnumValueValidation;
     private static Class<?> heartbeatWithRejectingUnknownFields;
+    private static Class<?> heartbeatAllowingEmptyTags;
     private static Class<?> heartbeat;
     private static Class<?> component;
     private static Class<?> otherMessage;
@@ -85,13 +86,15 @@ public abstract class AbstractDecoderGeneratorTest
     static void generate(final boolean flyweightStringsEnabled) throws Exception
     {
         sourcesWithValidation = generateSources(
-            true, false, true, flyweightStringsEnabled, false);
+            true, false, true, flyweightStringsEnabled, false, false);
         final Map<String, CharSequence> sourcesWithNoEnumValueValidation = generateSources(
-            true, false, false, flyweightStringsEnabled, false);
+            true, false, false, flyweightStringsEnabled, false, false);
         final Map<String, CharSequence> sourcesWithoutValidation = generateSources(
-            false, false, true, flyweightStringsEnabled, true);
+            false, false, true, flyweightStringsEnabled, true, false);
         final Map<String, CharSequence> sourcesRejectingUnknownFields = generateSources(
-            true, true, true, flyweightStringsEnabled, false);
+            true, true, true, flyweightStringsEnabled, false, false);
+        final Map<String, CharSequence> sourcesAllowingEmptyTags = generateSources(
+            true, false, true, flyweightStringsEnabled, false, true);
         heartbeat = compileInMemory(HEARTBEAT_DECODER, sourcesWithValidation);
         if (heartbeat == null || CODEC_LOGGING)
         {
@@ -109,6 +112,7 @@ public abstract class AbstractDecoderGeneratorTest
         heartbeatWithoutValidation = compileInMemory(HEARTBEAT_DECODER, sourcesWithoutValidation);
         heartbeatWithoutEnumValueValidation = compileInMemory(HEARTBEAT_DECODER, sourcesWithNoEnumValueValidation);
         heartbeatWithRejectingUnknownFields = compileInMemory(HEARTBEAT_DECODER, sourcesRejectingUnknownFields);
+        heartbeatAllowingEmptyTags = compileInMemory(HEARTBEAT_DECODER, sourcesAllowingEmptyTags);
         allReqFieldTypesMessage = compileInMemory(ALL_REQ_FIELD_TYPES_MESSAGE_DECODER, sourcesWithoutValidation);
         if (heartbeatWithoutValidation == null || CODEC_LOGGING)
         {
@@ -118,7 +122,8 @@ public abstract class AbstractDecoderGeneratorTest
 
     private static Map<String, CharSequence> generateSources(
         final boolean validation, final boolean rejectingUnknownFields, final boolean rejectingUnknownEnumValue,
-        final boolean flyweightStringsEnabled, final boolean wrapEmptyBuffer)
+        final boolean flyweightStringsEnabled, final boolean wrapEmptyBuffer, final boolean allowEmptyTags
+    )
     {
         final Class<?> validationClass = validation ? ValidationOn.class : ValidationOff.class;
         final Class<?> rejectUnknownField = rejectingUnknownFields ?
@@ -132,7 +137,7 @@ public abstract class AbstractDecoderGeneratorTest
         final DecoderGenerator decoderGenerator = new DecoderGenerator(
             MESSAGE_EXAMPLE, 1, TEST_PACKAGE, TEST_PARENT_PACKAGE, TEST_PACKAGE,
             outputManager, validationClass, rejectUnknownField,
-            rejectUnknownEnumValue, flyweightStringsEnabled, wrapEmptyBuffer,
+            rejectUnknownEnumValue, flyweightStringsEnabled, wrapEmptyBuffer, allowEmptyTags,
             String.valueOf(rejectingUnknownEnumValue), true, null);
         final EncoderGenerator encoderGenerator = new EncoderGenerator(MESSAGE_EXAMPLE, TEST_PACKAGE,
             TEST_PARENT_PACKAGE, outputManager, ValidationOn.class, RejectUnknownFieldOn.class,
@@ -968,6 +973,24 @@ public abstract class AbstractDecoderGeneratorTest
         assertFalse(decoder.validate(), "Passed validation with invalid tag number");
         assertEquals(99, decoder.invalidTagId(), "Wrong tag id");
         assertEquals(TAG_NOT_DEFINED_FOR_THIS_MESSAGE_TYPE, decoder.rejectReason(), "Wrong reject reason");
+    }
+
+    @Test
+    public void shouldAllowMessagesWithEmptyTagsForStringPropertyWhenAllowTagsPropIsSet() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeatAllowingEmptyTags(EMPTY_FIX_TAG_FOR_STRING_FIELD_MESSAGE);
+
+        assertTrue(decoder.validate(), "Failed validation with empty fix tag");
+        assertFalse((Boolean)get(decoder, "hasTestReqID"));
+    }
+
+    @Test
+    public void shouldAllowMessagesWithEmptyTagsForIntPropertyWhenAllowTagsPropIsSet() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeatAllowingEmptyTags(EMPTY_FIX_TAG_FOR_LONG_FIELD_MESSAGE);
+
+        assertTrue(decoder.validate(), "Failed validation with empty fix tag");
+        assertFalse((Boolean)get(decoder, "hasLongField"));
     }
 
     @Test
@@ -2003,6 +2026,13 @@ public abstract class AbstractDecoderGeneratorTest
     private Decoder decodeHeartbeatWithRejectingUnknownFields(final String example) throws Exception
     {
         final Decoder decoder = (Decoder)heartbeatWithRejectingUnknownFields.getConstructor().newInstance();
+        decode(example, decoder);
+        return decoder;
+    }
+
+    private Decoder decodeHeartbeatAllowingEmptyTags(final String example) throws Exception
+    {
+        final Decoder decoder = (Decoder)heartbeatAllowingEmptyTags.getConstructor().newInstance();
         decode(example, decoder);
         return decoder;
     }
