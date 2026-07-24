@@ -285,7 +285,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         {
             if (heartbeatRangeSequenceNumberStart != OUT_OF_RANGE)
             {
-                if (!sendGapFill())
+                if (!sendGapFill(headerDecoder.msgSeqNum()))
                 {
                     return ABORT;
                 }
@@ -296,7 +296,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         }
     }
 
-    private boolean sendGapFill()
+    private boolean sendGapFill(final int sequenceNumberEnd)
     {
         if (sequenceResetEncoder == null)
         {
@@ -329,10 +329,8 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
             }
         }
 
-        final int heartbeatRangeSequenceNumberEnd = headerDecoder.msgSeqNum();
-
         sequenceResetEncoder.header().msgSeqNum(heartbeatRangeSequenceNumberStart);
-        sequenceResetEncoder.newSeqNo(heartbeatRangeSequenceNumberEnd);
+        sequenceResetEncoder.newSeqNo(sequenceNumberEnd);
         sequenceResetEncoder.header().sendingTime(
             timestampEncoder.buffer(), timestampEncoder.encodeFrom(nanoClock.nanoTime(), TimeUnit.NANOSECONDS));
 
@@ -343,7 +341,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
             encodeBuffer, encodedOffset, encodedLength,
             libraryId, SEQUENCE_RESET_MESSAGE_TYPE,
             messageDecoder.session(), replayFromSequenceIndex, libraryId,
-            CATCHUP_REPLAY, heartbeatRangeSequenceNumberEnd) > 0;
+            CATCHUP_REPLAY, sequenceNumberEnd) > 0;
 
         if (sent)
         {
@@ -426,29 +424,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
 
             case REPLAYING:
             {
-                // Timeout the catchup operations
-                if (System.currentTimeMillis() > catchupEndTimeInMs)
-                {
-                    return switchToMissingMessages("Catchup operation timed out");
-                }
-
-                if (replayOperation.pollReplay())
-                {
-                    if (hasMissingMessages())
-                    {
-                        return switchToMissingMessages("Is missing messages from replay index query");
-                    }
-                    else
-                    {
-                        state = State.SEND_OK;
-                        return sendOk(inboundPublication, correlationId, session);
-                    }
-                }
-                else
-                {
-                    // Incomplete operation
-                    return BACK_PRESSURED;
-                }
+                return pollReplaying();
             }
 
             case SEND_MISSING:
@@ -467,6 +443,49 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
                 return 1;
             }
         }
+    }
+
+    private long pollReplaying()
+    {
+        // Timeout the catchup operations
+        if (System.currentTimeMillis() > catchupEndTimeInMs)
+        {
+            return switchToMissingMessages("Catchup operation timed out");
+        }
+
+        if (replayOperation.pollReplay())
+        {
+            if (heartbeatRangeSequenceNumberStart != OUT_OF_RANGE && !sendTrailingGapFill())
+            {
+                return BACK_PRESSURED;
+            }
+
+            if (hasMissingMessages())
+            {
+                return switchToMissingMessages("Is missing messages from replay index query");
+            }
+            else
+            {
+                state = State.SEND_OK;
+                return sendOk(inboundPublication, correlationId, session);
+            }
+        }
+        else
+        {
+            // Incomplete operation
+            return BACK_PRESSURED;
+        }
+    }
+
+    private boolean sendTrailingGapFill()
+    {
+        final int heartbeatRangeSequenceNumberEnd = headerDecoder.msgSeqNum();
+        if (sendGapFill(heartbeatRangeSequenceNumberEnd + 1))
+        {
+            replayFromSequenceNumber = heartbeatRangeSequenceNumberEnd;
+            return true;
+        }
+        return false;
     }
 
     private long switchToMissingMessages(final String reason)
