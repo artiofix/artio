@@ -469,6 +469,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         testSystem.awaitReply(reply);
         assertEquals(Reply.State.COMPLETED, reply.state(), reply.toString());
+        assertEquals(OK, reply.resultIfPresent());
         assertSame(acceptingSession, acceptingHandler.lastSession());
 
         exchangeExampleMessageFromAcceptorToInitiator("4");
@@ -1403,6 +1404,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         final Reply<ReplayMessagesStatus> reply = acceptingSession.replayReceivedMessages(
             1, 100, 2, 100, 5_000L);
         testSystem.awaitCompletedReplies(reply);
+        assertEquals(ReplayMessagesStatus.MISSING_MESSAGES, reply.resultIfPresent());
         assertThat(acceptingOtfAcceptor.messages(), hasSize(0));
     }
 

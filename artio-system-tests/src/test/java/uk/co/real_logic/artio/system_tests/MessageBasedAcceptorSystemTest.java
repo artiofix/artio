@@ -760,10 +760,12 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             testSystem.awaitReceivedSequenceNumber(session, 1);
 
             otfAcceptor.messages().clear();
-            testSystem.awaitCompletedReply(session.replayReceivedMessages(
+            final Reply<ReplayMessagesStatus> reply = session.replayReceivedMessages(
                 1, 0,
                 MOST_RECENT_MESSAGE, 1,
-                5000));
+                5000);
+            testSystem.awaitCompletedReply(reply);
+            assertEquals(ReplayMessagesStatus.OK, reply.resultIfPresent());
             assertThat(otfAcceptor.messages(), hasSize(3));
         });
     }
@@ -787,8 +789,10 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             connection.exchangeTestRequestHeartbeat("ABC");
 
-            testSystem.awaitReply(
-                library.requestSession(session.id(), 0, CURRENT_SEQUENCE, DEFAULT_REPLY_TIMEOUT_IN_MS));
+            final Reply<SessionReplyStatus> reply = library.requestSession(
+                session.id(), 0, CURRENT_SEQUENCE, DEFAULT_REPLY_TIMEOUT_IN_MS);
+            testSystem.awaitReply(reply);
+            assertEquals(SessionReplyStatus.OK, reply.resultIfPresent());
             assertThat(otfAcceptor.messages(), hasSize(2));
         }
     }

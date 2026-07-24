@@ -820,6 +820,7 @@ public class AbstractGatewayToGatewaySystemTest
         final Reply<ReplayMessagesStatus> reply = acceptingSession.replayReceivedMessages(
             1, 0, 2, 0, 5_000L);
         testSystem.awaitCompletedReplies(reply);
+        assertEquals(ReplayMessagesStatus.OK, reply.resultIfPresent());
 
         final FixMessage testRequest = acceptingOtfAcceptor
             .receivedMessage(TEST_REQUEST_MESSAGE_AS_STR)

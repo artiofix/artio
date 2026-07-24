@@ -28,6 +28,7 @@ import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.FixEngine;
 import uk.co.real_logic.artio.library.LibraryConfiguration;
 import uk.co.real_logic.artio.library.OnMessageInfo;
+import uk.co.real_logic.artio.messages.ReplayMessagesStatus;
 import uk.co.real_logic.artio.session.Session;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
@@ -176,10 +177,12 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
         connectSessions(1, 1);
 
         clearMessages();
-        testSystem.awaitCompletedReply(acceptingSession.replayReceivedMessages(
+        final Reply<ReplayMessagesStatus> reply = acceptingSession.replayReceivedMessages(
             1, 0,
             MOST_RECENT_MESSAGE, 1,
-            5000));
+            5000);
+        testSystem.awaitCompletedReply(reply);
+        assertEquals(ReplayMessagesStatus.OK, reply.resultIfPresent());
         assertThat(acceptingOtfAcceptor.messages(), hasSize(1));
     }
 
