@@ -195,7 +195,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
     private final DeadlineTimerWheel timerWheel;
     private final TimerEventHandler timerEventHandler;
 
-    private long nextConnectionId = (long)(Math.random() * Long.MAX_VALUE);
+    private long nextConnectionId;
     private FixPProtocol fixPProtocol;
     private AbstractFixPParser fixPParser;
     private AbstractFixPProxy fixPProxy;
@@ -283,6 +283,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         this.fixPContexts = fixPContexts;
         this.fixCounters = fixCounters;
         this.dutyCycleTracker = fixCounters.getFramerDutyCycleTracker(configuration.framerCycleThresholdNs());
+        this.nextConnectionId = configuration.initialConnectionId();
 
         replyTimeoutInNs = TimeUnit.MILLISECONDS.toNanos(configuration.replyTimeoutInMs());
         timerEventHandler = new TimerEventHandler(errorHandler);

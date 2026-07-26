@@ -326,6 +326,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     private long timeIndexReplayFlushIntervalInNs = DEFAULT_TIME_INDEX_FLUSH_INTERVAL_IN_NS;
     private CancelOnDisconnectOption cancelOnDisconnectOption = DO_NOT_CANCEL_ON_DISCONNECT_OR_LOGOUT;
     private int cancelOnDisconnectTimeoutWindowInMs = DEFAULT_CANCEL_ON_DISCONNECT_TIMEOUT_WINDOW_IN_MS;
+    private long initialConnectionId = (long)(Math.random() * Long.MAX_VALUE);;
     private long framerCycleThresholdNs = DEFAULT_CYCLE_THRESHOLD_NS;
     private long indexerCycleThresholdNs = DEFAULT_CYCLE_THRESHOLD_NS;
 
@@ -1299,6 +1300,18 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     }
 
     /**
+     * Sets the initial connectionId to start with.
+     *
+     * @param initialConnectionId initial connection id
+     * @return this
+     */
+    public EngineConfiguration initialConnectionId(final long initialConnectionId)
+    {
+        this.initialConnectionId = initialConnectionId;
+        return this;
+    }
+
+    /**
      * Set a threshold for the framer work cycle time which when exceeded it will increment the
      * framer cycle time exceeded count.
      *
@@ -2053,6 +2066,11 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public int cancelOnDisconnectTimeoutWindowInMs()
     {
         return cancelOnDisconnectTimeoutWindowInMs;
+    }
+
+    public long initialConnectionId()
+    {
+        return initialConnectionId;
     }
 
     public long framerCycleThresholdNs()
