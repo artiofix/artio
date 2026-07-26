@@ -1,0 +1,1547 @@
+= Artio Releases
+
+== Unreleased
+
+* `[Java]` Suppress `this-escape` warnings from generated encoders and decoders, required for them to compile without warnings on JDK 21.
+* Reject invalid week-of-month in `MonthYear` decode.
+* Check status when using `CatchupReplayer` in tests.
+* Fix session id reuse check when creating new `LibraryExtendPosition` objects (https://github.com/artiofix/artio/pull/578[#578]).
+* Fix: send trailing gap-fill when catchup replay ends with heartbeats (https://github.com/artiofix/artio/pull/577[#577]).
+* Tidy up throttle notification handling after https://github.com/artiofix/artio/pull/577[#577]; for now do nothing on throttle notification.
+* Correct `CustOrderCapacity` `ILink3SystemTest` (https://github.com/artiofix/artio/pull/512[#512]).
+* Externalize `initialConnectionId` to `EngineConfiguration`, from https://github.com/artiofix/artio/pull/500[#500].
+* Use `String` variables for composite key implementations, from https://github.com/artiofix/artio/pull/500[#500].
+
+== 0.181 (2026-07-10)
+
+* Upgrade to `Aeron` 1.52.2.
+
+== 0.180 (2026-07-08)
+
+* Upgrade to `Aeron` 1.52.1 and `Shadow` 9.5.1.
+* Qualify encoder fields with `this.` to avoid naming clashes.
+
+== 0.179 (2026-07-03)
+
+* Upgrade to `Aeron` 1.52.0, `Agrona` 2.5.0, `SBE` 1.39.0, `JUnit` 6.1.1, `Gradle` 9.6.1 and `Shadow` 9.4.3.
+* Remove usage of deprecated `Image#position(long)` and fix performance test dependencies.
+
+== 0.178 (2026-06-10)
+
+* Fix `StreamTimestampZipper`/`StreamPoller` handling so buffered messages can no longer get the zipper stuck, and ensure correct timestamp ordering for both catchup replay and resend-request replay streams. As a side effect, `timestampInNs` passed into `SessionHandler#onMessage` during catchup replay now reflects replay time rather than original framer time.
+* Allow `compaction-size` and `maximum-buffer-size` to be configured within `FixArchivePrinter`.
+* Pin GitHub Actions to commit hashes for supply-chain security.
+
+== 0.177 (2026-04-29)
+
+* Upgrade to `Aeron` 1.51.0, `Agrona` 2.4.1, `SBE` 1.38.1, `Gradle` 9.5.0 and `Shadow` 9.4.1.
+* Add CI snapshot release testing (https://github.com/artiofix/artio/pull/571[#571]).
+* Add regression test verifying no resource leak occurs during catchup replay.
+
+== 0.176 (2026-03-25)
+
+* Upgrade to `Aeron` 1.50.4, `Shadow` 9.4.0, `Mockito` 5.23.0 and `JUnit` 6.0.3.
+* Add aliases to subscriptions, and use named Aeron/Archive clients for easier diagnostics.
+* Print stream information when a system property is set, to aid debugging.
+* Refactor `DirectSessionProxy` to update the FIX header before calling `SessionCustomisationStrategy#configureLogon` and `SessionCustomisationStrategy#configureLogout`.
+
+== 0.175 (2026-01-19)
+
+* Upgrade to `Aeron` 1.50.0, `Agrona` 2.4.0, `SBE` 1.37.1 and `JUnit` 6.0.2; bump tip Java version to 25.
+* Fix the debug logger and remove an unnecessary `ByteBuffer` position update in `FixPSenderEndPoint` (https://github.com/artiofix/artio/pull/563[#563]).
+* Use faster temporary storage for Windows CI builds.
+
+== 0.174 (2026-01-06)
+
+* Upgrade to `Aeron` 1.49.3, `Agrona` 2.3.2, `SBE` 1.36.2, `ByteBuddy` 1.17.8, `Gradle` 9.2.1, `Shadow` 9.3.1, `Checkstyle` 12.3.1, `Mockito` 5.21.0 and `JUnit` 6.0.1.
+* Improve `ErrorPrinter` to label archive errors and handle the archive client disconnecting.
+* Update CI actions (`setup-gradle`, `setup-java`, `checkout`).
+
+== 0.173 (2025-11-12)
+
+* Upgrade to `Aeron` 1.49.1 and `JUnit` 6.0.0 (https://github.com/artiofix/artio/pull/557[#557]); pin `Shadow` to 8.3.9 and remove the JUnit Vintage dependency.
+* Use the associated length field to determine how much to copy from a data/xmldata buffer when encoding a message (https://github.com/artiofix/artio/pull/559[#559]).
+* Ensure the replay plan is synchronized with the outbound replay index for accurate replay (https://github.com/artiofix/artio/pull/561[#561]).
+* Fix resetting of the suppress-retransmission callback in the binary entrypoint when a connection experiences back pressure, plus additional `Gapfiller` test coverage.
+* Allow the FIX workflow to act as a liveness indicator for engine and library.
+
+== 0.172 (2025-10-06)
+
+* Upgrade to `Aeron` 1.49.0 and `Agrona` 2.3.0 (https://github.com/artiofix/artio/pull/556[#556]).
+* Fix a crash in `UtcTimeOnlyEncoder` (https://github.com/artiofix/artio/pull/553[#553]).
+* Fix `SequenceNumberIndexWriter` term roll check.
+* Allow `SeqIndexSync`, `ThrottleConfiguration` and `ReleaseSessionReply` to act as liveness indicators.
+* Use the same timestamp for `SendingTime` in outbound FIX messages and `FixMessage#timestamp` (https://github.com/artiofix/artio/pull/550[#550]).
+* Include the session id in, and otherwise improve, the `trySendSequenceReset` exception message.
+
+== 0.171 (2025-06-30)
+
+* Upgrade to `Aeron` 1.48.4, `Agrona` 2.2.4, `ByteBuddy` 1.17.6, `Checkstyle` 10.26.0, `JUnit` 5.13.2, `SBE` 1.35.6 and `ShadowJar` 8.3.7.
+* Run CI daily.
+
+== 0.170 (2025-06-23)
+
+* Upgrade to `Aeron` 1.48.3, `Agrona` 2.2.3, `SBE` 1.35.5 and `JUnit` 5.13.1.
+* Add support for overriding the begin sequence number in the Resend Request Controller (https://github.com/artiofix/artio/pull/551[#551]).
+* Improve logging around the `Replayer` processing a Resend Request.
+
+== 0.169 (2025-06-06)
+
+* Upgrade to `Aeron` 1.48.1, `SBE` 1.35.3, `Agrona` 2.2.2 and `Gradle` 8.14.2.
+* Publish artifacts to Maven Central using the Central Portal OSSRH Staging API.
+
+== 0.168 (2025-06-05)
+
+* Fix a validation bug introduced by https://github.com/artiofix/artio/pull/546[#546] that caused failures for the rest of the trading day, with added regression test coverage (https://github.com/artiofix/artio/pull/548[#548], https://github.com/artiofix/artio/pull/549[#549]).
+* Correct the sequence index for offline sessions when requesting a session, including after releasing the session to the engine.
+* Fix FIX socket connection handling in tests (https://github.com/artiofix/artio/pull/547[#547]).
+
+== 0.167 (2025-05-08)
+
+* Add validation for `char`/`boolean` tag value length (https://github.com/artiofix/artio/pull/546[#546]).
+
+== 0.166 (2025-04-21)
+
+* Upgrade to `Aeron` 1.47.4, `Agrona` 2.1.0, `ByteBuddy` 1.17.5, `Checkstyle` 10.23.0, `JUnit` 5.12.2, `Mockito` 5.17.0 and `ShadowJar` 8.3.6, keeping dependencies aligned with Aeron.
+* Fix receiver buffer handling to invalidate data when the begin string or body length tags are invalid.
+* Improve Proxy Protocol V2 handling.
+* Use the `gradle/actions/setup-gradle` action for caching Gradle dependencies in CI.
+
+== 0.165 (2025-02-11)
+
+* Fix a bug in the float overflow handler when used with a dictionary where a message has repeating groups (https://github.com/artiofix/artio/pull/543[#543]).
+* Update repository references from `real-logic` to `aeron-io`/`artiofix`, and update the `Implementation-Vendor` manifest attribute.
+
+== 0.164 (2025-01-30)
+
+* Upgrade to `Aeron` 1.47.2.
+
+== 0.163 (2025-01-29)
+
+* Upgrade to `Aeron` 1.47.1, `Gradle` 8.12.1, `Checkstyle` 10.21.2 and `ByteBuddy` 1.16.1.
+* Allow custom float overflow handling (https://github.com/artiofix/artio/pull/539[#539]).
+* Pass `Image` header values as captured at the time of initiating the session, rather than the header from the initiating connection callback.
+* Fix a race in `LiveLibraryInfo#connectionFinishesConnecting` where a mid-connection disconnect could occur while a session was being handed over.
+* Remove a library reply once it has completed, timed out, or errored.
+
+== 0.162 (2025-01-20)
+
+* Upgrade to `Aeron` 1.47.0, `Agrona` 2.0.1, `SBE` 1.34.1 and `Mockito` 5.15.2.
+* When using `CatchupReplayer` to replay inbound archive messages, skip messages with `CATCHUP_REPLAY` message status (https://github.com/artiofix/artio/pull/529[#529]).
+* Add a timeout to `ResetSequenceNumberCommand`.
+
+== 0.161.6 (2025-11-11)
+
+* Add more `Gapfiller` test coverage.
+* Add workflow dispatch to CI.
+
+== 0.161.5 (2025-10-20)
+
+* Ensure the replay plan is synchronized with the outbound replay index for accurate replay (https://github.com/artiofix/artio/pull/561[#561]).
+* Allow the FIX workflow to act as a liveness indicator for engine and library.
+* Fix FIX socket connection handling in tests (https://github.com/artiofix/artio/pull/547[#547]).
+
+== 0.161.4 (2025-09-02)
+
+* Fix `SequenceNumberIndexWriter` term roll check.
+* Include the session id in, and otherwise improve, the `trySendSequenceReset` exception message.
+
+== 0.161.3 (2025-06-24)
+
+* Backport publishing of artifacts to Maven Central via the Central Portal OSSRH Staging API.
+== 0.161.2 (2025-06-23)
+
+* Update CI to upload build artifacts using the v4 `upload-artifact` action.
+
+== 0.161.1 (2025-06-23)
+
+* Support overriding the begin sequence number in the Resend Request Controller (https://github.com/artiofix/artio/pull/551[#551]).
+* Improve logging around `Replayer` processing of Resend Requests.
+
+== 0.161 (2025-01-08)
+
+* Validate the `MsgType` field before parsing, and fix `MsgType` parsing for message types longer than two characters.
+* Disconnect sessions when a library times out in `SOLE_LIBRARY` mode, including support for an accepting engine timeout (https://github.com/artiofix/artio/pull/537[#537]).
+* Add a duty cycle tracker (https://github.com/artiofix/artio/pull/536[#536]).
+* Downgrade error handler logging when a session disconnects during a replay.
+* Fix unnecessary allocation caused by group decoder `next` references not being nullified on reset (https://github.com/artiofix/artio/pull/532[#532]).
+* Upgrade to JUnit 5.11.4, ByteBuddy 1.15.11, Gradle 8.11.1, and SBE 1.33.2.
+
+== 0.160 (2024-11-19)
+
+* Fix an exception thrown after a disconnect caused by exceeding the slow consumer buffer, and relax validation of `slowConsumerTimeoutInMs`.
+* Fix the groups decoder to reset its `next` reference, preventing ghost references when parsing a new message with the same decoder instance (issue https://github.com/artiofix/artio/issues/525[#525]).
+* Upgrade to Checkstyle 1.20.1, ByteBuddy 1.15.10, and Shadow 8.3.5.
+
+== 0.159 (2024-11-05)
+
+* Fix fragmented message length calculation for padding (fixes https://github.com/artiofix/artio/pull/527[#527]).
+* Add test coverage guiding the resolution of the groups decoder ghost-reference issue (https://github.com/artiofix/artio/issues/525[#525]).
+* Upgrade to Aeron 1.46.7, Mockito 5.14.2, JUnit 5.11.3, Checkstyle 10.19.0, and ByteBuddy 1.15.7.
+
+== 0.158 (2024-10-21)
+
+* Apply `FIX_MESSAGE` logging to messages sent using `SessionWriter`.
+* Add a Dockerfile for running Artio builds in a container.
+* Improve determinism and reliability of several system tests (`CancelOnDisconnectBinaryEntrypointSystemTest`, `PersistentSequenceNumberGatewayToGatewaySystemTest`, `ExternallyControlledSystemTest`, `SlowConsumerTest`), including retry/back-pressure handling in `sendMessage`.
+* Improve `STATE_CLEANUP` logging to include details of performed purges.
+* Migrate the Gradle build to version catalogs and force a specific JVM for CI test execution.
+* Upgrade to Aeron 1.46.6, Agrona 1.23.1, SBE 1.33.1, Gradle 8.10.2, ByteBuddy 1.15.4, JUnit 5.11.2, Shadow 8.3.3, and Mockito 5.14.1.
+
+== 0.157 (2024-09-16)
+
+* Disconnect sessions before library logon in certain error conditions (https://github.com/artiofix/artio/pull/521[#521]).
+* Upgrade to Aeron 1.46.2, Gradle 8.10.1, Mockito 5.13.0, and Shadow 8.3.1.
+
+== 0.156 (2024-09-03)
+
+* Fix nested repeating group validation not detecting cases where the count tag is lower than the actual number of group occurrences (https://github.com/artiofix/artio/pull/520[#520]).
+* Publish sessions on `LibraryTimeout` (https://github.com/artiofix/artio/pull/519[#519]).
+* Fix a race condition in `Replayer`.
+* Ensure Gradle tasks that generate FIX codecs correctly treat dictionaries as task inputs.
+
+== 0.155 (2024-08-25)
+
+* Move the build and tests to run on JDK 17 (`sourceCompatibility=17`).
+* Work around nested `Selector` poll call issues affecting legacy Selector behaviour.
+* Switch CI to CodeQL v3.
+* Upgrade to Aeron 1.46.0, Agrona 1.23.0, SBE 1.33.0, Mockito 5.12.0, Shadow 8.3.0, and Gradle 8.10.
+
+== 0.154 (2024-08-24)
+
+* Fix `connectionId` returned by a follower session after disconnect.
+* Fix the Basic Client/Server and Stress samples.
+* Publish OSS artifacts through a GitHub Actions workflow, with explicit job permissions for workflow calls.
+* Upgrade to Aeron 1.45.0, Agrona 1.22.0, SBE 1.32.1, JUnit 5.11.0 (via BOM), ByteBuddy 1.14.18, Hamcrest 3.0, and HdrHistogram 2.2.2.
+
+== 0.153 (2024-06-12)
+
+* Add a `--delimiter` option to `FixArchivePrinter` (https://github.com/artiofix/artio/pull/509[#509]).
+* Fix required temporal field values incorrectly being retained on decoders after reset.
+
+== 0.152.1 (2025-03-14)
+
+* Add support for custom float overflow handling (https://github.com/artiofix/artio/pull/539[#539]).
+* Fix a bug in the float overflow handler when used with dictionaries containing repeating groups (https://github.com/artiofix/artio/pull/543[#543]).
+
+== 0.152 (2024-06-04)
+
+* Fix `FixReplayerSession` state scope and stream naming issues.
+* Upgrade to Agrona 1.21.2.
+
+== 0.151 (2024-05-30)
+
+* Fix float parsing.
+* Upgrade to ByteBuddy 1.14.16.
+
+== 0.150 (2024-05-10)
+
+* Avoid leaking offline sessions.
+* Add test coverage demonstrating an issue exceeding `numInGroup` in `ControlNotification`.
+* Upgrade to ByteBuddy 1.14.14.
+
+== 0.149 (2024-04-12)
+
+* Add `connectTimeoutNs` to `ArtioAdmin` and wait for the connection to the `FixEngine` before allowing any commands to be executed.
+* Fix a connection race condition and a related Mockito test error.
+* Upgrade to Aeron 1.44.1 and SBE 1.31.1.
+
+== 0.148 (2024-04-09)
+
+* Fix `ReplayIndex` to delete all index segments on a sequence reset.
+* Fix `SEP.timeoutSlowDisconnect` logging.
+* Upgrade to Aeron 1.44.0, SBE 1.31.0, Agrona 1.21.1, ByteBuddy 1.14.13, and ASM 9.7.
+
+== 0.147 (2024-03-14)
+
+* Improve default settings for `FixArchivePrinter` and `FixArchiveScanner` (fixes https://github.com/artiofix/artio/pull/468[#468], fixes https://github.com/artiofix/artio/pull/492[#492], closes https://github.com/artiofix/artio/pull/493[#493]).
+* Make the engine reuse its outbound recording consistently.
+* Log `FIX_MESSAGE_TCP` written bytes as ASCII instead of a raw byte array.
+
+== 0.146 (2024-02-23)
+
+* Add support for encoding "any" fields in generated codecs.
+* Avoid generating invalid or unnecessary JavaDoc on `toEncoder`/`copyTo` methods.
+* Move CI to Java 21 and upgrade to GitHub Actions v4.
+* Upgrade to ByteBuddy 1.14.12 and JUnit 5.10.2.
+
+== 0.145 (2023-12-21)
+
+* **Breaking:** Change the return type of `EngineConfiguration.replayIndexFileCapacityToBytes()` to `long`.
+* Fix a bug where Artio silently stops processing incoming messages when one can't fit in the receive buffer (fixes https://github.com/artiofix/artio/pull/499[#499]).
+* Migrate the test suite to run on the JUnit Platform / JUnit 5.
+* Upgrade to Aeron 1.43.0, SBE 1.30.0, Agrona 1.20.0, ByteBuddy 1.14.10, and JUnit 5.10.1.
+
+== 0.144 (2023-09-14)
+
+* Fix handling of back-pressured and disconnected endpoints so that they are correctly removed (https://github.com/artiofix/artio/pull/490[#490]).
+* Add a null check for `sessionKey` on the command line (https://github.com/artiofix/artio/pull/489[#489]).
+* Fix resend-after-reset handling and a race condition when redacting the sequence number index.
+* Fix a bug that missed an index replay record after a sequence reset.
+
+== 0.143 (2023-09-04)
+
+* Allow applications to request a `logoutDisconnect` on a session with a custom text (https://github.com/artiofix/artio/pull/488[#488]).
+* Add customisable cancel-on-disconnect behaviour (https://github.com/artiofix/artio/pull/482[#482]).
+* Add a `notApplied` method to the binary entrypoint connection interface (https://github.com/artiofix/artio/pull/479[#479]).
+* Prevent writing to application-supplied buffers when encoding strings (https://github.com/artiofix/artio/pull/485[#485]).
+* Fetch `RejectReason` by index rather than representation for improved performance (https://github.com/artiofix/artio/pull/483[#483]).
+* Fix `ReplayQuery` and `ReplayIndexExtractor`, and ensure `ReplayIndex` always deletes all files when resetting.
+* Fix `replayReceivedMessages()` to correctly use `replayFromSequenceIndex`.
+* Fix a disconnect race that could occur after requesting an online reset but before receiving the response.
+* Upgrade to Aeron 1.42.1, Agrona 1.19.2, SBE 1.29.0, JUnit 5.10.0, JMH 1.37, and Gradle 8.2.1.
+
+== 0.142 (2023-04-21)
+
+* Remove usage of the `finalize` method, deprecated since JDK 17.
+* Add support for building and testing against multiple JDK versions, including JDK 21.
+* Upgrade to Aeron 1.41.2 and ByteBuddy 1.14.4.
+
+== 0.141 (2023-04-17)
+
+* Fix `ByteBuffer` writes to account for `wrapAdjustment()` so that data at the correct offset is used.
+* Upgrade to Aeron 1.41.1, Agrona 1.18.1, SBE 1.28.2, Gradle 8.1, and Shadow 8.1.1.
+== 0.140 (2023-03-28)
+
+* Fix a FIXP issue where the Cancel on Disconnect event fired when a session logout occurred for `CANCEL_ON_DISCONNECT_ONLY` (https://github.com/artiofix/artio/pull/476[#476]).
+* Change `BusinessRejectReason` handling in `BusinessMessageReject` for the Binary Entrypoint protocol (https://github.com/artiofix/artio/pull/478[#478]).
+* Remove an extra semicolon from `DefaultDictionaryAcceptor` (https://github.com/artiofix/artio/pull/475[#475]).
+* Fix `ReplayIndexExtractor` and indexer quiescing bugs, removing the now unused `ReplayIndexValidator`.
+* Do not log connection reset exceptions as errors on Java 13+.
+* Upgrade to Mockito 4.11.0 and the Gradle Versions plugin 0.46.0.
+* Add a CodeQL workflow for GitHub code scanning and various CI tooling improvements.
+
+== 0.139.5 (2024-04-18)
+
+* Fix a session leak involving offline sessions.
+* Add a test demonstrating an issue with exceeding `numInGroup` in `ControlNotification`.
+
+== 0.139.4 (2024-04-02)
+
+* Fix `ReplayIndex` to delete all index segments on a sequence reset, with accompanying test coverage.
+* Fix `SenderEndPoint` timeout/slow-disconnect logging.
+
+== 0.139.3 (2023-09-07)
+
+* Fix resend-after-reset handling and a race condition when redacting the sequence number index.
+* Fix a bug where an index replay record could be missed after a sequence reset.
+
+== 0.139.2 (2023-07-11)
+
+* Fix `ReplayQuery` and `ReplayIndexExtractor`, and remove the unused `ReplayIndexValidator`.
+* Fix `ReplayIndex` to always delete all files when resetting.
+* Fix `replayReceivedMessages()` to correctly use `replayFromSequenceIndex`.
+* Fix indexer quiescing bugs.
+
+== 0.139.1 (2023-06-12)
+
+* Fix a disconnect handling issue occurring after an online reset was requested but before the response was received.
+* Upgrade to Agrona 1.17.2.
+
+== 0.139 (2023-01-04)
+
+* Make additional logout/disconnect operations work correctly with the async `SessionProxy`.
+* Fix a flaky test (https://github.com/artiofix/artio/pull/472[#472]).
+* Upgrade to Gradle 7.6, Mockito 4.10.0, JMH 1.36, and the Versions plugin 0.44.0.
+
+== 0.138 (2022-11-04)
+
+* Add a message header for FIXP business messages so additional fields, including the SOFH message size, can be passed through.
+* Add a `SLOW_CONSUMER` debug log tag.
+* Fix an issue (https://github.com/artiofix/artio/pull/468[#468]).
+* Add further test coverage for authentication rejection of server-disconnected sessions.
+
+== 0.137 (2022-10-25)
+
+* Upgrade to Agrona 1.17.1, SBE 1.27.0, and Aeron 1.40.0.
+* Upgrade to Mockito 4.8.1 and the Versions plugin 0.43.0.
+
+== 0.136.1 (2022-11-22)
+
+* Make additional logout/disconnect operations work correctly with the async `SessionProxy`.
+
+== 0.136 (2022-10-06)
+
+* Add a callback allowing control over FIXP retransmit requests, plus additional accessors for FIXP connections.
+* Add extensive FIXP correctness and validation fixes: reject/disconnect on out-of-range template ids and duplicate session ids, low sequence number validation on establish, minimum keepalive timestamp validation, and correct handling of terminate/retransmit messages with the right termination and reject codes.
+* Fix re-establishing a FIXP acceptor connection that had previously been created as an offline session.
+* Fix back-pressure handling in negotiate reject, and a bug where a second negotiate message wasn't rejected.
+* Split out FIXP keepalive timeouts so they no longer need to match the counter-party's timeout.
+* Immediately disconnect FIXP connections whose first message isn't a negotiate or establish.
+* Bump the Binary Entrypoint definition to the latest version and add further negotiate message fields to the FIXP context.
+* Handle further reproduction-mode corner cases.
+* Clean up a Java 17 reflection warning.
+* Upgrade to Mockito 4.8.0.
+
+== 0.135 (2022-08-30)
+
+* Add a new "reproduction mode" capability for replaying and reproducing session behavior for diagnostics, including replay support, a configurable reproduction stream id, and a backpressure-events log to improve reproduction accuracy.
+* Add the ability to reject FIXP protocols with custom reject codes.
+* Fix a bug where repeated sequence number resets without intervening messages could hold back old data from being pruned; allow the prune operation to cope with replay index files whose sequence indices had been properly incremented.
+* Fix a heartbeat-based timestamp calculation bug and correct the use of the `APPLICATION_HEARTBEAT` log tag.
+* Reduce the risk of a crash when an Aeron client liveness timeout occurs.
+* Suppress unnecessary error messages on shutdown.
+* Add a way to simulate TCP back-pressure during system tests.
+* Upgrade to Mockito 4.7.0.
+
+== 0.134 (2022-08-10)
+
+* Disconnect initiator sessions whose first message isn't a logon, matching existing acceptor behavior; this can be disabled via a new configuration option.
+* Ensure the `forcedHeartbeatIntervalInS` configuration option is handled consistently between initiator and acceptor and never affects the outbound 108= field.
+* **Breaking:** `Session.trySend()` no longer throws exceptions when a message is sent during logon/logoff — it now archives the message for a future resend instead. The `Session.send()` method has been removed and `Session.canSendMessage()` deprecated.
+* Fix `FIX_MESSAGE_TCP` debug logging.
+* Upgrade to Gradle 7.5.1 and `net.researchgate.release` 3.0.0.
+
+== 0.133 (2022-07-25)
+
+* Fix an issue causing multiple connections to be created after connection timeouts.
+* Update the Binary Entrypoint XML dictionary.
+
+== 0.132 (2022-07-14)
+
+* Fix a bug with delayed connection timeouts.
+* Upgrade to Agrona 1.16.0, SBE 1.26.0, and Aeron 1.39.0.
+
+== 0.131.3 (2026-05-12)
+
+* Use Gradle toolchains and ensure Java 8 is downloaded as part of the release build.
+
+== 0.131.2 (2026-05-12)
+
+* Remove an unused upload task from the release build.
+
+== 0.131.1 (2026-05-12)
+
+* Fix fragmented message length calculation for padding (https://github.com/artiofix/artio/pull/527[#527]).
+* Backport a basic release pipeline and fix `SlowConsumerTest`.
+
+== 0.131 (2022-07-07)
+
+* Fix a bug where, in a cluster, logout messages could be round-tripped multiple times.
+* Fix a deadlock on shutdown that could occur if a close happened while the indexer was resetting a session's sequence numbers.
+
+== 0.130 (2022-06-26)
+
+* Fix a bug where reconnecting a previously disconnected initiator and only setting its reset-seq-num flag on the second reconnect would fail to apply the reset.
+* Make TCP-level connection disconnects more prompt when a FIX heartbeat timeout occurs.
+* Fix a bug where `FixMessageLogger` could output messages out of order when their timestamps were equal.
+* Fix a bug where resend requests didn't work with logging disabled.
+* Add the ability to disable heartbeats in response to test requests, to aid testing.
+
+== 0.129.1 (2022-06-28)
+
+* Fix a deadlock on shutdown that could occur if a close happened while the indexer was resetting a session's sequence numbers.
+
+== 0.129 (2022-06-07)
+
+* Fix a race between message sending and offline sequence number handover.
+* Fix several issues related to replay of missing messages, including potentially sending duplicate replay-complete notifications, and ensure a session receives its replay-complete notification before any counter-party messages once the counter-party has received the full replay.
+* Improve close-replay operation handling so the replay thread is no longer blocked while closing.
+* **Breaking:** `getAsciiSequenceView()` decoder methods now return an `AsciiSequenceView` instead of `void`, for a more fluent decoder API.
+* Add an encoder configuration parameter to avoid throwing when decoding optional strings.
+* Restrict CI Actions to read-only access to repository contents.
+* Upgrade to Mockito 4.6.1.
+
+== 0.128 (2022-05-12)
+
+* Remove the "slow peeker" and other blocking mechanisms from Artio's sender end point, replacing them with a simplified non-blocking implementation.
+* **Breaking:** Remove the `backpressureMessagesDuringReplay` configuration option, as replay back-pressure handling was removed as part of this simplification.
+* Fix a reattempt-condition bug in the new FIX sender end point.
+* Upgrade to Mockito 4.5.1.
+
+== 0.127 (2022-04-20)
+
+* Fix a bug that could cause replay correlation ids to be accidentally requeued once already processed.
+* Fix a race condition in `SenderEndPoint` when receiving valid resend request messages, and clean up a related race in FIXP acceptor retransmission.
+* Improve reliability of FIXP acceptor replay and add support for `NEXT_SESSION_VER_ID` with no offline messages to replay.
+* Add `sessionId`/`firmId` long support to `forNextSessionVerID`.
+* Improve replay logging and counters throughout.
+* Upgrade to Agrona 1.15.1, SBE 1.25.3, and Aeron 1.38.1, and add a strict Agrona version check.
+== 0.126 (2022-04-09)
+
+* Fix header-matching bugs in `CodecUtil.equals(char[], char[], int)` and `SenderTargetAndSubSessionIdStrategy`, including checking length with offset to prevent index-out-of-bounds errors and no longer matching subsequences when matching headers.
+* Fix a bug where repeated attempts to initiate a connection that always failed leaked counters.
+* Fix a Windows-specific file locking bug that occurred during reset sequence number operations.
+* Fix bugs where two consecutive archive prunes failed to properly prune the second time, and a related race condition when applying sequence number update redactions.
+* Improve test reliability (timeouts, flaky asserts, additional pruning test coverage) and fix various typos.
+
+== 0.125 (2022-04-06)
+
+* Add support for a `NEXT_SESSION_VERSION_ID` feature for FIXP sessions, with clarified FIXP javadoc.
+* Add a configurable `maximumBufferSize` to the `FixArchiveScanner` reorder buffer, along with improved validation around its offset handling.
+* Improve logging of replay-related operations and disconnect detection during replays.
+* Upgrade to Gradle 7.4.2.
+
+== 0.124 (2022-03-31)
+
+* Fix a bug where an offline sequence reset caused messages to not be resent afterwards.
+* Add a callback for resend request completion and track the number of resends in flight.
+* Clean up the `Session` hierarchy and enable initiating offline sessions.
+* Ensure the session version id is set up correctly with an acceptor FIXP connection.
+* Upgrade to JMH 1.35.
+
+== 0.123 (2022-03-22)
+
+* Fix a bug in `FixMessageConsumer` where the offset and length were incorrectly calculated.
+* Fix a bug where metadata caused the `Resending:` log line to print unnecessary content, and fix two subtle back-pressure blockage bugs when processing resend requests.
+* Fix an overflow when a large replay index file capacity was configured, and add validation around the replay index segment capacity.
+* Improve replay index performance for large numbers of sessions (at the cost of some additional memory consumption), and improve indexer thread performance with an option to disable index checksums.
+* Improve `FixArchiveScanner` performance in pathological cases, add the ability to set a custom archive context, cover the corner case of scanning an empty archive after a reset, and make the archive scanner benchmark more flexible.
+* Add a forced heartbeat configuration option to simplify testing.
+* Remove unneeded cache configuration parameters and update related javadoc.
+
+== 0.122 (2022-03-14)
+
+* Fix a bug where overlapping encoder rejects during back-pressure could cause the wrong one to be written, and fix a race between closing the archive and resetting state.
+* Fix a bug where ending a stream early could cause `FixArchiveScanner` to stall.
+* Fix a bug in `LocalMktDateEncoder#encode(byte[])` and improve `LocalMktDate` encoder/decoder documentation.
+* Improve debuggability of rejected authentications and handle a session sequence number reset case more explicitly.
+* Be more flexible about what is accepted on a follower session's `fromNegotiate`.
+* Upgrade to Gradle 7.4.1 and Mockito 4.4.0.
+
+== 0.121 (2022-03-02)
+
+* Add a no-linger option to reduce authentication reject latency, using a timer wheel instead of spin polling to reduce overhead.
+* Improve support for huge replay indices by splitting files into independently-creatable segments, and ensure segment buffers are properly closed in `ReplayIndexExtractor`.
+* Improve handling of resend requests sent after sequence reset messages.
+* Stop a lingering receiver endpoint from becoming back-pressured when disconnected.
+* Improve benchmark infrastructure, including new benchmarks and a fix for a benchmark server timeout bug.
+
+== 0.120 (2022-02-17)
+
+* Pause inbound FIX sessions whilst replays are ongoing, and drain in-flight outbound messages before replay messages are sent to avoid triggering slow-consumer back-pressure.
+* Add support for duplicate resends to the resend coordination mechanism, add correlation ids to the replay complete message, and make replay correlation ids incremental rather than fully random.
+* Fix a bug where a resend request larger than the replay index size could produce a message with `34=0`.
+* Fix handling of slow vs normal resend request messages, and reduce the number of scenarios where admin messages can be sent during replay.
+* Improve naming of FIX counters, especially for offline sessions, and add more fine-grained heartbeat logging.
+
+== 0.119.1 (2022-03-02)
+
+* Backport: add a no-linger option to reduce authentication reject latency, using a timer wheel instead of spin polling.
+* Backport: stop a lingering receiver endpoint from becoming back-pressured when disconnected.
+* Improve benchmark infrastructure and fix a benchmark server timeout bug.
+
+== 0.119 (2022-02-11)
+
+* **Breaking:** Make `DecimalFloat` constants read-only, fixing a bug where a constant `DecimalFloat` value could be accidentally redefined (https://github.com/artiofix/artio/pull/452[#452]).
+* Fix a bug, introduced in 0.117, where custom reject messages could fail to send on subsequent reconnects.
+* Improve handling of corner cases around session handover, such as requesting an unknown session id or two racing request operations.
+* Make back-pressure handling in `ResendRequestController` more efficient by avoiding duplicate calls to `onResend`.
+* Upgrade to Checkstyle 9.3 and the Versions plugin to 0.42.0.
+
+== 0.118 (2022-02-04)
+
+* Add the ability to send custom reject messages in response to a resend request.
+
+== 0.117 (2022-02-01)
+
+* Fix a metadata offset bug and fix a bug where a session became a slow consumer on fragmented messages.
+* Send a logout message on heartbeat timeout instead of just disconnecting.
+* Log custom user authentication reject messages, and warn about a potential misconfiguration when both a custom appender and the debug file property are set.
+
+== 0.116 (2022-01-27)
+
+* Add the ability to reject resend requests.
+* Improve archive scanning performance and increase the default `FixArchiveScanner` compaction size from 64KB to 256MB.
+* Upgrade to Mockito 4.3.1.
+* Reduce test memory usage to stop tests from running out of memory on low-memory machines such as CI.
+
+== 0.115 (2022-01-13)
+
+* Add user-driven back-pressure handling to FIXP protocols by having handlers return `Action` instances.
+* Ensure `FixArchiveScanner` produces a total ordering of messages.
+* Fix a bug where an invalid timestamp offset was passed to `FixMessageConsumer`.
+* Improve recording coordinator logging and the information printed by `FixArchivePrinter`.
+
+== 0.114 (2022-01-10)
+
+* Ensure the library id of initiated connections is correctly tracked along with their disconnects, and notify libraries that reconnect of sessions that disconnected whilst they were timed out.
+* Deprecate the `--ilink` option for `FixArchivePrinter` in favor of `--fixp`.
+* Fix a bug with engine session acquisition failure in no-logging mode, and make floating point parser error validation consistent.
+* Fix a reported bug (https://github.com/artiofix/artio/pull/438[#438]).
+* Upgrade to the Versions plugin 0.41.0, JMH 1.34, Checkstyle 9.2.1, and Shadow 7.1.2.
+
+== 0.113.1 (2022-01-31)
+
+* Backport: fix a metadata offset bug and a bug where a session became a slow consumer on fragmented messages.
+
+== 0.113 (2021-12-24)
+
+* Fix a bug where metadata could not be sent in conjunction with large, fragmented messages.
+* Upgrade to Gradle 7.3.3.
+
+== 0.112 (2021-12-21)
+
+* Pass metadata values through to the timing captor.
+* Fix several back-pressure handling edge cases.
+* Improve naming consistency for enums with matching counts.
+
+== 0.111 (2021-12-16)
+
+* Ensure the replaying flag is set when a `Session` disconnects.
+* Upgrade to Mockito 4.2.0, Gradle 7.3.2, and Shadow 7.1.1.
+
+== 0.110 (2021-12-14)
+
+* Add a configuration option to enable/disable back-pressure during replays.
+* Check `MsgType` in case an unexpected message with a compatible structure is read.
+* Improve test reliability, including fixing a race condition caused by replayer thread session ownership tracking.
+* Upgrade to Gradle 7.3.1 and Checkstyle 9.2.
+
+== 0.109 (2021-11-29)
+
+* Extend replayer session ownership tracking to the replay index and sequence number index writer for clearer tracking.
+* Fix a bug where a clustered logout could cause a premature disconnect, and avoid an immediate disconnect after sending a reply logout when Artio is being externally controlled.
+* Fix the missing float assignment issue in `CommonDecoderImpl` (https://github.com/artiofix/artio/pull/452[#452]).
+* Send both exceptions to the error handler when an exception (e.g. from a custom session proxy) is triggered while handling a reject.
+* Improve handling of messages remaining in the buffer after a disconnect has been issued, and improve `IllegalStateException` diagnostics.
+* Make the sequence index public.
+* Upgrade to Agrona 1.14.0, SBE 1.25.1, Aeron 1.37.0, and Mockito 4.1.0.
+
+== 0.108 (2021-11-20)
+
+* Fix a bug where `putIntAscii`/`putLongAscii` encoded numbers at the wrong position in the destination array (https://github.com/artiofix/artio/pull/451[#451]).
+* Add the ability for shared codecs to synthesize components containing common fields, normalizing the FIX 4.2 and 4.4 APIs, and support per-dictionary codec configuration for allowing duplicate fields.
+* Support fragmentation for large control notifications, and add support for a custom long field type with a wider range of values.
+* Allow follower session objects to be used after reconnects, and improve usability of `FixConnection` and session header APIs.
+* Use `beginStringAsCopy` for more efficient begin string resets, and avoid sharing `HeaderEncoder`'s begin string via `DEFAULT_BEGIN_STRING`.
+* Upgrade to Aeron 1.36.0, Agrona 1.13.0, and SBE 1.25.0 (https://github.com/artiofix/artio/pull/449[#449]).
+
+== 0.107 (2021-10-25)
+
+* Add `Session.isReplaying`.
+* Fix a bug where a resend request following a large earlier sequence reset could miss messages.
+* Expose the sequence writer's sequence index.
+
+== 0.106 (2021-10-15)
+
+* Fix a bug where shared codecs caused an `UnsupportedOperationException` for optional session fields.
+
+== 0.105 (2021-10-14)
+
+* Add a major new "shared codecs" feature: generate normalized codecs shared across multiple FIX dictionaries, with support for sharing components, groups (including nested groups), enums, and duplicate/widened field types, along with collision detection between dictionaries.
+* Support FIXT-style split dictionary configurations for shared codecs, including reversing component order when presenting duplicate field messages.
+* Add a new utility for batch test code generation across multiple XML dictionaries, plus expanded encode/decode/copyTo test coverage for shared codecs.
+* Test in CI with Java 17 instead of Java 16.
+* Upgrade to Gradle 7.2, Mockito 4.0.0, Checkstyle 9.0.1, and Shadow 7.1.0.
+== 0.104 (2021-10-04)
+
+* Ensure proxy protocol remote addresses are passed through to authentication strategies.
+* Fix potential `IllegalArgumentException` when resetting backpressured sessions.
+* Fix bug where certain comp ID lengths could cause a session context file reading bug.
+* Add new iLink3 test cases in preparation for an upcoming change in CME reject behaviour.
+* Upgrade to Checkstyle 9.0.
+
+== 0.103 (2021-09-22)
+
+* Add a time-based index to the archive scanner to significantly speed up scanning, along with improved validation, documentation, and configurability of `FixArchiveScanner`.
+* Add new `log-file-dir` configuration option for the archive scanner.
+* Add dictionary normalisation for unusual dictionary definitions.
+* Ensure FIXP message timestamps are used correctly and are ignored on throttles.
+* Add regression test for validation of a message with an absent group defined as an optional component of a required group (https://github.com/artiofix/artio/pull/444[#444]).
+
+== 0.102 (2021-09-07)
+
+* Upgrade to Aeron 1.35.1.
+* Fix time issue in FIX replay (https://github.com/artiofix/artio/pull/443[#443]).
+* Fix bug where resetting a repeating group with length zero could throw an exception in generated decoders (https://github.com/artiofix/artio/pull/444[#444]).
+
+== 0.101 (2021-08-30)
+
+* **Breaking:** Deprecate `ILink3MessageConsumer` in favour of `FIXPMessageConsumer`, remove `PrintingILinkMessageConsumer` in favour of `FixPMessagePrinter`, and add support for using Binary Entrypoint with `FixArchiveScanner` / `FixMessageLogger` via a generic, allocation-free FIXP message pretty-printer.
+* Fix bug with very large replays triggering an integer overflow.
+* Fix bug where a reset call with an invalid message wrapped by a flyweight decoder could throw an exception (https://github.com/artiofix/artio/pull/327[#327]).
+* Fix decimal float parsing to accept an upper-case `E` in scientific notation (https://github.com/artiofix/artio/pull/440[#440]).
+* Get FIXP acceptors to send a terminate message on shutdown rather than just disconnecting, and fix a bug where FIXP acceptor receiver endpoints were always polled.
+* Add a FIXP acceptor slow-consumer disconnect feature, proper closing of FIXP sender endpoints, and support for FIXP acceptor retransmissions where messages are being attempted at the same time.
+* Send the correct sequence number in FIXP finished sending, and adjust the FIXP throttle business reject code.
+* Qualify generated methods that may be named `yield`, avoiding compiler warnings on Java 14+ (https://github.com/artiofix/artio/pull/441[#441]).
+* Add a sample for the FIXP acceptor implementation.
+* Upgrade to Mockito 3.12.4 and Checkstyle 8.45.1.
+
+== 0.100 (2021-08-09)
+
+* Fix potential slow-consumer disconnect issue when Artio is responding to a large resend request while a `FixLibrary` is simultaneously writing messages.
+* Add support for throttles in FIXP protocols, and pick a more appropriate business reject reason for a throttle.
+* Add an easier way to configure and calculate replay index file sizes.
+* Improve the codec validation inspector to take a message as input from a file, and improve FIXP Javadoc.
+* Upgrade to Aeron 1.35.0, Agrona 1.12.0, SBE 1.24.0, and JMH 1.33.
+
+== 0.99 (2021-07-30)
+
+* **Breaking:** Remove the ability to disable `gracefulShutdown` and improve related Javadoc.
+* Add ability to create follower sessions for FIXP sessions, including handling the case where a follower FIXP session is created while a normal session already exists.
+* Add ability to filter debug log FIX messages by message type.
+* Make the FIXP acceptor configuration more general.
+* Fix bug where logging back in while a cancel-on-disconnect timer was pending would still trigger cancel-on-disconnect.
+
+== 0.98 (2021-07-21)
+
+* Add cancel-on-disconnect support for Binary Entrypoint.
+* Allow offline sessions to be released, ensure messages sent via `followerSession` correctly update sequence numbers of offline session objects, and prevent session writers from a closed `FixLibrary` from sending messages.
+* Fix bugs where sole-library session handover or sequence number resets could hang.
+* Fix subtle race condition during shutdown, and handle exceptions thrown by `SessionHandler.onSessionStart()` gracefully instead of propagating them.
+* Fix offset calculation when logging replayed messages, and stop `DebugLogger` from appending a duplicate line separator.
+* Fix `toString()` in keys generated by `SenderTargetAndSubSessionIdStrategy`, and reset the session index after sending a logon with a sequence number reset requested.
+* Improve checking of null configuration parameters.
+* Upgrade to Gradle 7.1.1, Shadow 7.0.0, and Mockito 3.11.2; address various dependency warnings.
+
+== 0.97 (2021-06-16)
+
+* Fix bug scanning for archive locations, and make archive channel search more robust to differing ordering of channel parameters in the channel string.
+* Upgrade to Aeron 1.34.0, SBE 1.23.0, and Agrona 1.11.0.
+
+== 0.96 (2021-06-11)
+
+* Change error handling in `FixLibrary` to stop throwing session-specific exceptions, avoiding unrecoverable scenarios.
+* Ensure `trySendSequenceReset()` atomically sets both sequence numbers or neither, regardless of backpressure.
+* Change behaviour when receiving a resend request with `endSeqNo` < `beginSeqNo`: send a reject instead of raising an application error, and correctly respond to resend requests with a high sequence number.
+* Optimize the `putFloatAscii` method, and fix formatting in generated dictionary acceptor code.
+* Upgrade to Mockito 3.11.1.
+
+== 0.95 (2021-05-31)
+
+* Improve handling of resend requests for messages that already had the poss-dup flag set when originally sent, including cases with a missing original sending time, and fix confusing log lines and character encoding issues around this logic.
+* **Breaking:** Rename `Session.tryUpdateReceivedSequenceNumber()` to `Session.tryUpdateLastReceivedSequenceNumber()` for API symmetry.
+* Null check the image before use in `ReplayOperation`.
+* Upgrade to the Versions Gradle plugin 0.39.0 and JMH 1.32; remove the Eclipse and IDEA Gradle plugins.
+
+== 0.94 (2021-05-19)
+
+* Fix data races during session handover.
+* Add support for `Session.tryResetSequenceNumbers()` to work while offline, and add a way to force a sequence index sync to coordinate with `Session.tryUpdateReceivedSequenceNumber()`.
+* Ensure an exception thrown while closing a `SequenceNumberIndexWriter` file doesn't prevent other files from being closed.
+* Upgrade to Aeron 1.33.1, Mockito 3.10.0, and JMH 1.31.
+
+== 0.93 (2021-05-11)
+
+* Implement FIXP acceptor offline session reconnects, including the ability to request an offline FIXP session and support for `FixEngine.resetSequenceNumber(sessionId)` on FIXP sessions.
+* Add `Session.tryUpdateReceivedSequenceNumber()`, `Reply.await(FixLibrary)`, and an `isSlowConsumer()` flag.
+* Fix bugs where a client disconnecting mid sequence-number-reset logon sequence, or rapidly sending a FIX message after a reset-sequence-number logon, could result in a missing or duplicate logon message.
+* Fix a back-pressure bug in FIXP `ReceiverEndpoint`, return the correct error code from FIXP `requestSession()` when another library owns the session, and add binary entrypoint validation for unexpected protocol attempts.
+* Save the recording ID entry file regularly for better resilience to process termination, and improve tools for dumping and analysing replay index files.
+* Improve FIXP Acceptor Javadoc and clarify the separation between FIXP protocol implementations and Artio core.
+* Upgrade to Aeron 1.33.0, SBE 1.22.0, Agrona 1.10.0, and JMH 1.30.
+
+== 0.92 (2021-04-19)
+
+* Fix bug where writing metadata for a session that has never exchanged a message would fail, and expose the ability to track the indexer position for a given library.
+* Add `LiveLibraryInfo` / `allSessions()` admin API support for FIXP acceptors.
+
+== 0.91 (2021-04-15)
+
+* Implement a full suite of FIXP acceptor session-establishment behaviours: establish/negotiate reject cases, duplicate session ID disconnection, no-logon/no-establish disconnects, re-establishment after restart and on renegotiate, and sequence-number-index resets on renegotiate.
+* Add FIXP sequence number gap detection and finished-sending support (both sending and receiving), and block duplicate FIXP acceptor resend/retransmit requests with sequence number validation and caps.
+* Add an authentication strategy for FIXP acceptor connections with accept/reject flows, and start sending periodic sequence messages as a keepalive in Binary Entrypoint.
+* Deprecate `FixEngine.resetSessionIds()` in favour of new utilities to dump and validate on-disk session context / session ID / replay index state.
+* Fix cases where exceptions were thrown for invalid int and float field values, improving decode-validation error handling (https://github.com/artiofix/artio/pull/301[#301]).
+* Fix bug where disabling logging could stop the FIX message logger from printing streaming data, and fix bug where a non-IPC Aeron library channel could cause the FIX message logger to hang.
+* Fix null pointer exception caused by a missing idle strategy, and improve the error message shown for classpath issues.
+* Add a GitHub Actions CI workflow, add Windows to CI, and remove the old AppVeyor CI setup.
+
+== 0.90 (2021-03-09)
+
+* Add support for a configurable, runtime-adjustable message throttle that rejects sessions sending messages too fast at an acceptor, taking recent message timings into account.
+* Introduce the generic FIXP protocol abstraction, adding Binary Entrypoint subprojects and splitting the FIXP implementation out from the iLink3-specific code, with a first working ("golden path") FIXP login and generic FIXP message send/receive support.
+* Implement FIXP acceptor termination and disconnect handling, add a cancel-on-disconnect timeout handler with a cap on timeouts (https://github.com/artiofix/artio/pull/421[#421]), and standardise the FIXP API.
+* Fix subtle race where a rapid disconnect of a session replaying a very short sequence of messages could leak an image.
+* Fix bug where a message received after a session was disconnected could trigger an additional resend request.
+* Flesh out the different combinations for the business message reject ref ID.
+* Upgrade to Gradle 6.8.3, Mockito 3.8.0, JMH 1.28, and the Versions Gradle plugin 0.38.0.
+
+== 0.89 (2021-02-20)
+
+* Switch to using `EpochNanoClock` consistently for all FIX message timestamps, including millisecond-based calculations, ensuring a single consistent time source (this also fixed a related iLink3 issue introduced by the nanosecond timestamp refactor).
+* Rework sequence handling in the presence of gaps: properly mark out-of-order received messages as invalid, and correctly treat the `newSeqNo` field of a retransmitted gap-fill message as the sequence number of the next message.
+* Fix bug where `beginSeqNo=0` could be sent in a resend request when `sendRedundantResendRequests` is enabled.
+* Fix null-pointer edge cases where the image or session could be null when `ReplayOperation` / `ReplayChannel` was closed, and fix a bug where a redact sequence update could fail to be applied due to message processing order.
+* Upgrade to JUnit 4.13.2 and Gradle 6.8.2.
+
+== 0.88 (2021-01-29)
+
+* Expose initiator sessions that have connected but are not yet active.
+* Fix NPE when a sole-library-mode initiator attempts to reconnect and is disconnected before logon completes.
+* Make the dictionary parser more lenient, supporting arbitrary `msgcat` values, and add the FIX 5.0 `TENOR` field.
+* Add ability to run `FixArchivePrinter` against an offline / shutdown Artio instance.
+* Remove spurious trailing newline characters from log lines.
+* Upgrade to Aeron 1.32.0, Agrona 1.9.0, SBE 1.21.0, and Gradle 6.8.1.
+
+== 0.87.4 (2021-06-08)
+
+* Backport: change behaviour when receiving a resend request with `endSeqNo` < `beginSeqNo` to send a reject rather than raising an application error, and correctly respond to resend requests with a high sequence number.
+
+== 0.87.3 (2021-05-06)
+
+* Backport: save the recording ID entry file regularly for improved resilience to process termination, with improved state cleanup logging for the replay index.
+* Backport: fix bugs where a client disconnecting mid sequence-number-reset logon sequence, or rapidly sending a FIX message after a reset-sequence-number logon, could result in a missing or duplicate logon message.
+
+== 0.87.2 (2021-04-15)
+
+* Fix issue where a file handle was not released.
+* Backport: deprecate `FixEngine.resetSessionIds()` and add utilities to validate and dump the on-disk session contexts / session IDs file and replay indices, along with fixes for bugs that could produce an inconsistent sequence index.
+
+== 0.87.1 (2021-03-26)
+
+* Backport: fix bug where disabling logging could stop the FIX message logger from printing streaming data, and fix bug where a non-IPC Aeron library channel could cause the FIX message logger to hang.
+* Improve Javadoc around `FixMessageLogger` and add the ability to provide a reusable Aeron client for other Aeron application code.
+* Fix cases where exceptions were thrown for invalid int and float field values (https://github.com/artiofix/artio/pull/301[#301]).
+
+== 0.87 (2021-01-22)
+
+* Fix bug where Artio would freeze during startup if the stream ID of a cached recording ID changed.
+* Fix bug where a library timing out with logging disabled could throw a `NullPointerException`, and fix a subtle race condition during session handover to a library.
+* Fix bug where the wrong replay ID was used to stop replay sessions, causing spurious errors in tests.
+* Improve behaviour when a session receives a resend request with a high `beginSeqNo` or `endSeqNo`.
+* Add support for configuring an inline error handler that runs without using the distinct error log; deprecate the existing error customisation configuration.
+* Upgrade to Mockito 3.7.7 and Checkstyle 8.39.
+
+== 0.86 (2021-01-04)
+
+* Add a new Admin API and admin tool, supporting session disconnect, sequence number reset, and slow-consumer querying operations.
+* Fix bug where a `ResendRequest` could cause an infinite loop when `BeginSeqNo` > the last message sequence number.
+* Fix bug where a session could be created despite a missing sender or target comp ID, and fix an exception thrown when sending a reject for a logon message missing its target comp ID.
+
+== 0.85 (2020-12-13)
+
+* Add a `copyTo()` method to generated encoders for copying fields to another encoder, and improve the formatting of generated encoder code.
+* Fix bug where `connect()` throwing `UnresolvedAddressException` could leak a socket and cause the next selection to throw `NoConnectionPendingException`.
+* Fix iLink3 bug where the last received sequence number for a session could be recorded too low if the last message before a disconnect had the `possRetrans` flag set.
+* Fix bug where a session created via the `followerSession` API, rather than by a client connecting, could miss replay messages.
+* Ensure generated source files are included in the produced source and javadoc jars.
+* Upgrade to JMH 1.27.
+== 0.84 (2020-12-03)
+
+* Fix a bug where a misconfigured epoch nano clock could cause exceptions on the `Framer`; add a timer for invalid (negative) timing measurements and improve handling of engine closes on startup.
+* Add copying setters for data and timestamp fields on Artio encoders as a safer API, and refactor `toEncoder()` to use them, improving its formatting.
+* Fix an NPE in the sender end point caused by a fragmented message passing over a replay subscription.
+* Fix a bug where sessions were not properly disabled after a library timeout, or were incorrectly re-used on session reconnect; add tighter assertions around resend request sequence numbers.
+* Upgrade to Checkstyle 8.38, Mockito 3.6.28, and Gradle 6.7.1.
+
+== 0.83 (2020-11-13)
+
+* Add a convenience method for waiting for administrative replies.
+* Notify authentication strategies when a disconnect occurs (https://github.com/artiofix/artio/pull/411[#411]).
+* Give users more options for calculating a packed message type from non-Artio input; add a message type getter on the header.
+* Fix a bug where an exception could be printed more than once.
+* Improve iLink3 disconnect and error-handling diagnostics; fix a bug where large messages over the fragment size might not update the iLink3 sequence index.
+* Ensure the first character of generated enum names is uppercase, so calling static methods on the enum from the encoder/decoder classes doesn't clash with the enum field name.
+* Upgrade to Gradle 6.7, Checkstyle 8.37, Mockito 3.6.0, Versions 0.34.0/0.36.0, and Aeron 1.31.1.
+
+== 0.82 (2020-11-03)
+
+* Improve iLink3 disconnect and error-handling diagnostics.
+* Fix a bug where large messages over the fragment size might not update the iLink3 sequence index.
+* Upgrade to Mockito 3.6.0, Versions 0.34.0, and Aeron 1.31.1.
+
+== 0.81 (2020-11-01)
+
+* Improve error messages around logon errors and fix a bug where reply objects could be polled after a disconnect.
+* Fix a bug (https://github.com/artiofix/artio/pull/408[#408]).
+
+== 0.80 (2020-10-26)
+
+* Fix iLink3 bugs around negotiate timeouts and rejections: non-contiguous messages within retransmits were not enqueued correctly, and re-establishing a connection after a negotiate rejection could result in a UUID of 0 (with added test coverage for reconnect scenarios).
+* Add support for reordering messages by timestamp in the FIX archive scanner; ensure `FixMessageLogger` flushes its reorder buffer on shutdown, and fix a bug where it wouldn't work when there were no resent messages.
+* Use the correct counter type for the sent sequence when refreshing counters.
+* Upgrade to Mockito 3.5.15.
+
+== 0.79.5 (2021-05-04)
+
+* Backport a fix for a bug where a client disconnecting mid-way through a sequence number reset logon sequence could cause a missing logon message.
+
+== 0.79.4 (2021-04-30)
+
+* Backport a fix for a bug where a reset-sequence-number logon followed by the rapid sending of another FIX message could result in a duplicate logon message being sent.
+
+== 0.79.3 (2021-04-15)
+
+* Fix an issue where a file handle was not released.
+* Deprecate `FixEngine.resetSessionIds()`; add the ability to validate replay index files, with new validation tests added to the suite (backport).
+* Fix bugs where an inconsistent sequence index could be produced (backport).
+* Add utilities to dump out the on-disk state of session contexts, the session IDs file, and replay indices.
+
+== 0.79.2 (2021-01-05)
+
+* Improve behaviour when a session receives a resend request with a high `beginSeqNo` or `endSeqNo`.
+
+== 0.79.1 (2021-01-04)
+
+* Fix bugs where a logon message missing a sender or target comp ID could cause a session to be created incorrectly, or cause an exception when sending its reject message.
+
+== 0.79 (2020-10-15)
+
+* Add support for iLink3 messages in `FixMessageLogger`, sorting messages by their internally assigned timestamp.
+* Retry fetching the stop position of a recording to avoid a race condition.
+
+== 0.78 (2020-10-14)
+
+* Expose iLink3 internal timestamps to `ILinkMessageConsumer` implementations; refactor the archive scanner accordingly.
+* Deprecate the separate `Clock` concept in favour of Agrona's `OffsetEpochNanoClock` (https://github.com/artiofix/artio/pull/406[#406]).
+* Upgrade Aeron, Agrona, and SBE versions, and upgrade to JUnit 4.13.1.
+
+== 0.77 (2020-10-11)
+
+* Add internal message timestamps to iLink3 messages and expose them via the message timing handler; improve efficiency of setting iLink3 message sequence numbers.
+* Fix a bug where currency, exchange, country, and language enums were not generated correctly.
+* Expose the session ID on the session writer for more convenient creation of offline sessions.
+* Fix an iLink3 bug where retransmit requests over 2500 messages long could result in out-of-order retransmit queue replays.
+* Introduce a codec-generation API usable by wrapper tooling without depending on internal classes.
+* Upgrade to JMH 1.26, Checkstyle 8.36.2, Shadow 6.1.0, and Mockito 3.5.13.
+
+== 0.76 (2020-09-25)
+
+* Revert an accidental 0.75 behaviour change where invalid int values in codecs resulted in `MISSING_INT` instead of throwing exceptions.
+* Fix several iLink3 retransmit bugs: an incorrect last-UUID sent in retransmit requests for sequence gaps within a last-UUID retransmit, retransmits from a previous UUID altering current sequence numbers, and the retransmit timeout feature being invoked repeatedly.
+* Only save the new UUID in iLink3 once a connection has been replied to.
+* Fix missing updates from the changeover to int-based body lengths.
+
+== 0.75 (2020-09-21)
+
+* Finish implementing iLink3 retransmit message queuing, including a timeout callback for retransmit requests and a fix for sequence messages not correctly clearing an in-progress retransmit; expose `nextRetransmitSeqNo()`.
+* Fix a bug where `EstablishAck` rather than `Establish` was used to initialise the sending time timer.
+* Add support for very large FIX messages.
+* Fix an edge case in `UtcTimestampEncoder` date-roll logic.
+* Fix a subtle race condition in file movement on Windows, and fix Windows-specific test and duplicate-file-checker bugs.
+* Fix a null pointer exception related to exception handling.
+* Make some generated fields final to allow better optimisation.
+* Upgrade to Aeron 1.30.0, SBE 1.20.2, Agrona 1.7.2, Checkstyle 8.36, and Versions 0.33.0/0.31.0/0.30.0.
+
+== 0.74 (2020-09-04)
+
+* Log authentication-rejected logon messages into the archive stream so they can be picked up by `FixMessageLogger`, and add a log line for logon messages that fail authentication.
+* Add a startup check (with an option to disable it) that detects duplicate engines using the same directory.
+* Fix an issue where an unclean restart could result in an attempted reuse of an old, unstopped recording.
+* Fix an iLink3 bug where re-establishing an already-existing connection and then restarting resulted in an incorrect previous UUID.
+* Fix a decoding bug where a field defined for a given message but appearing at the wrong level would abort decoding instead of continuing.
+* Upgrade to Mockito 3.5.10 and JMH 1.25.2.
+
+== 0.73 (2020-08-28)
+
+* Log outbound iLink3 messages, including human-readable versions of business messages, and update `FixArchivePrinter` to handle iLink3 messages.
+* Ensure sequence number changes are rolled back if an iLink3 message buffer claim has to be aborted.
+* Fix `LibraryPoller.onEngineClose` to reset `sessionLogoutIndex` to 0 before calling `attemptEngineCloseBasedLogout`.
+* Fix `SessionContexts` to reset `filePosition` in `resetBuffer` so new slots are added at the beginning of the buffer rather than the old position.
+* Upgrade to JMH 1.25.1, Gradle 6.6.1, and Mockito 3.5.7.
+
+== 0.72 (2020-08-13)
+
+* **Breaking:** Pass `ILink3Connection` as a parameter to `ILink3ConnectionHandler` to make the API easier for implementors.
+* Add a replay handler for iLink3 messages, including the ability to gap-fill replayed iLink3 messages by message type using sequence messages instead (https://github.com/artiofix/artio/pull/397[#397]).
+* Fix the archive version property in the JAR manifest.
+* Fix issues (https://github.com/artiofix/artio/pull/398[#398], https://github.com/artiofix/artio/pull/393[#393]).
+* Upgrade to JMH 1.25.
+
+== 0.71 (2020-08-04)
+
+* Avoid busy-spinning on disconnected sessions.
+* Add support for not incrementing sequence numbers when a business reject of a message with a null ref seq ID is received.
+* Ensure `FixEngine.close()` can be executed exactly once even if an exception is thrown.
+* Add the ability to deploy iLink3 binaries to a private repository.
+* Fix an issue (https://github.com/artiofix/artio/pull/388[#388]).
+* Upgrade to Agrona 1.6.0, SBE 1.19.0, Aeron 1.29.0, Checkstyle 8.35, and Mockito 3.4.6.
+
+== 0.70 (2020-07-15)
+
+* Mark malformed/rejected messages as invalid and correctly increment the processed sequence number after a reject; add a ref tag ID to original sending time validation and to malformed message rejects; send a logout after a rejected logon message.
+* Fix an iLink3 bug producing an incorrect UUID/last-UUID on an `onEstablish` retransmit request for the previous UUID; add the ability to send retransmit requests for previous UUIDs on establish, and to reconnect to a backup IP that continues the sequence numbering of the original primary IP.
+* Add clearer handling for concurrent unbinds, and extend the unbind operation with optional disconnect and logout.
+* Ban duplicate connections for the same session/host combination in iLink3 to avoid errors.
+* Remove redaction after a sent reject, for FIX spec compliance.
+* Add a class to look up human-readable business reject messages.
+* Fix unsafe use of static formatters when multiple Artio instances run in the same JVM.
+* Allow more tolerant time parsing, fix epoch fraction time-unit conversion, and enable builds in other locales.
+* Accept an exceeding gap range during resend handling.
+* Read the backup host from a properties file.
+* Fix an issue (https://github.com/artiofix/artio/pull/379[#379]).
+* Upgrade to Mockito 3.4.0.
+
+== 0.69 (2020-07-01)
+
+* Fix a bug where the sequence index might not increment for messages sent while offline.
+* Add an extra safety check on replay queries; make the replay position buffer size configurable.
+* Reduce retained memory footprint during codec generation to help avoid out-of-memory errors.
+* Improve prune operation logging.
+* Fix a freeze in `IndexedPositionWriter.indexedUpTo` during startup.
+* Upgrade to Checkstyle 8.34 and Gradle 6.5.1.
+
+== 0.68 (2020-06-26)
+
+* Fix an issue where free recording IDs weren't counted as part of the prune operation; add a log tag for pruning.
+* Ensure sequence number gaps in sequence messages are detected in iLink3.
+* Ensure the message timing handler also receives callbacks for messages from slow consumers.
+
+== 0.67 (2020-06-19)
+
+* Improve iLink3 disconnect handling and error messages; expose whether a message can currently be sent.
+* Improve replay handling around corner cases: add a counter to monitor concurrent replays, limit the number of replays per session, clean up replay operations more promptly after a session disconnect, and fix a bug where resend requests in flight at the point of disconnect could still hold resources.
+* Handle sequence gaps within retransmits.
+* Add a sequence number parameter to the message timing handler.
+* Fix a bug in state reset.
+* Upgrade to Shadow 6.0.0.
+
+== 0.66 (2020-06-16)
+
+* Fix a bug where the last message within a retransmission wasn't handed off to application code.
+* Fix an error in how iLink3 retransmit requests were sent for old UUIDs; add debug logging for retransmission messages and terminate message error codes.
+* Use the correct keep-alive interval error code.
+* Fix an offset calculation bug (the offset was assumed to always be zero rather than being subtracted as a length).
+* Fix issues (https://github.com/artiofix/artio/pull/369[#369], https://github.com/artiofix/artio/pull/368[#368]).
+* Upgrade to Gradle 6.5.
+== 0.65 (2020-06-04)
+
+* Fix a counter leak that could cause a memory leak when counters were closed.
+* Fix a bug where initiator sessions could fail to reconnect due to offline session handling (https://github.com/artiofix/artio/pull/361[#361]).
+* Fix sequence index tracking for received messages after a logon exchange within the same TCP connection, and ensure `Session.tryResetSequenceNumbers()` and `Session.trySendSequenceReset()` correctly enable pruning of old sequence numbers.
+* Fix a bug where calling `FixEngine.resetSequenceNumber()` for every session id could prevent the archive prune operation from running.
+
+== 0.64 (2020-06-02)
+
+* Fix a bug where the gateway could hang on startup.
+* Fix a race condition that could unbind the acceptor socket in sole library mode.
+
+== 0.63 (2020-05-29)
+
+* Expose ILink3 sequence messages to applications and allow manually sending a retransmit request when needed.
+* Upgrade to Aeron 1.28.2, Agrona 1.5.1, and SBE 1.18.2.
+* Fix authentication strategy error handling so a connection is only rejected once, not repeatedly.
+
+== 0.62 (2020-05-26)
+
+* Improve shutdown logging (https://github.com/artiofix/artio/pull/363[#363]).
+* **Breaking:** Remove the sent position handler (https://github.com/artiofix/artio/pull/360[#360]).
+* Upgrade to Aeron 1.28.0.
+
+== 0.61 (2020-05-25)
+
+* Upgrade Agrona and SBE dependency versions.
+* Fix a bug in the password cleaner where a change in body length from 2 to 3 characters caused `UpdateBodyLengthField` to throw an exception.
+* Add support for configuring acceptor FIX dictionaries on a per-session basis when sessions share the same `beginString` (https://github.com/artiofix/artio/pull/365[#365]).
+* **Breaking:** Change sole library mode binding behaviour: the acceptor now only binds to the port when a sole library explicitly connects with binding configured, and bind-on-startup now defaults to `false` unless a bind address is provided.
+* Fix `Image.controlledPoll()` swallowing exceptions that should terminate `FixLibrary` operations.
+* Upgrade to Gradle 6.4.1.
+* Clarify the javadoc for `FixEngine.close()`.
+
+== 0.60 (2020-05-05)
+
+* Fix a missing case in the ILink3 initiate connection timeout handling.
+* **Breaking:** Rename ILink3 "session" types/handlers to "connection" terminology for clarity.
+* Add stronger handling of ILink3 sessions when the owning library disconnects.
+* Allow sole library mode libraries to retain ownership of their sessions on disconnect (https://github.com/artiofix/artio/pull/361[#361]).
+* Improve session encoder interfaces and add more convenient fields to the abstract decoder interfaces.
+* Unbind the TCP socket in sole library mode when no library is connected (https://github.com/artiofix/artio/pull/357[#357]).
+
+== 0.59 (2020-04-27)
+
+* Introduce the ability to send ILink3 sequence messages and messages using variable-length encoding.
+* Make ILink3 session configuration immutable and add a builder for it, along with sensible defaults and expanded javadoc.
+* **Breaking:** Rename ILink3 session send methods to `trySend*` for consistency with the rest of the API.
+* Add support for loading ILink3 configuration from a properties file.
+* Improve ILink3 reliability: handle back pressure during shutdown and sequence reset, correctly handle the first-time re-establish case, fix premature disconnection caused by heartbeating, and improve connection timeout and error handling.
+* Improve ILink3 logging, including business reject messages and message debug logging, and add a `toString()` implementation for ILink3 sessions.
+* Avoid exposing private key material via `toString()`, and remove an accidentally introduced allocation.
+
+== 0.58 (2020-04-02)
+
+* Upgrade to Aeron 1.27.0, SBE 1.17.0, and Agrona 1.4.1.
+* Fix a bug where `SequenceNumberIndexWriter` could loop around to an out-of-space position.
+* Fix sequence reset handling so sequence numbers are correctly applied after a restart.
+* Add a `toEncoder()` conversion method to decoders, with accompanying documentation.
+* Improve handling of low sequence number cases and back pressure when sending ILink3 terminate messages.
+
+== 0.57 (2020-03-27)
+
+* Add support for a configurable epoch fraction and automatic time-precision detection when timestamping and decoding messages (https://github.com/artiofix/artio/pull/352[#352], https://github.com/artiofix/artio/pull/353[#353]).
+* Disconnect a session that fails to reply to a logout message within the timeout (https://github.com/artiofix/artio/pull/351[#351]).
+* Add support for v1 and v2 of the PROXY protocol (https://github.com/artiofix/artio/pull/347[#347]).
+* Validate that FIX XML schema fields are only declared once (https://github.com/artiofix/artio/pull/330[#330]).
+* Make `toString()` stateless so that using a debugger no longer breaks decoder iterators (https://github.com/artiofix/artio/pull/343[#343]).
+* **Breaking:** Switch session sequence numbers from `int` to `long`.
+* Fix ILink3 index catchup handling on startup.
+* Implement ILink3 message replay, including retransmit requests sent in response to an establish-ack, retransmit reject/batching limits, restricting in-flight retransmit requests to one at a time, and correct handling of the gap-fill and not-applied back-pressure cases.
+* Improve handling of TCP back pressure for ILink3.
+* Upgrade to Gradle 6.3.
+
+== 0.56 (2020-03-16)
+
+* Add ILink3 support for sequence messages and timeouts.
+* Fix several publishing issues affecting release artifacts, including a missing `artio-core`, missing test jars, and missing javadoc/sources jars.
+* Improve ILink3 classpath error handling.
+
+== 0.55 (2020-03-14)
+
+* Implement archive pruning: complete the prune operation calculation, prevent it from racing against close, and add replay index scanning to support it.
+* Improve error handling for missing recordings and reduce unnecessary liveness detector creation.
+* Eliminate garbage produced by decimal float formatting in encoder/decoder `appendTo()`.
+* Make `getId()` public so that it can be used outside Artio.
+* Add support for resetting the sequence number index file for a given session (https://github.com/artiofix/artio/pull/346[#346]).
+* Fix ILink3 issues when running on Java 11.
+* Upgrade to Gradle 6.2.2 and Mockito 3.3.3.
+
+== 0.54 (2020-03-05)
+
+* Upgrade to Aeron 1.26.0, SBE 1.16.3, and Agrona 1.4.0.
+* Fix session context `filePosition` being wrong after reload, which could break composite key loading across restarts.
+* **Breaking:** Change `AsciiBuffer.scan()` to use an exclusive end index for consistency with common Java APIs.
+* `AsciiBuffer` now throws `AsciiNumberFormatException` instead of a generic `NumberFormatException`.
+* Fix a startup failure when an old session IDs file is retained, and fix the FIX dictionary change not being persisted on a new logon with a different dictionary.
+* Implement ILink3 negotiation and establishment, including a backing state file for ILink3 contexts, sequence number tracking to support re-establishing sessions, protocol reject messages, negotiate/establish timeouts, and a terminate operation.
+* Fix a race in reading `SessionInfo.sequenceIndex` and improve sequence reset logic so the sequence number is properly saved in the engine.
+* Fix credentials header length being ignored.
+* Remove the requirement to have a FIX dictionary on the classpath when only using ILink3.
+* Expose the Aeron counter ID as an enum.
+* Upgrade to Gradle 6.2.1 and Mockito 3.3.0.
+* Various additional bug fixes (https://github.com/artiofix/artio/pull/324[#324], https://github.com/artiofix/artio/pull/337[#337]).
+
+== 0.53 (2020-02-19)
+
+* Add support for bulk-adding sessions on startup.
+* **Breaking:** Split the `SessionInfo` interface into `SessionInfo` and `ConnectedSessionInfo`, and add an `allSessions()` call to `FixEngine` to retrieve the list of session infos.
+* Fix decoder field initialisation so char/int fields match the value produced by `reset()`, and ensure price/float fields are initialised to `NaN` consistent with their reset value.
+* Improve validation of repeating group counts that are too small or too large, and add an option to disable duplicated-fields validation.
+* Fix a bug where re-used session objects could potentially share counters.
+* Allow `TcpChannelSupplier` to be implemented by classes outside the Artio package.
+* Begin the initial ILink3 project structure and get ILink3 negotiation and connection establishment working end-to-end.
+* Various bug fixes (https://github.com/artiofix/artio/pull/331[#331], https://github.com/artiofix/artio/pull/332[#332], https://github.com/artiofix/artio/pull/334[#334]).
+
+== 0.52 (2020-02-08)
+
+* Reduce garbage in low-level debug logging: remove allocation from the debug logger, add a more garbage-friendly `appendTo()` API used by `toString()`, and introduce an API for routing the debug logger into an external logging system.
+* Switch the debug logger appender to use a service loader, avoiding class-loading order dependencies.
+* Fix low-GC logging bugs (https://github.com/artiofix/artio/pull/295[#295], https://github.com/artiofix/artio/pull/328[#328]).
+
+== 0.51 (2020-01-31)
+
+* Add support for offline sessions: store and forward messages sent while a session is offline, allow requesting an offline session and replay of messages received on it, cache and reuse existing session objects on reconnect, and allow offline sessions to be taken over on reconnect while preventing takeover when a library merely times out.
+* **Breaking:** Rework the `SessionHandler.onMessage` callback to take an info object and expose message status to API consumers, removing the `possDup` flag from catchup replay in favour of the new message status parameter.
+* **Breaking:** Replace `logonTime` with `lastLogonTime` and add `lastSequenceResetTime`, with persistent tracking of both.
+* Treat resent messages as heartbeat liveness indicators.
+* Fix a bug in the composability of the `and`/`or` FIX message predicates.
+* Add a command-line tool for testing and reproducing reported code validation issues.
+* Upgrade to Gradle 6.1.1 and JMH 1.23.
+
+== 0.50 (2020-01-22)
+
+* Add the ability to associate metadata with outbound messages, and mark the metadata API as no longer experimental.
+* **Breaking:** Change the session acquire handler API so it can receive the latest metadata for a session.
+* Fix a slow replay case when metadata is present on the original message.
+* Fix a file locking issue on Windows.
+* Store the last sequence reset time in the session contexts file.
+* Upgrade to Aeron 1.25.1, SBE 1.16.1, and Agrona 1.3.0.
+
+== 0.49 (2020-01-14)
+
+* Implement the session metadata API: read/write metadata, tidy up the file format, and add javadoc (https://github.com/artiofix/artio/pull/320[#320], https://github.com/artiofix/artio/pull/321[#321]).
+* Upgrade to Aeron 1.25.0, SBE 1.16.0, and Agrona 1.2.0.
+* Fix a `NullPointerException` when a library connects at the same time as a session that has connected but not yet exchanged logon messages.
+* Fix required enum char encoding, avoid throwing on `NULL_VAL`, and throw an exception if a sentinel enum value is encoded.
+* Upgrade to JUnit 4.13, Checkstyle 8.28, and Mockito 3.2.4.
+
+== 0.48 (2019-12-13)
+
+* Fix a validation bug affecting repeating groups within components.
+* Allow the customisation strategy to apply a custom field to any session header.
+* Upgrade to Gradle 6.0.1 and HdrHistogram 2.1.12.
+
+== 0.47 (2019-12-05)
+
+* Add support for scientific notation in floating point number parsing, and share the decimal float parsing algorithm between `DecimalFloat.fromString()` and `MutableAsciiBuffer.getFloat()`.
+* Fix timestamp encoding so `update()` and `initialise()` no longer drop trailing zeros.
+* Ensure proper cleanup of sessions that are tracked by the gateway but never acquired, and fix the no-logon disconnect timeout when directing sessions to a single library (https://github.com/artiofix/artio/pull/312[#312]).
+* Add an option to defer binding to the network on startup.
+* Upgrade to Checkstyle 8.27 and Mockito 3.2.0.
+
+== 0.46 (2019-11-29)
+
+* Provide the logon sequence number and sequence index to `SessionExistsHandler`.
+* **Breaking:** Rename the `soleLibraryMode` configuration option to `initialAcceptedSessionOwner`, with improved error logging and documentation.
+* Rename the `PersistenceLevel` enum values to be easier to understand (old options are deprecated but continue to work).
+* Introduce an authentication timeout, and allow binding/unbinding of the acceptor socket at runtime.
+* Fix a `NumberFormatException` in the session parser when it occurs on a library thread.
+
+== 0.45 (2019-11-24)
+
+* Upgrade to Aeron 1.24.0, Agrona 1.1.0, and SBE 1.15.0.
+* Validate that `DecimalFloat` values aren't NaN when encoding, preventing invalid values from being silently encoded.
+* **Breaking:** Switch packed message type fields from `int` to `long` (supporting up to 8 characters), with backwards compatibility to conditionally read the message type field based on schema version.
+
+== 0.44 (2019-11-19)
+
+* Increase the default reply timeout to 10 seconds and add extra logging around disconnects.
+* Reduce the outbound fragment limit so a single client cannot consume too much of the duty cycle.
+* Exclude authentication time from the no-logon disconnect timeout.
+* Fix `DecimalFloat.fromString()` to correctly throw an exception for non-numeric input.
+* Fix position calculation to count the data frame header and calculate before alignment.
+* Add an option to delete the log file directory on startup, resetting index state, and use it in system tests.
+
+== 0.43 (2019-11-12)
+
+* Fix term padding handling at the end of term buffers.
+* Upgrade to Shadow 5.2.0, Checkstyle 8.26, Hamcrest 2.2, and JMH 1.22, and address a build warning on Java 11.
+
+== 0.42 (2019-11-07)
+
+* Upgrade to Aeron 1.23.1, SBE 1.14.1, and Agrona 1.0.11.
+* Fix an issue where `FixLibrary.close()` could throw an exception after the monitoring file had already been closed.
+* Conditionally generate the FIX dictionary based on whether messages exist, and reduce garbage in a hot loop.
+== 0.41 (2019-10-31)
+
+* Fix a potential overflow in `DecimalFloat` parsing near the size limit, with additional test coverage around the size limit.
+* Relax validation on user request messages and include the session id in the user request callback.
+* Add a code generator option to statically configure whether invalid enum values are rejected, rather than this being hard-coded.
+* Upgrade to Aeron 1.23.0, SBE 1.14.0, and Agrona 1.0.9.
+
+== 0.40 (2019-10-22)
+
+* **Breaking:** Change the `AuthenticationStrategy.onUserRequest` callback to use the FIX version interface rather than manually-passed fields.
+* Fix a bug in the password cleaner that produced an invalid body length when the ASCII length of the body length field changed.
+* Fix Windows-specific test failures and improve error messages around file renaming in system tests.
+* Upgrade to Gradle 5.6.3.
+
+== 0.39 (2019-10-17)
+
+* Add initial support for handling multiple FIX versions within a single gateway session: decouple logging, indexing, and replay from a specific FIX version, wire through `BeginString`/FIX dictionary lookup, and simplify the gateway session lifecycle.
+* Fix a bug where an open but not-logged-in FIX session could hang the gateway on shutdown.
+* Fix a regression where user-request changes broke support for older FIX versions and related system tests.
+* Ensure timestamps are always encoded with a consistent length, even with trailing zeros.
+* Fix an issue where connecting to a TCP server that never sent a Logon did not time out.
+* Fix a bug where back-pressure could stop the initiate-session operation from timing out.
+* Ensure an exception while parsing a Logon message cannot hang the engine.
+* Make the reject encoder's use of `refMsgType` optional, since not every venue supports it.
+* Improve error logging beyond the engine, and correctly print Aeron Archive error messages and version numbers.
+* Upgrade to Checkstyle 8.25 and Aeron 1.22.1.
+
+== 0.38 (2019-10-09)
+
+* **Breaking:** Remove `endOfDayClose()`; add `resetState()` for on-disk state reset and make `close()` perform a proper logout. Also fixes a bug where the sequence number index writer miscalculated index positions for fragmented messages.
+* Add password cleaning for Logon and User Request messages, with end-to-end test coverage.
+* Make message timestamps as close as possible to the time data is actually received.
+* Add the ability to directly encode just the session header onto a buffer.
+* Fix a bug where messages could be delayed until the next message arrived when their publication was back-pressured with more than 5 concurrently connected sessions.
+* Fix a bug where low sequence-number Logout messages did not correctly fill in `lastMsgSeqNumProcessed`.
+* Harden asynchronous authentication with additional error checking and coverage of more async authentication error cases, plus linger support for the encoding reject operation.
+* Upgrade to Agrona 1.0.8, SBE 1.13.3, and Aeron 1.22.0; upgrade to Gradle 5.6.1/5.6.2, Checkstyle 8.24, and Mockito 3.1.0.
+
+== 0.37 (2019-08-22)
+
+* Stop any active replayed sessions cleanly when Artio is shut down.
+* Fix a bug where recordings were not properly cleaned up at end of day.
+* Improve the error message reported for a dropped replay message.
+* Upgrade to SBE 1.13.2 and Aeron 1.21.2.
+
+== 0.36 (2019-08-15)
+
+* Ensure the catchup replayer waits for the indexer thread before responding to catchup replay requests, and avoid accidentally closing the replay subscription.
+* Improve catchup replay logging and handle end-of-stream cases better.
+* Complete the implementation of the end-of-day operation.
+* Have `FixMessageLogger` also tail the replay subscription.
+* Upgrade to Agrona 1.0.7, SBE 1.13.1, and Aeron 1.21.1.
+
+== 0.35 (2019-08-02)
+
+* Add the ability to obtain the remote address within the asynchronous authentication mechanism.
+* Upgrade to Agrona 1.0.6, SBE 1.13.0, and Aeron 1.21.0.
+
+== 0.34 (2019-08-02)
+
+* Fix a memory leak triggered by a disconnect on a required polling endpoint.
+* Ensure catchup replay gap fills correctly set the `PossDupFlag`.
+* Improve catchup replay logging and test reliability on Windows.
+* Upgrade to Checkstyle 8.23 and Mockito 3.0.0.
+
+== 0.33 (2019-07-24)
+
+* Fix a bug where a second login attempt failed following an asynchronous authentication attempt.
+* Add a new system property to disable enum value validation when decoding FIX messages, along with related decoding fixes.
+* Fix `AsciiSequenceView` to avoid writing content when there is no data present.
+* Add test coverage for resend-request and failed-authentication scenarios.
+
+== 0.32 (2019-07-19)
+
+* Fix a bug where the gateway could stall authentication when handling too many connections, a regression from the asynchronous authentication refactor.
+* Fix a bug where duplicate resend requests could occur.
+* Ensure invalidated messages are logged, and improve logging around replay operations.
+* Upgrade to Gradle 5.5.1.
+
+== 0.31 (2019-07-15)
+
+* Fix a bug where the replay index's begin-change-position could be reset incorrectly, potentially causing missing replays.
+* Improve enum code generation: only generate `CharArrayWrapper` for string-based enums, standardise handling of `MULTIPLECHARVALUE`, and add a has-check for optional fields during validation.
+* **Breaking:** Change `TcpChannelSupplier` from a concrete class to an interface.
+* Upgrade to Agrona 1.0.3, SBE 1.12.8, and Aeron 1.20.0.
+
+== 0.30 (2019-07-02)
+
+* Add a `FixMessageLogger` to enable easier integration into external logging systems.
+* Add support for replaying just the current sequence, an `Encoder` method to accept `AsciiSequenceView` for string fields, and a utility method to read an encoder's value out as a `String` for testing.
+* **Breaking:** Fix decoder out-of-bounds exceptions on invalid messages; this also changes the representation of errors.
+* Change the reset value for a missing field from `ZERO` to `NaN`.
+* Fix a bug in `DecimalFloat` comparison (`compareTo`).
+* Fix a monitoring agent idle strategy configuration bug and make thread factory usage consistent.
+* Fix issues https://github.com/artiofix/artio/pull/275[#275] and https://github.com/artiofix/artio/pull/278[#278] in decoder/generator and logging code.
+* Upgrade to Agrona 1.0.2, Checkstyle 8.21/8.22, Mockito 2.28.2, and Shadow 5.1.0.
+
+== 0.29 (2019-05-28)
+
+* Add support for flyweight-style encoders and decoders: strings are decoded lazily by storing offset/length instead of copying, byte-based fields use a direct buffer, and both flyweight and non-flyweight codecs can be generated together, with a configuration property controlling string flyweighting.
+* Add nanosecond-precision timestamp encoding and decoding.
+* Fix a bug where SOH characters inside a data field caused parsing errors.
+* Fix repeating-group handling issues introduced by the flyweight encoder work.
+* Fix a bug in handling a `SessionHandler` that returns `ABORT`.
+* Allow `INT` fields for `associatedLengthField` to support additional dictionaries.
+* Fix issue https://github.com/artiofix/artio/pull/274[#274] affecting engine shutdown/close behaviour.
+* Upgrade to Aeron 1.19.0/1.19.1, SBE 1.12.6/1.12.7, Agrona 1.0.1, and Hamcrest 2.1.
+
+== 0.28 (2019-05-06)
+
+* Upgrade to Aeron 1.18.0, SBE 1.12.5, Agrona 1.0.0, and Checkstyle 8.20. Minor internal/dependency release.
+
+== 0.27 (2019-05-02)
+
+* **Breaking:** Remove the unused authentication strategy setter from library configuration.
+* **Breaking:** Replace the `HeaderEncoder` class with a `SessionHeaderEncoder` interface.
+* Add an asynchronous authentication strategy flow, including acceptor-based logout support and documentation, with additional error-handling coverage for failed authentication attempts.
+* Add support for follower sessions: create follower sessions using just a header, and introduce a session proxy interface so external clustering components can round-trip messages through a session proxy and follower session.
+* Introduce common interfaces for generated enums.
+* Fix a bug where the checksum could be wrong when the wrapper buffer is a slice of the underlying buffer.
+* Fix a regression to ensure Logout happens immediately if Logon isn't the first message.
+* Fix a bug where sender/target sub id could be swapped when accepting sessions.
+* Fix a bug where sole-library mode did not correctly inject initial sequence numbers, a related sequence-number bug, and an exception on no-Logon disconnect.
+* Only process `ManageSession` messages while connected, and avoid deleting unrelated files when cleaning up an empty parent directory.
+* Fix issues https://github.com/artiofix/artio/pull/269[#269] (replay index) and https://github.com/artiofix/artio/pull/256[#256] (debug logging/configuration).
+* Upgrade to Gradle 5.4.1, Mockito 2.26.0/2.27.0, and Checkstyle 8.19; increase default system test timeouts.
+
+== 0.26 (2019-03-29)
+
+* Fix an infinite loop when decoding malformed FIX messages.
+* Expose an iterator on the FIX component interface, and stop generating nested component fields to avoid a related bug.
+* Add configurable thread factories for `archivingRunner` and `framerRunner` via `EngineConfiguration`.
+* Fix `DecimalFloat` reference handling during encoding.
+* Various fixes to sequence reset handling.
+* Upgrade to Aeron 1.17.0, SBE 1.12.4, Agrona 0.9.35, Gradle 5.3.1, and Mockito 2.25.1.
+
+== 0.25 (2019-03-13)
+
+* Add the ability to read a `DecimalFloat` value from a `String`.
+
+== 0.24 (2019-03-12)
+
+* Fix a bug where an engine was not restartable after being killed.
+* Fix a duplicate-session bug occurring when re-initiating a connection after a timeout.
+* Add `putFloatAscii` support for encoding `DecimalFloat` values with correct handling of leading/trailing zeros, similar to `BigDecimal.toPlainString`.
+* Add a session id predicate to the replay query.
+* Upgrade to Aeron 1.16.0, SBE 1.12.3, Agrona 0.9.34, Gradle 5.2.1, Shadow 5.0.0, Checkstyle 8.18, and Mockito 2.25.0.
+
+== 0.23 (2019-02-18)
+
+* Simplify and standardise session logic, including the session proxy's handling of rejects, now using `char[]` consistently rather than mixing `char[]` and `byte[]`.
+* Add a session scheduler.
+* Improve resilience to corrupt archives, and fix a time-consistency bug found during the session logic simplification.
+* Upgrade to Aeron 1.15.3, SBE 1.12.2, and Agrona 0.9.33.
+
+== 0.22 (2019-02-07)
+
+* Fix a bug where the messages-read counter was incremented even when no message was read.
+* Upgrade to Aeron 1.15.2, Agrona 0.9.32, SBE 1.12.1, and Mockito 2.24.0.
+
+== 0.21 (2019-01-31)
+
+* Standardise and simplify session setup logic across session types, including consistent handling of username/password initiation and `enableLastMsgSeqNumProcessed`.
+* Fix a bug causing `SessionContexts` to incorrectly reuse session ids (https://github.com/artiofix/artio/pull/228[#228]).
+* Extract interface-based header encoders so common session logic can operate across all generated FIX-version code, and allow `BeginString` to be overridden when encoding, enabling the same encoders to support multiple FIX versions while the session layer enforces correct header values.
+* Switch to Aeron's number-encoding utilities.
+* Remove caching that was causing failures, and fix issue https://github.com/artiofix/artio/pull/204[#204].
+* Add FIX integration testing to CI, including cloning QuickFIX for cross-compatibility testing.
+* Upgrade to Aeron 1.15.1, SBE 1.12.0, Agrona 0.9.31, and Checkstyle 8.17.
+
+== 0.20 (2019-01-22)
+
+* Add comprehensive support for leading/trailing zeros and larger scale values in `DecimalFloat` encoding/decoding, including a new encoder setter taking value and scale, a default `DecimalFloat` value, and correctly formatted `toString()` output (fixes https://github.com/artiofix/artio/pull/225[#225] and issue https://github.com/artiofix/artio/issues/227[#227]).
+* Move Artio's error counters onto the Aeron Counters API, with dedicated type ids per counter, to simplify monitoring.
+* Fix a replay bug affecting consecutive recording ranges that use different Aeron Images.
+* Fix issues https://github.com/artiofix/artio/pull/222[#222] and https://github.com/artiofix/artio/pull/228[#228].
+* Improve handling of invalid and gap-fill messages: don't validate sequence numbers on Logout, accept gap fills without the PossDup/PossResend flags, better handle messages with body-length tags longer than their checksum, and avoid updating the sequence number index for saved invalid messages.
+* Bring resend-request chunking behaviour into line with QuickFIX when using `ResendRequestChunkSize`.
+* Remove `OP_CONNECT` interest once a connection succeeds.
+* Split `FIX_MESSAGE` logging so that it only logs reads and writes.
+* Upgrade to Aeron 1.15.0, SBE 1.11.0, Agrona 0.9.30, Shadow 4.0.4, and HdrHistogram 2.1.11.
+
+== 0.19 (2019-01-10)
+
+* Add resend-request chunking support for gap fills, including handling chunked resends on message and new configuration options for `ResendRequestChunkSize`-related settings (fixes https://github.com/artiofix/artio/pull/223[#223]).
+* Fix a bug validating `SendingTime` when `PossResend` (but not `PossDup`) is set.
+* Only track separate resend sequence numbers once a resend request has actually been made.
+* Add further methods to FIX component interfaces.
+* Prepare the Gradle build for publishing to Maven Central, removing the AppVeyor `init.gradle` usage.
+
+== 0.18 (2019-01-07)
+
+* Split out separate sequence-number tracking for resent messages, and separate the concept of "awaiting a resend" from session state, in preparation for `SendRedundantResendRequestsByDefault`.
+* Fix `FixArchivePrinter` not working with default settings.
+* Upgrade to Aeron 1.14.0, SBE 1.10.2, and Agrona 0.9.29; upgrade to Checkstyle 8.16.
+== 0.17 (2018-12-19)
+
+* Make the Aeron stream IDs used by Artio configurable.
+* Add an `initiate` overload that accepts a fragment limit.
+* Improve replay performance and robustness: reduce allocation in the replay query and replayer loop, speed up replay queries by skipping to the start of relevant messages, support concurrent replays more efficiently, and retry replay operations when archiving has not yet caught up.
+* Fix a bug where reconnecting with message logging disabled could cause a hang, and tighten configuration validation around disabling logging (https://github.com/artiofix/artio/pull/212[#212]).
+* Various additional fixes (https://github.com/artiofix/artio/pull/211[#211], https://github.com/artiofix/artio/pull/191[#191]).
+* Replace `AsciiSequenceView` with the equivalent class now provided by Agrona and deprecate the Artio version.
+* Add Windows CI build support (AppVeyor).
+* Upgrade to Agrona 0.9.28, SBE 1.10.1, and Aeron 1.13.0; upgrade to Gradle 4.10.3 and Checkstyle 8.15.
+
+== 0.16 (2018-11-29)
+
+* **Breaking:** Replace the internal clustering/replication implementation with integration against https://github.com/aeron-io/aeron[Aeron]'s Archive module for message persistence and replay, removing the standalone clustering feature.
+* Add support for concurrent replay sessions and make the catchup replay operation re-entrant and retriable.
+* Add support for indexing and replaying fragmented FIX messages.
+* Add a `fix.codecs.reject_unknown_field` system property and support for skipping unknown fields when decoding messages, including handling of unknown fields within (nested) repeating groups.
+* **Breaking:** Rename `DecimalFloat`'s `NULL` sentinel to `NAN`, and add `toDouble()`/`fromDouble()` conversion helpers.
+* Update `RejectReason` values to include the FIX 5.0 `SessionRejectReason` values.
+* Add support for microsecond and variable-precision timestamps (https://github.com/artiofix/artio/pull/181[#181]).
+* Fix various `AsciiSequenceView` bugs, including a `NullPointerException` and an inconsistency between `toString()` and `charAt()`.
+* Fix a bug where a logon reply with an unexpectedly high sequence number could cause an initiating `Session` to fail, and fix related off-by-one poll errors (https://github.com/artiofix/artio/pull/177[#177], https://github.com/artiofix/artio/pull/149[#149], https://github.com/artiofix/artio/pull/170[#170], https://github.com/artiofix/artio/pull/187[#187]).
+* If a logon message is received with a low sequence number, send a logout before disconnecting and notify the callback after the disconnect has completed.
+* Fix a bug where gap-fill messages would not properly reset the session state.
+* Add Java 11 build support.
+* Add support for disabling message logging for improved performance.
+* Upgrade to Aeron 1.11.3, SBE 1.9.0, and Agrona 0.9.26; Gradle 4.10; Checkstyle 8.14; Mockito 2.19.1.
+
+== 0.15 (2018-06-13)
+
+* Add initial support for FIXT transport (separating the session layer from the application layer).
+* Improve repeating group support: generated groups now implement `Iterable`, return an empty iterator when a group is absent, fail generation on duplicate fields (https://github.com/artiofix/artio/pull/150[#150]), and move enum validation into the generated enum classes.
+* Add `AsciiSequenceView` for zero-copy access to ASCII field values (https://github.com/artiofix/artio/pull/153[#153]).
+* Change sentinel values for missing `int`/`long` fields to their minimum values (https://github.com/artiofix/artio/pull/157[#157]).
+* Improve the dictionary parser to handle idiosyncrasies in certain vendor FIX dictionaries, and switch repeating group parsing from recursion to iteration to avoid `StackOverflowError`.
+* Complete the FIX archive printer tool and allow customisation of the messages sent during a gap fill on replay.
+* Add support for custom field numbers above 9000.
+* Add convenience getters to generated encoder fields.
+* Fix a `NullPointerException` when the message logging feature is disabled, fix bugs in session predicates and command-line argument parsing, and fix an offset bug in debug logging of resent messages (https://github.com/artiofix/artio/pull/148[#148], https://github.com/artiofix/artio/pull/151[#151], https://github.com/artiofix/artio/pull/146[#146]).
+* Ensure libraries immediately terminate an initiating connection if the target engine does not exist.
+* Add Java 10 build support and remove the use of `javax.annotation.Generated` to keep generated code compiling on newer JDKs.
+* Upgrade to Aeron 1.9.3, Agrona 0.9.18, and SBE 1.8.1; Gradle 4.7; Checkstyle 8.10.1; Mockito 2.18.3.
+
+== 0.14 (2017-10-27)
+
+* Complete the project rename from FIX-Gateway to Artio.
+* Switch message `toString()` generation to use SBE's JSON printer utilities.
+* Fix `LowResourceEngineScheduler` to route errors through the configured `ErrorHandler` instead of calling `Throwable::printStackTrace`.
+* Update backoff/idle strategy spin and yield counts to be more realistic under load.
+* Ensure the engine and library schedulers correctly close down agents even if they have not yet started.
+* Work around a buffer-threading change introduced in Aeron 1.5.
+* Depend on `sbe-tool` rather than `sbe-all`.
+* Upgrade to Aeron 1.5.1, Agrona 0.9.9, and SBE 1.7.3; Checkstyle 8.3; Mockito 2.11.0.
+
+== 0.13 (2017-08-18)
+
+* Add support for running multiple `FixLibrary` instances against a single engine.
+* Rework session logon handling: split logon behaviour into a configurable callback, avoid automatically creating library state on heartbeats, and save the logon time to support persistent sessions across gateway restarts.
+* Add the ability to reset the sequence number of a live session from the engine, and make session-id reset operations asynchronous.
+* Prevent duplicate outbound connections from being created when initiating sessions.
+* Give each library its own `ErrorHandler` on the shared thread and marshal remote exceptions onto the correct library thread.
+* Implement batching and cleaner resend logic for disconnected libraries.
+* Split `DynamicCompositeAgent` out into its own class and add a dynamic library scheduler.
+* Rename the `SessionExists`/`ManageConnection` messages to `ManageSession`, and add a `libraryName` field for debugging.
+* Upgrade to Gradle 4.1; Checkstyle 8.1; Mockito 2.8.47; JMH 1.19; latest Aeron/Agrona/SBE.
+
+== 0.12 (2017-05-14)
+
+* Refactor the replay index and query mechanism: ensure atomic reads of written index updates, move towards a rolling ring-buffer style index, and switch to long-based positions.
+* Simplify replay stream handling by polling images directly and moving replay streams onto the IPC channel with a configurable stream id.
+* Fix a crash on library poll caused by re-initialising streams in the middle of `Subscription.poll()`.
+* Fix a bug in the library connect timeout mechanism and re-enable the cluster failover test.
+* Ensure the gateway-managed `Session`s and the framer use the same outbound publication object, fixing a race condition and message-ordering inconsistency.
+* Expose the archive position for debugging.
+* Make the clock used by timers configurable (https://github.com/artiofix/artio/pull/109[#109]).
+* Upgrade to Checkstyle 7.7.
+
+== 0.11 (2017-04-21)
+
+* Add support for replaying fragmented messages, including a fragment assembler in the replayer.
+* Fix a bug where catchup replay could drop messages when a session's connection id changed across reconnects.
+* Add support for arbitrary-length FIX messages.
+* Ensure the sending time (and orig sending time) fields are correctly updated/added when a message is resent or replayed.
+* Move message publication over to Aeron's `ExclusivePublication`, fixing an NPE on quiescing and associated test raciness.
+* Fix a required `int` field not being properly reset on the decoder, and add exception handlers around user-defined strategies.
+* Replace uses of `\n` with `%n` outside of code generation for correct behaviour on Windows.
+* Upgrade to Gradle 3.5; Mockito 2.7.22; latest Aeron/Agrona/SBE.
+
+== 0.10 (2017-04-07)
+
+* Merge the "peek" experiment: introduce a peeking-based mechanism for slow subscribers and clean up related library slow-peeker handling.
+* Improve replay gap-filling: correctly gap-fill missing messages, and support combining gap-filled admin messages followed by an application message (https://github.com/artiofix/artio/pull/105[#105]).
+* Account for back pressure when replaying regular messages, and fix a `NullPointerException` in `ReplayQuery`.
+* Fix a bug where data could be skipped when there were multiple slow consumers.
+* Make setting the `MsgSeqNum` field optional, and ensure required-field checking correctly applies to `int` fields.
+* Upgrade to Mockito 2.7.21; Checkstyle 7.6.1.
+
+== 0.9 (2017-03-27)
+
+* Introduce `EngineScheduler`/`LibraryScheduler` interfaces (https://github.com/artiofix/artio/pull/104[#104]), and add a low-resource scheduler implementation that can share a single monitoring thread across multiple libraries.
+* **Breaking:** Rework message encoding to support longer messages: encoders now return a single `long` packing (length, offset), and the redundant `MessageEncoder` interface is removed.
+* Add slow-consumer timeout handling with more descriptive errors, and separate the outbound and replay stream positions to prevent replayed messages from interleaving with or corrupting outbound messages.
+* Upgrade to Gradle 3.4.1; Checkstyle 7.0; Mockito 2.7.17; JMH 1.18.
+
+== 0.8 (2017-03-10)
+
+* Expose additional identifying information from the `Session` object.
+* Improve library connection liveness handling: refresh the liveness detector on reconnect attempts and send a control notification when connecting to a new cluster leader (https://github.com/artiofix/artio/pull/87[#87]).
+* Avoid heartbeating/keep-alive on messages sent while not the cluster leader.
+* Fix a false-positive checksum error that could occur if the engine is shut down immediately after startup.
+* Improve error reporting: clarify file names in replay index error messages and add a sample printer for sequence number indices.
+
+== 0.7 (2017-03-03)
+
+* Simplify the OTF parser API by merging the error acceptor interface into `OtfMessageAcceptor`, and stop swallowing exceptions thrown from acceptor callbacks.
+* Fix a bug in the error printer that could spam errors due to incorrect time precision, and ensure the correct file name is reported on checksum errors.
+* Retry library connection attempts even when in a `NOT_CONNECTED` state, and keep the resend-connect message in sync with the reply timeout.
+* Upgrade to Aeron 1.2.3.
+
+== 0.6 (2017-02-27)
+
+* Fix a sequence number handling bug uncovered by tightening up system test assertions.
+* Improve performance: use an array rather than an `ArrayList` in the main session poll loop, avoid re-encoding the message header on every encode, and reduce unnecessary reset calls and memory consumption when validation is disabled.
+* Ensure header errors or filesystem exceptions during startup don't prevent the engine from starting.
+* Upgrade to Gradle 3.4; Mockito 2.7.9; JMH 1.17.5.
+
+== 0.5 (2017-02-17)
+
+* Fix a data-corruption bug affecting slow consumers, and refactor the slow-consumer detection logic to remove its dependency on `SenderEndPoint` internal state.
+* **Breaking:** Rename the `Logon` event to `SessionExists`, and change `SessionHandler` to pass `Session` objects rather than raw session ids.
+* Add a callback to detect slow-consumer sessions, and pass a flag to `SessionAcquireHandler` indicating whether an acquired session is a slow consumer.
+* Notify libraries when a session is released, and notify other libraries of a timed-out library's sessions so they can be re-acquired.
+* Remove the limit on connection attempts, and ensure closing cannot be triggered from within the poll loop.
+
+== 0.4 (2017-02-10)
+
+* Rename "stream position" to "transport position" for clarity, and add a dedicated interface/header for subscribing to cluster streams.
+* Add Aeron log-buffer term alignment support, updating position handling and tests accordingly.
+* Fix a bug causing the logon message to be sent twice, and fix bugs related to sequence number and sequence index resets.
+* Fix the slow-subscription logic for the clustered case.
+* Add a configurable delay before considering a session's connection attempt timed out, and add the ability to limit debug output by thread.
+
+== 0.3 (2017-02-03)
+
+* Harden the Raft-based cluster implementation: fix an `IndexOutOfBoundsException` when the archiver lags the cluster subscription, an NPE for an early consensus heartbeat from a new leader, and bugs where resends could be dropped or accidentally suppressed by heartbeats (https://github.com/artiofix/artio/pull/28[#28]).
+* Allow cluster subscriptions to back-track and correctly resolve positions when different leaders have different stream positions.
+* Avoid a candidate accidentally voting against itself, and ensure `votedFor` is reset at the start of each election.
+* Add a configuration option to initiate a session with the reset-sequence-number flag set (https://github.com/artiofix/artio/pull/97[#97]).
+* Add remote sub-id and location-id fields to the session composite key, renaming "sender"/"target" to "local"/"remote" for clarity.
+* Upgrade to Agrona 0.9.2, Aeron 1.1.0, and SBE 1.5.6 (the SBE upgrade required renaming `type` keyword usages to `errorType`/`connectionType` for Go compatibility).
+* Fix an alignment bug affecting message replay, and support replaying messages whose body-length field has no space for an extended value.
+
+== 0.2 (2016-12-21)
+
+* Introduce a session context/sequence-index concept, persisting sequence indices across session resets and gateway restarts, and wire it through the message protocol, replay index, and replay queries.
+* Rework catchup replay: replace sequences of heartbeats with gap-fills, use a message status flag rather than a dedicated catchup-start message, and correctly detect the end of catchup using the sequence index rather than message counts.
+* Ensure replayed messages are correctly sent with the poss-dup flag enabled.
+* Add a "close checker" utility to help reproduce and fix Windows file-locking issues when closing the media driver and other resources.
+* Rewrite the cluster position sender to correctly calculate combined stream positions, including support for interval array expansion and multiple/wrap-around gap cases.
+* Fix a decoder bug where array-based fields with independent length and "has" flags could be reset inconsistently, and fix decimal-float encoding for scales longer than the value's text representation.
+* Avoid blocking the Framer thread while waiting to acquire library sessions or while indexing, so engine shutdown is not delayed.
+* Various bug fixes (https://github.com/artiofix/artio/pull/94[#94], https://github.com/artiofix/artio/pull/96[#96], https://github.com/artiofix/artio/pull/98[#98], https://github.com/artiofix/artio/pull/99[#99], https://github.com/artiofix/artio/pull/100[#100], https://github.com/artiofix/artio/pull/81[#81], https://github.com/artiofix/artio/pull/88[#88]).
+* Upgrade to Aeron 1.0.5, Agrona 0.9.1, and SBE 1.5.5; Gradle 3.3; Checkstyle 7.3.
+
+== 0.1 (2016-09-29)
+
+* Initial public release of Artio (then named FIX-Gateway), a low-latency FIX engine and gateway built on top of https://github.com/aeron-io/aeron[Aeron]. (~1600 commits of initial development history establishing the engine/library architecture, session and message codecs, clustering, and replay/archiving support.)
