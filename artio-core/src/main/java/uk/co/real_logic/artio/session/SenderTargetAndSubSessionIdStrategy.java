@@ -162,6 +162,9 @@ class SenderTargetAndSubSessionIdStrategy implements SessionIdStrategy
         private final char[] localCompID;
         private final char[] localSubID;
         private final char[] remoteCompID;
+        private final String localCompIDStr;
+        private final String localSubIDStr;
+        private final String remoteCompIDStr;
         private final int hashCode;
 
         private CompositeKeyImpl(
@@ -175,6 +178,9 @@ class SenderTargetAndSubSessionIdStrategy implements SessionIdStrategy
             this.localCompID = Arrays.copyOf(localCompID, localCompIDLength);
             this.remoteCompID = Arrays.copyOf(remoteCompID, remoteCompIDLength);
             this.localSubID = Arrays.copyOf(localSubID, localSubIDLength);
+            this.localCompIDStr = new String(this.localCompID);
+            this.localSubIDStr = new String(this.localSubID);
+            this.remoteCompIDStr = new String(this.remoteCompID);
             hashCode = hash(this.localCompID, this.localSubID, this.remoteCompID);
         }
 
@@ -186,6 +192,9 @@ class SenderTargetAndSubSessionIdStrategy implements SessionIdStrategy
             this.localCompID = CodecUtil.fromBytes(localCompID);
             this.localSubID = CodecUtil.fromBytes(localSubID);
             this.remoteCompID = CodecUtil.fromBytes(remoteCompID);
+            this.localCompIDStr = new String(this.localCompID);
+            this.localSubIDStr = new String(this.localSubID);
+            this.remoteCompIDStr = new String(this.remoteCompID);
             hashCode = hash(this.localCompID, this.localSubID, this.remoteCompID);
         }
 
@@ -226,12 +235,12 @@ class SenderTargetAndSubSessionIdStrategy implements SessionIdStrategy
 
         public String localCompId()
         {
-            return new String(localCompID);
+            return localCompIDStr;
         }
 
         public String localSubId()
         {
-            return new String(localSubID);
+            return localSubIDStr;
         }
 
         public String localLocationId()
@@ -241,7 +250,7 @@ class SenderTargetAndSubSessionIdStrategy implements SessionIdStrategy
 
         public String remoteCompId()
         {
-            return new String(remoteCompID);
+            return remoteCompIDStr;
         }
 
         public String remoteSubId()
