@@ -148,6 +148,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         AWAITING_INDEX,
         REPLAY_QUERY,
         REPLAYING,
+        COMPLETE_REPLAY,
         SEND_MISSING,
         SEND_OK
     }
@@ -167,6 +168,8 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     private final long correlationId;
     private final long connectionId;
     private final int libraryId;
+    private final int replayFromSequenceNumber;
+    private final int replayFromSequenceIndex;
     private final int replayToSequenceNumber;
     private final int replayToSequenceIndex;
     private final FixGatewaySession session;
@@ -178,8 +181,8 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     private final EpochFractionFormat epochFractionFormat;
     private final EpochNanoClock nanoClock;
 
-    private int replayFromSequenceNumber;
-    private int replayFromSequenceIndex;
+    private int currentSequenceIndex = OUT_OF_RANGE;
+    private int currentSequenceNumber = OUT_OF_RANGE;
     private State state = State.AWAITING_INDEX;
     private String missingMessagesReason;
 
@@ -187,7 +190,10 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     private UtcTimestampEncoder timestampEncoder;
     private MutableAsciiBuffer encodeBuffer;
 
+    private int heartbeatRangeSequenceIndexStart = OUT_OF_RANGE;
     private int heartbeatRangeSequenceNumberStart = OUT_OF_RANGE;
+    private int heartbeatRangeSequenceIndexEnd = OUT_OF_RANGE;
+    private int heartbeatRangeSequenceNumberEnd = OUT_OF_RANGE;
 
     private ReplayOperation replayOperation = null;
 
@@ -250,53 +256,77 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     {
         messageHeaderDecoder.wrap(srcBuffer, srcOffset);
 
+        final int schemaId = messageHeaderDecoder.schemaId();
+        final int templateId = messageHeaderDecoder.templateId();
+        final int blockLength = messageHeaderDecoder.blockLength();
         final int version = messageHeaderDecoder.version();
-        messageDecoder.wrap(
-            srcBuffer,
-            srcOffset + MessageHeaderDecoder.ENCODED_LENGTH,
-            messageHeaderDecoder.blockLength(),
-            version);
 
-        if (messageDecoder.status() == CATCHUP_REPLAY)
+        switch (templateId)
         {
-            return CONTINUE;
-        }
-
-        final long messageType = MessageTypeExtractor.getMessageType(messageDecoder);
-
-        messageDecoder.skipMetaData();
-
-        final int messageLength = messageDecoder.bodyLength();
-        final int messageOffset = messageDecoder.limit() + bodyHeaderLength();
-
-        asciiBuffer.wrap(srcBuffer, messageOffset, messageLength);
-        headerDecoder.decode(asciiBuffer, 0, messageLength);
-
-        if (messageType == HEARTBEAT_MESSAGE_TYPE)
-        {
-            if (heartbeatRangeSequenceNumberStart == OUT_OF_RANGE)
+            case FixMessageDecoder.TEMPLATE_ID:
             {
-                heartbeatRangeSequenceNumberStart = headerDecoder.msgSeqNum();
-            }
+                messageDecoder.wrap(
+                    srcBuffer,
+                    srcOffset + MessageHeaderDecoder.ENCODED_LENGTH,
+                    blockLength,
+                    version);
 
-            return CONTINUE;
-        }
-        else
-        {
-            if (heartbeatRangeSequenceNumberStart != OUT_OF_RANGE)
-            {
-                if (!sendGapFill())
+                if (messageDecoder.status() == CATCHUP_REPLAY)
                 {
-                    return ABORT;
+                    return CONTINUE;
+                }
+
+                final long messageType = MessageTypeExtractor.getMessageType(messageDecoder);
+
+                messageDecoder.skipMetaData();
+
+                final int messageLength = messageDecoder.bodyLength();
+                final int messageOffset = messageDecoder.limit() + bodyHeaderLength();
+
+                asciiBuffer.wrap(srcBuffer, messageOffset, messageLength);
+                headerDecoder.decode(asciiBuffer, 0, messageLength);
+
+                if (messageType == HEARTBEAT_MESSAGE_TYPE)
+                {
+                    if (heartbeatRangeSequenceNumberStart == OUT_OF_RANGE)
+                    {
+                        initializeHeader(headerDecoder);
+                        heartbeatRangeSequenceIndexStart = messageDecoder.sequenceIndex();
+                        heartbeatRangeSequenceNumberStart = headerDecoder.msgSeqNum();
+                    }
+
+                    heartbeatRangeSequenceIndexEnd = messageDecoder.sequenceIndex();
+                    heartbeatRangeSequenceNumberEnd = headerDecoder.msgSeqNum();
+
+                    return CONTINUE;
+                }
+                else
+                {
+                    if (heartbeatRangeSequenceNumberStart != OUT_OF_RANGE)
+                    {
+                        if (!sendGapFill(messageDecoder.sequenceIndex(), headerDecoder.msgSeqNum() - 1))
+                        {
+                            return ABORT;
+                        }
+                    }
+
+                    return processNormalMessage(srcBuffer, srcOffset, srcLength);
                 }
             }
 
-            return processNormalMessage(
-                srcBuffer, srcOffset, srcLength);
+            case ThrottleNotificationDecoder.TEMPLATE_ID:
+            {
+                return CONTINUE;
+            }
+
+            default:
+            {
+                return CONTINUE;
+            }
         }
     }
 
-    private boolean sendGapFill()
+    private void initializeHeader(final SessionHeaderDecoder headerDecoder)
     {
         if (sequenceResetEncoder == null)
         {
@@ -328,11 +358,12 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
                 header.targetLocationID(headerDecoder.targetLocationID());
             }
         }
+    }
 
-        final int heartbeatRangeSequenceNumberEnd = headerDecoder.msgSeqNum();
-
+    private boolean sendGapFill(final int sequenceIndexEnd, final int sequenceNumberEnd)
+    {
         sequenceResetEncoder.header().msgSeqNum(heartbeatRangeSequenceNumberStart);
-        sequenceResetEncoder.newSeqNo(heartbeatRangeSequenceNumberEnd);
+        sequenceResetEncoder.newSeqNo(sequenceNumberEnd + 1);
         sequenceResetEncoder.header().sendingTime(
             timestampEncoder.buffer(), timestampEncoder.encodeFrom(nanoClock.nanoTime(), TimeUnit.NANOSECONDS));
 
@@ -342,12 +373,18 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         final boolean sent = inboundPublication.saveMessage(
             encodeBuffer, encodedOffset, encodedLength,
             libraryId, SEQUENCE_RESET_MESSAGE_TYPE,
-            messageDecoder.session(), replayFromSequenceIndex, libraryId,
-            CATCHUP_REPLAY, heartbeatRangeSequenceNumberEnd) > 0;
+            messageDecoder.session(), heartbeatRangeSequenceIndexStart, libraryId,
+            CATCHUP_REPLAY, heartbeatRangeSequenceNumberStart) > 0;
 
         if (sent)
         {
+            heartbeatRangeSequenceIndexStart = OUT_OF_RANGE;
             heartbeatRangeSequenceNumberStart = OUT_OF_RANGE;
+            heartbeatRangeSequenceIndexEnd = OUT_OF_RANGE;
+            heartbeatRangeSequenceNumberEnd = OUT_OF_RANGE;
+
+            currentSequenceIndex = sequenceIndexEnd;
+            currentSequenceNumber = sequenceNumberEnd;
         }
 
         return sent;
@@ -363,13 +400,13 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         final Action action = Pressure.apply(inboundPublication.offer(srcBuffer, srcOffset, srcLength));
         if (action == CONTINUE)
         {
-            // store the point to continue from if an abort happens.
-            replayFromSequenceNumber = headerDecoder.msgSeqNum() + 1;
-            replayFromSequenceIndex = messageDecoder.sequenceIndex();
+            currentSequenceNumber = headerDecoder.msgSeqNum();
+            currentSequenceIndex = messageDecoder.sequenceIndex();
         }
         return action;
     }
 
+    @SuppressWarnings("MethodLength")
     public long attempt()
     {
         if (DebugLogger.isEnabled(CATCHUP))
@@ -434,20 +471,34 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
 
                 if (replayOperation.pollReplay())
                 {
-                    if (hasMissingMessages())
-                    {
-                        return switchToMissingMessages("Is missing messages from replay index query");
-                    }
-                    else
-                    {
-                        state = State.SEND_OK;
-                        return sendOk(inboundPublication, correlationId, session);
-                    }
+                    state = State.COMPLETE_REPLAY;
+                    return BACK_PRESSURED;
                 }
                 else
                 {
                     // Incomplete operation
                     return BACK_PRESSURED;
+                }
+            }
+
+            case COMPLETE_REPLAY:
+            {
+                if (heartbeatRangeSequenceNumberStart != OUT_OF_RANGE)
+                {
+                    if (!sendGapFill(heartbeatRangeSequenceIndexEnd, heartbeatRangeSequenceNumberEnd))
+                    {
+                        return BACK_PRESSURED;
+                    }
+                }
+
+                if (hasMissingMessages())
+                {
+                    return switchToMissingMessages("Is missing messages from replay index query");
+                }
+                else
+                {
+                    state = State.SEND_OK;
+                    return sendOk(inboundPublication, correlationId, session);
                 }
             }
 
@@ -478,7 +529,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
 
     private boolean hasMissingMessages()
     {
-        return replayFromSequenceIndex < replayToSequenceIndex || replayFromSequenceNumber < replayToSequenceNumber;
+        return currentSequenceIndex < replayToSequenceIndex || currentSequenceNumber < replayToSequenceNumber;
     }
 
     private boolean notLoggingInboundMessages()
@@ -529,8 +580,8 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
                 "Failed to read correct number of messages for sessionId=%d," +
                 " finished at [%d, %d] instead of [%d, %d] - %s",
                 session.sessionId(),
-                replayFromSequenceIndex,
-                replayFromSequenceNumber,
+                currentSequenceIndex,
+                currentSequenceNumber,
                 replayToSequenceIndex,
                 replayToSequenceNumber,
                 missingMessagesReason)));
