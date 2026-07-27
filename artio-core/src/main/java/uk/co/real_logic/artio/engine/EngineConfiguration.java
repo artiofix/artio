@@ -212,6 +212,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public static final int DEFAULT_MAX_CONCURRENT_SESSION_REPLAYS = 5;
     public static final long DEFAULT_DUPLICATE_ENGINE_TIMEOUT_IN_MS = SECONDS.toMillis(10);
     public static final int NO_THROTTLE_WINDOW = MISSING_INT;
+    public static final int DEFAULT_THROTTLE_BUSINESS_REJECT_REASON = 99;
     public static final boolean DEFAULT_INDEX_CHECKSUM_ENABLED = true;
 
     public static final long MAX_COD_TIMEOUT_IN_NS = 60_000_000_000L;
@@ -326,6 +327,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     private FixPCancelOnDisconnectTimeoutHandler fixPCancelOnDisconnectTimeoutHandler = null;
     private int throttleWindowInMs = NO_THROTTLE_WINDOW;
     private int throttleLimitOfMessages = NO_THROTTLE_WINDOW;
+    private int throttleBusinessRejectReason = DEFAULT_THROTTLE_BUSINESS_REJECT_REASON;
     private long timeIndexReplayFlushIntervalInNs = DEFAULT_TIME_INDEX_FLUSH_INTERVAL_IN_NS;
     private CancelOnDisconnectOption cancelOnDisconnectOption = DO_NOT_CANCEL_ON_DISCONNECT_OR_LOGOUT;
     private int cancelOnDisconnectTimeoutWindowInMs = DEFAULT_CANCEL_ON_DISCONNECT_TIMEOUT_WINDOW_IN_MS;
@@ -1037,6 +1039,19 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
                 "Unable to configure message throttle, throttleLimitOfMessages must be >= 1 but is " +
                     throttleLimitOfMessages);
         }
+    }
+
+    /**
+     * Sets the throttle business reject reason used on business message reject when session throttling limits are
+     * reached.
+     *
+     * @param throttleBusinessRejectReason  business reject reason used.
+     * @return this
+     */
+    public EngineConfiguration throttleBusinessRejectReason(final int throttleBusinessRejectReason)
+    {
+        this.throttleBusinessRejectReason = throttleBusinessRejectReason;
+        return this;
     }
 
     /**
@@ -2078,6 +2093,11 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public int throttleLimitOfMessages()
     {
         return throttleLimitOfMessages;
+    }
+
+    public int throttleBusinessRejectReason()
+    {
+        return throttleBusinessRejectReason;
     }
 
     public long timeIndexReplayFlushIntervalInNs()

@@ -27,6 +27,7 @@ public class FixThrottleRejectBuilder
     private final EpochNanoClock clock;
     private final AbstractBusinessMessageRejectEncoder businessMessageReject;
     private final byte[] refMsgTypeBuffer = new byte[2];
+    private final int businessRejectReason;
 
     public FixThrottleRejectBuilder(
         final FixDictionary fixDictionary,
@@ -36,12 +37,14 @@ public class FixThrottleRejectBuilder
         final UtcTimestampEncoder timestampEncoder,
         final EpochNanoClock clock,
         final int throttleWindowInMs,
-        final int throttleLimitOfMessages)
+        final int throttleLimitOfMessages,
+        final int businessRejectReason)
     {
         this.timestampEncoder = timestampEncoder;
         this.clock = clock;
-        businessRejectBuffer = new MutableAsciiBuffer(ByteBuffer.allocateDirect(BUFFER_CAPACITY));
-        businessMessageReject = fixDictionary.makeBusinessMessageRejectEncoder();
+        this.businessRejectBuffer = new MutableAsciiBuffer(ByteBuffer.allocateDirect(BUFFER_CAPACITY));
+        this.businessMessageReject = fixDictionary.makeBusinessMessageRejectEncoder();
+        this.businessRejectReason = businessRejectReason;
 
         if (businessMessageReject == null)
         {
@@ -106,7 +109,7 @@ public class FixThrottleRejectBuilder
         businessMessageReject
             .refMsgType(refMsgTypeBuffer, 0, refMsgTypeLength)
             .refSeqNum(refSeqNum)
-            .businessRejectReason(FixSenderEndPoint.THROTTLE_BUSINESS_REJECT_REASON)
+            .businessRejectReason(businessRejectReason)
             .businessRejectRefID(businessRejectRefIDBuffer, businessRejectRefIDOffset, businessRejectRefIDLength);
 
         final long result = businessMessageReject.encode(businessRejectBuffer, 0);

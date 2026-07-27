@@ -80,8 +80,6 @@ class FixSenderEndPoint extends SenderEndPoint
             "SEP.timeoutSlowDisconnect, conn=%s,sess=%s,time=%s,maxBytesInBuffer=%s,noWriteSince=%s");
     }
 
-    public static final int THROTTLE_BUSINESS_REJECT_REASON = 99;
-
     private final long connectionId;
     private final AtomicCounter invalidLibraryAttempts;
     private final long slowConsumerTimeoutInMs;
@@ -218,7 +216,8 @@ class FixSenderEndPoint extends SenderEndPoint
                 connectionId,
                 new UtcTimestampEncoder(configuration.sessionEpochFractionFormat()),
                 configuration.epochNanoClock(),
-                configuration.throttleWindowInMs(), configuration.throttleLimitOfMessages()
+                configuration.throttleWindowInMs(), configuration.throttleLimitOfMessages(),
+                configuration.throttleBusinessRejectReason()
             );
             configuration.sessionIdStrategy().setupSession(sessionKey, throttleRejectBuilder.header());
         }

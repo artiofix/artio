@@ -375,7 +375,8 @@ public class Replayer extends AbstractReplayer
                 sessionId,
                 connectionId,
                 utcTimestampEncoder,
-                clock, configuration.throttleWindowInMs(), configuration.throttleLimitOfMessages());
+                clock, configuration.throttleWindowInMs(), configuration.throttleLimitOfMessages(),
+                configuration.throttleBusinessRejectReason());
             HeaderSetup.setup(resendRequest.header(), throttleRejectBuilder.header());
         }
 
