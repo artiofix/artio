@@ -11,6 +11,7 @@
 * Correct `CustOrderCapacity` `ILink3SystemTest` (https://github.com/artiofix/artio/pull/512[#512]).
 * Externalize `initialConnectionId` to `EngineConfiguration`, from https://github.com/artiofix/artio/pull/500[#500].
 * Use `String` variables for composite key implementations, from https://github.com/artiofix/artio/pull/500[#500].
+* Adjust return value to endOfField + 1 when parsing a 0 length group, from https://github.com/artiofix/artio/pull/565[#565].
 
 == 0.181 (2026-07-10)
 

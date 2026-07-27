@@ -53,6 +53,7 @@ public class OtfParserTest
         parser.onMessage(buffer, offset, MSG_LEN);
 
         verify(mockAcceptor).onNext();
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -71,6 +72,7 @@ public class OtfParserTest
         catch (final IllegalArgumentException ex)
         {
             assertEquals(errorMessage, ex.getMessage());
+            verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
             return;
         }
 
@@ -95,6 +97,7 @@ public class OtfParserTest
         inOrder.verify(mockAcceptor).onField(eq(34), any(), eq(offset + 24), eq(1));
 
         inOrder.verify(mockAcceptor, times(15)).onField(anyInt(), any(), anyInt(), anyInt());
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -117,6 +120,7 @@ public class OtfParserTest
         inOrder.verify(mockAcceptor).onField(eq(34), any(), eq(offset + 24), eq(1));
 
         inOrder.verifyNoMoreInteractions();
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -128,6 +132,7 @@ public class OtfParserTest
         parser.onMessage(buffer, offset, MSG_LEN);
 
         verify(mockAcceptor).onComplete();
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -169,6 +174,8 @@ public class OtfParserTest
         verifyInOrderField(437);
         verifyInOrderField(438);
         verifyGroupEnd(382, 1, 0);
+
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -183,6 +190,8 @@ public class OtfParserTest
         verifyGroupHeader(382, 0);
         inOrder.verify(mockAcceptor, never()).onGroupBegin(anyInt(), anyInt(), anyInt());
         inOrder.verify(mockAcceptor, never()).onGroupEnd(anyInt(), anyInt(), anyInt());
+
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -198,6 +207,8 @@ public class OtfParserTest
         verifyGroupHeader(NO_ORDERS, 2);
         verifyNoOrdersGroup(0);
         verifyNoOrdersGroup(1);
+
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
@@ -214,6 +225,8 @@ public class OtfParserTest
         verifyGroupHeader(NO_ORDERS, 2);
         verifyNestedNoAllocsGroup(0);
         verifyNoOrdersGroup(1);
+
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     @ParameterizedTest()
