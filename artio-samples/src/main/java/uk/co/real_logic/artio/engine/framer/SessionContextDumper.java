@@ -36,7 +36,9 @@ public final class SessionContextDumper
             mappedFile,
             SessionIdStrategy.senderAndTarget(),
             1,
-            throwable -> throwable.printStackTrace(System.out), false);
+            throwable -> throwable.printStackTrace(System.out),
+            false,
+            new IncrementalSessionIdGenerator());
 
         contexts
             .allSessions()
