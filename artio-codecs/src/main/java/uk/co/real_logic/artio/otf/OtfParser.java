@@ -219,7 +219,7 @@ public final class OtfParser
             return position;
         }
 
-        return endOfField;
+        return endOfField + 1;
     }
 
     private boolean isEndOfGroup(final IntHashSet groupFields)
