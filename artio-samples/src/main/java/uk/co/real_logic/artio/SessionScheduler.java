@@ -244,6 +244,7 @@ public class SessionScheduler
                 {
                     session = null;
                     state = State.DISCONNECTED;
+                    scheduleStart();
                     return 1;
                 }
 
