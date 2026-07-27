@@ -13,6 +13,7 @@
 * Use `String` variables for composite key implementations, from https://github.com/artiofix/artio/pull/500[#500].
 * Adjust return value to endOfField + 1 when parsing a 0 length group, from https://github.com/artiofix/artio/pull/565[#565].
 * Correctly handle LibraryScheduler when monitoring agent is null. Addresses https://github.com/artiofix/artio/issues/473[#473].
+* Reset decoder before decoding in generated DictionaryDecoder. Addresses https://github.com/artiofix/artio/issues/511[#511].
 
 == 0.181 (2026-07-10)
 

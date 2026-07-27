@@ -202,9 +202,9 @@ class AcceptorGenerator
         decoderOutput.append(String.format(
             "        %1$sif (messageType == %2$s.MESSAGE_TYPE)\n" +
             "        {\n" +
+            "            %3$s.reset();\n" +
             "            %3$s.decode(buffer, offset, length);\n" +
             "            acceptor.on%4$s(%3$s);\n" +
-            "            %3$s.reset();\n" +
             "        }\n\n",
             index == 0 ? "" : "else ",
             decoderClassName(message),
