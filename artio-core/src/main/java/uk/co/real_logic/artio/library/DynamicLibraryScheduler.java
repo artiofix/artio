@@ -128,7 +128,10 @@ public class DynamicLibraryScheduler implements LibraryScheduler
         public void onStart()
         {
             FixLibrary.setClientConductorThread();
-            monitoringAgent.onStart();
+            if (monitoringAgent != null)
+            {
+                monitoringAgent.onStart();
+            }
             clientConductorAgent.onStart();
         }
 
@@ -138,7 +141,10 @@ public class DynamicLibraryScheduler implements LibraryScheduler
 
             try
             {
-                count += monitoringAgent.doWork();
+                if (monitoringAgent != null)
+                {
+                    count += monitoringAgent.doWork();
+                }
                 count += clientConductorAgent.doWork();
             }
             catch (final Throwable throwable)

@@ -23,6 +23,9 @@ import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.CompositeAgent;
 import uk.co.real_logic.artio.engine.EngineScheduler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.agrona.concurrent.AgentRunner.startOnThread;
 
 public class DefaultLibraryScheduler implements LibraryScheduler
@@ -40,22 +43,26 @@ public class DefaultLibraryScheduler implements LibraryScheduler
             EngineScheduler.fail();
         }
 
-        if (monitoringAgent != null)
+        final List<Agent> agents = new ArrayList<>();
+        agents.add(conductorAgent);
+        if (null != monitoringAgent)
         {
-            monitoringRunner = new AgentRunner(
-                configuration.monitoringThreadIdleStrategy(),
-                errorHandler,
-                null,
-                new CompositeAgent(monitoringAgent, conductorAgent)
-                {
-                    public void onStart()
-                    {
-                        FixLibrary.setClientConductorThread();
-                        super.onStart();
-                    }
-                });
-            startOnThread(monitoringRunner, configuration.threadFactory());
+            agents.add(monitoringAgent);
         }
+
+        monitoringRunner = new AgentRunner(
+            configuration.monitoringThreadIdleStrategy(),
+            errorHandler,
+            null,
+            new CompositeAgent(agents)
+            {
+                public void onStart()
+                {
+                    FixLibrary.setClientConductorThread();
+                    super.onStart();
+                }
+            });
+        startOnThread(monitoringRunner, configuration.threadFactory());
     }
 
     public void configure(final Aeron.Context aeronContext)
