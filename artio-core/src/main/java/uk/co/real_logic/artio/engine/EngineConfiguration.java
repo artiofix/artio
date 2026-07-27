@@ -1874,10 +1874,6 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
      */
     public SessionIdGenerator sessionIdGenerator()
     {
-        if (sessionIdGenerator == null)
-        {
-            sessionIdGenerator = new IncrementalSessionIdGenerator();
-        }
         return sessionIdGenerator;
     }
 
@@ -2231,6 +2227,11 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
         if (lookupDefaultAcceptorfixDictionary && acceptorfixDictionary() == null)
         {
             acceptorfixDictionary(FixDictionary.findDefault());
+        }
+
+        if (sessionIdGenerator == null)
+        {
+            sessionIdGenerator = new IncrementalSessionIdGenerator();
         }
 
         if (Strings.isEmpty(aeronContext().clientName()))
