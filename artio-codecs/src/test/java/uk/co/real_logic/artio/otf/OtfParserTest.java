@@ -237,7 +237,7 @@ public class OtfParserTest
 
         parser.onMessage(buffer, offset, ZERO_CHECKSUM_MESSAGE.length);
 
-        verify(mockAcceptor, never()).onError(any(), anyInt(), anyInt(), any());
+        verify(mockAcceptor, never()).onError(any(), anyLong(), anyInt(), any());
     }
 
     private void verifyGroupHeader(final int groupNumber, final int numberOfElements)
