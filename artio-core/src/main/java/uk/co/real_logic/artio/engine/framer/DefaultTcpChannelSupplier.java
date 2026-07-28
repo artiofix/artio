@@ -126,6 +126,10 @@ public class DefaultTcpChannelSupplier extends TcpChannelSupplier
         if (hasBindAddress && listeningChannel == null)
         {
             listeningChannel = ServerSocketChannel.open();
+            if (configuration.receiverSocketBufferSize() > 0)
+            {
+                listeningChannel.setOption(SO_RCVBUF, configuration.receiverSocketBufferSize());
+            }
             listeningChannel.bind(configuration.bindAddress()).configureBlocking(false);
             listeningChannel.register(selector, SelectionKey.OP_ACCEPT);
         }
