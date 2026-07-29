@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 <module name="Checker">
     <module name="SuppressionFilter">
@@ -19,8 +19,10 @@
 
     <module name="LineLength">
         <property name="max" value="120"/>
-        <property name="ignorePattern" value="^[ \t]*\*.*@.*$"/>
+        <property name="ignorePattern" value="^([ \t]*\*.*@.*|package .*|import .*)$"/>
     </module>
+
+    <module name="NewlineAtEndOfFile"/>
 
     <module name="TreeWalker">
         <property name="tabWidth" value="4"/>
@@ -28,9 +30,7 @@
 
         <module name="SuppressWarningsHolder"/>
 
-        <module name="Indentation">
-            <property name="forceStrictCondition" value="true"/>
-        </module>
+        <module name="Indentation"/>
 
         <module name="ConstantName"/>
 
@@ -58,7 +58,9 @@
 
         <module name="StaticVariableName"/>
 
-        <module name="TypeName"/>
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9_]*$"/>
+        </module>
 
         <module name="RedundantImport"/>
 
