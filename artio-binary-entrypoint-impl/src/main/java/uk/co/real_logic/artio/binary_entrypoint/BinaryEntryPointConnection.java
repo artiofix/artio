@@ -95,6 +95,7 @@ public interface BinaryEntryPointConnection extends FixPConnection
     /**
      * {@inheritDoc}
      */
+    @Override
     BinaryEntryPointKey key();
 
     /**

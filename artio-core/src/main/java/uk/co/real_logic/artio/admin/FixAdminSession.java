@@ -64,6 +64,7 @@ public class FixAdminSession implements SessionInfo
     /**
      * {@inheritDoc}
      */
+    @Override
     public long sessionId()
     {
         return sessionId;
@@ -72,6 +73,7 @@ public class FixAdminSession implements SessionInfo
     /**
      * {@inheritDoc}
      */
+    @Override
     public CompositeKey sessionKey()
     {
         return sessionKey;
@@ -80,6 +82,7 @@ public class FixAdminSession implements SessionInfo
     /**
      * {@inheritDoc}
      */
+    @Override
     public int sequenceIndex()
     {
         return sequenceIndex;

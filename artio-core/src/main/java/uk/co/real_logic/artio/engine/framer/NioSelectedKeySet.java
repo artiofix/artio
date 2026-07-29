@@ -60,6 +60,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         return size;
@@ -78,6 +79,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return 0 == size;
@@ -86,6 +88,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(final SelectionKey selectionKey)
     {
         if (null == selectionKey)
@@ -102,6 +105,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(final Object o)
     {
         for (int i = 0; i < size; i++)
@@ -121,6 +125,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(final Object o)
     {
         for (int i = 0; i < size; i++)
@@ -213,6 +218,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Iterator<SelectionKey> iterator()
     {
         throw new UnsupportedOperationException();

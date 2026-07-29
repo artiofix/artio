@@ -119,6 +119,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
     /**
      * {@inheritDoc}
      */
+    @Override
     public BinaryEntryPointKey key()
     {
         return key;
@@ -127,6 +128,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
     /**
      * {@inheritDoc}
      */
+    @Override
     public FixPFirstMessageResponse checkAccept(final FixPContext fixPContext, final boolean ignoreFromNegotiate)
     {
         if (fixPContext == null)
@@ -206,6 +208,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
     /**
      * {@inheritDoc}
      */
+    @Override
     public void initiatorReconnect(final boolean reestablishConnection)
     {
         unsupported();
@@ -224,6 +227,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
     /**
      * {@inheritDoc}
      */
+    @Override
     public FixPProtocolType protocolType()
     {
         return FixPProtocolType.BINARY_ENTRYPOINT;
@@ -232,6 +236,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
     /**
      * {@inheritDoc}
      */
+    @Override
     public void onEndSequence()
     {
         ended = true;

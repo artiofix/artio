@@ -219,6 +219,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration sessionIdStrategy(final SessionIdStrategy sessionIdStrategy)
     {
         super.sessionIdStrategy(sessionIdStrategy);
@@ -228,6 +229,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration monitoringBuffersLength(final Integer monitoringBuffersLength)
     {
         super.monitoringBuffersLength(monitoringBuffersLength);
@@ -237,6 +239,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration monitoringFile(final String monitoringFile)
     {
         super.monitoringFile(monitoringFile);
@@ -309,6 +312,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration replyTimeoutInMs(final long replyTimeoutInMs)
     {
         super.replyTimeoutInMs(replyTimeoutInMs);
@@ -318,6 +322,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration noEstablishFixPTimeoutInMs(final long noEstablishFixPTimeoutInMs)
     {
         super.noEstablishFixPTimeoutInMs(noEstablishFixPTimeoutInMs);
@@ -327,6 +332,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration fixPAcceptedSessionMaxRetransmissionRange(
         final int fixPAcceptedSessionMaxRetransmissionRange)
     {
@@ -337,6 +343,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration epochNanoClock(final EpochNanoClock epochNanoClock)
     {
         super.epochNanoClock(epochNanoClock);
@@ -346,6 +353,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration resendRequestController(final ResendRequestController resendRequestController)
     {
         super.resendRequestController(resendRequestController);
@@ -355,6 +363,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration defaultHeartbeatIntervalInS(final int value)
     {
         super.defaultHeartbeatIntervalInS(value);
@@ -364,6 +373,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public LibraryConfiguration forcedHeartbeatIntervalInS(final int value)
     {
         super.forcedHeartbeatIntervalInS(value);
@@ -373,6 +383,7 @@ public final class LibraryConfiguration extends CommonConfiguration
     /**
      * {@inheritDoc}
      */
+    @Override
     public CommonConfiguration disableHeartbeatRepliesToTestRequests(
         final boolean disableHeartbeatRepliesToTestRequests)
     {

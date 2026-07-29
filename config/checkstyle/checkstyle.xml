@@ -30,6 +30,8 @@
 
         <module name="SuppressWarningsHolder"/>
 
+        <module name="MissingOverride"/>
+
         <module name="Indentation"/>
 
         <module name="ConstantName"/>
