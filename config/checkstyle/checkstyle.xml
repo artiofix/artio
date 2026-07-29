@@ -22,6 +22,11 @@
         <property name="ignorePattern" value="^([ \t]*\*.*@.*|package .*|import .*)$"/>
     </module>
 
+    <module name="RegexpHeader">
+        <property name="header" value="/*\n * Copyright \d{4}(-\d{4})? (Real Logic|Adaptive Financial Consulting|Monotonic) (Limited.|Ltd.)"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
     <module name="NewlineAtEndOfFile"/>
 
     <module name="TreeWalker">
