@@ -50,7 +50,7 @@ public interface FixPConnection
         /**
          * Negotiate accepted, The Establish message hasn't been sent due to back-pressure in Artio,
          * retrying attempt to send.
-         * */
+         */
         RETRY_ESTABLISH,
         /** Received an Establish Reject message. */
         ESTABLISH_REJECTED,

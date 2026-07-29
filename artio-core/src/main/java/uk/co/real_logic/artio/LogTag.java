@@ -43,7 +43,7 @@ public enum LogTag
     GATEWAY_MESSAGE,
     /**
      * This logs the flow of messages when application heartbeat messages are sent.
-     * */
+     */
     APPLICATION_HEARTBEAT,
 
     /**
