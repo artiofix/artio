@@ -44,7 +44,7 @@ public class AcceptorGeneratorTest
         RejectUnknownFieldOn.class, RejectUnknownEnumValueOn.class, RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true);
     private static final DecoderGenerator DECODER_GENERATOR = new DecoderGenerator(
         MESSAGE_EXAMPLE, 1, TEST_PACKAGE, TEST_PARENT_PACKAGE, TEST_PACKAGE, OUTPUT_MANAGER, ValidationOn.class,
-        RejectUnknownFieldOff.class, RejectUnknownEnumValueOn.class, false, false,
+        RejectUnknownFieldOff.class, RejectUnknownEnumValueOn.class, false, false, false,
         Generator.RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY, true, null);
     private static final AcceptorGenerator ACCEPTOR_GENERATOR = new AcceptorGenerator(
         MESSAGE_EXAMPLE, TEST_PACKAGE, OUTPUT_MANAGER);
