@@ -238,14 +238,20 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         this.nanoClock = nanoClock;
     }
 
-    private void updateMessageHeader(final MutableDirectBuffer buffer, final int offset)
+    private void updateMessageHeader(
+        final MutableDirectBuffer buffer,
+        final int offset,
+        final long connectionId,
+        final long timestamp,
+        final MessageStatus status,
+        final int libraryId)
     {
         final int frameOffset = offset + MessageHeaderEncoder.ENCODED_LENGTH;
         messageEncoder
             .wrap(buffer, frameOffset)
             .connection(connectionId)
-            .timestamp(nanoClock.nanoTime())
-            .status(CATCHUP_REPLAY)
+            .timestamp(timestamp)
+            .status(status)
             .libraryId(libraryId);
     }
 
@@ -395,13 +401,24 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         final int srcOffset,
         final int srcLength)
     {
-        updateMessageHeader((MutableDirectBuffer)srcBuffer, srcOffset);
+        final long originalConnectionId = messageDecoder.connection();
+        final long originalTimestamp = messageDecoder.timestamp();
+        final MessageStatus originalStatus = messageDecoder.status();
+        final int originalLibraryId = messageDecoder.libraryId();
+
+        updateMessageHeader((MutableDirectBuffer)srcBuffer, srcOffset,
+            connectionId, nanoClock.nanoTime(), CATCHUP_REPLAY, libraryId);
 
         final Action action = Pressure.apply(inboundPublication.offer(srcBuffer, srcOffset, srcLength));
         if (action == CONTINUE)
         {
             currentSequenceNumber = headerDecoder.msgSeqNum();
             currentSequenceIndex = messageDecoder.sequenceIndex();
+        }
+        else
+        {
+            updateMessageHeader((MutableDirectBuffer)srcBuffer, srcOffset,
+                originalConnectionId, originalTimestamp, originalStatus, originalLibraryId);
         }
         return action;
     }
