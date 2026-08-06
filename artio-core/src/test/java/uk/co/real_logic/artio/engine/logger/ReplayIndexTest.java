@@ -658,23 +658,24 @@ public class ReplayIndexTest extends AbstractLogTest
         final int endSequenceNumber,
         final int endSequenceIndex)
     {
-        final ReplayOperation operation = query.query(
+        try (ReplayOperation operation = query.query(
             sessionId,
             beginSequenceNumber,
             beginSequenceIndex,
             endSequenceNumber,
             endSequenceIndex,
             REPLAY,
-            new FixMessageTracker(REPLAY, fakeHandler, sessionId));
-
-        final IdleStrategy idleStrategy = CommonConfiguration.backoffIdleStrategy();
-        while (!operation.pollReplay())
+            new FixMessageTracker(REPLAY, fakeHandler, sessionId)))
         {
-            idleStrategy.idle();
-        }
-        idleStrategy.reset();
+            final IdleStrategy idleStrategy = CommonConfiguration.backoffIdleStrategy();
+            while (!operation.pollReplay())
+            {
+                idleStrategy.idle();
+            }
+            idleStrategy.reset();
 
-        return operation.replayedMessages();
+            return operation.replayedMessages();
+        }
     }
 
     static class FakeMessageHandler implements ControlledFragmentHandler
