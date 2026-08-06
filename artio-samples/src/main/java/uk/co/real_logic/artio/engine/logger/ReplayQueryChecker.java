@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
+import org.agrona.CloseHelper;
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.LogTag;
 
@@ -48,7 +49,7 @@ public final class ReplayQueryChecker
             DEFAULT_REPLAY_INDEX_RECORD_CAPACITY,
             DEFAULT_REPLAY_INDEX_SEGMENT_CAPACITY);
 
-        query.query(
+        final ReplayOperation replayOperation = query.query(
             sessionId,
             1,
             0,
@@ -56,5 +57,6 @@ public final class ReplayQueryChecker
             0,
             LogTag.REPLAY,
             null);
+        CloseHelper.quietClose(replayOperation);
     }
 }

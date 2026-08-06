@@ -18,6 +18,7 @@ package uk.co.real_logic.artio.engine.logger;
 import io.aeron.ExclusivePublication;
 import io.aeron.logbuffer.BufferClaim;
 import io.aeron.logbuffer.ControlledFragmentHandler;
+import org.agrona.CloseHelper;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.Pressure;
@@ -120,19 +121,8 @@ abstract class ReplayerSession implements ControlledFragmentHandler
 
     abstract boolean attemptReplay();
 
-    void closeNow()
+    void close()
     {
-        if (replayOperation != null)
-        {
-            replayOperation.closeNow();
-        }
-    }
-
-    void startClose()
-    {
-        if (replayOperation != null)
-        {
-            replayOperation.startClose();
-        }
+        CloseHelper.quietClose(replayOperation);
     }
 }
