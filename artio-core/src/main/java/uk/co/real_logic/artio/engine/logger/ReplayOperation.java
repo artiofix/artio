@@ -23,7 +23,6 @@ import io.aeron.archive.client.AeronArchive;
 import io.aeron.archive.client.ArchiveException;
 import io.aeron.archive.status.RecordingPos;
 import io.aeron.logbuffer.FragmentHandler;
-import org.agrona.CloseHelper;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.status.CountersReader;
 import uk.co.real_logic.artio.DebugLogger;
@@ -39,7 +38,7 @@ import static io.aeron.CommonContext.IPC_CHANNEL;
  * <p>
  * Each object is single threaded, but different objects used on different threads.
  */
-public class ReplayOperation implements AutoCloseable
+public class ReplayOperation
 {
     private static final FragmentHandler EMPTY_FRAGMENT_HANDLER = (buffer, offset, length, header) -> {};
 
@@ -81,18 +80,22 @@ public class ReplayOperation implements AutoCloseable
     private final boolean logTagEnabled;
     private final LogTag logTag;
     private final CountersReader countersReader;
+    private final Subscription subscription;
 
     // fields reset for each recordingRange
     private int replayedMessages = 0;
+    private long endPosition;
     private RecordingRange recordingRange;
-    private Subscription subscription;
-    private Image image;
     private long replaySessionId;
     private int aeronSessionId;
+    private Image image;
 
     private enum State
     {
         REPLAYING,
+        INIT_CLOSING,
+        FIND_IMAGE_CLOSING,
+        POLL_IMAGE_CLOSING,
         CLOSED
     }
 
@@ -102,6 +105,7 @@ public class ReplayOperation implements AutoCloseable
         final List<RecordingRange> ranges,
         final AeronArchive aeronArchive,
         final ErrorHandler errorHandler,
+        final Subscription subscription,
         final int archiveReplayStream,
         final LogTag logTag,
         final MessageTracker messageTracker)
@@ -117,6 +121,7 @@ public class ReplayOperation implements AutoCloseable
 
         final Aeron aeron = aeronArchive.context().aeron();
         countersReader = aeron.countersReader();
+        this.subscription = subscription;
 
         logTagEnabled = DebugLogger.isEnabled(logTag);
     }
@@ -134,37 +139,88 @@ public class ReplayOperation implements AutoCloseable
         }
         else
         {
-            return internalClose();
+            return attemptClose();
         }
     }
 
 
-    private boolean internalClose()
+    private boolean attemptClose()
     {
-        if (State.CLOSED != state)
+        switch (state)
         {
-            if (replaySessionId != 0)
+            case INIT_CLOSING:
             {
-                DebugLogger.log(logTag, INIT_CLOSING_FORMATTER.get(), replaySessionId);
-                try
+                if (replaySessionId != 0)
                 {
-                    aeronArchive.stopReplay(replaySessionId);
-                }
-                catch (final ArchiveException e)
-                {
-                    if (e.errorCode() != ArchiveException.UNKNOWN_REPLAY)
+                    DebugLogger.log(logTag, INIT_CLOSING_FORMATTER.get(), replaySessionId);
+                    try
                     {
-                        errorHandler.onError(e);
+                        aeronArchive.stopReplay(replaySessionId);
                     }
+                    catch (final ArchiveException e)
+                    {
+                        // The replay session may have already ended before this close was called.
+                        if (e.errorCode() != ArchiveException.UNKNOWN_REPLAY)
+                        {
+                            errorHandler.onError(e);
+                        }
+                    }
+                    state = image == null ? State.FIND_IMAGE_CLOSING : State.POLL_IMAGE_CLOSING;
+
+                    return false;
+                }
+                else
+                {
+                    // There isn't a current replay in progress.
+                    logClosed();
+                    state = State.CLOSED;
+                    return true;
                 }
             }
 
-            CloseHelper.quietClose(subscription);
-            logClosed();
-            state = State.CLOSED;
-        }
+            case FIND_IMAGE_CLOSING:
+            {
+                // If the session disconnected rapidly after starting a short replay then it is possible for us to
+                // be in a position where image == null but Aeron owns an image object that needs to be drained in
+                // order for it's underlying buffers to be released.
+                image = subscription.imageBySessionId(aeronSessionId);
+                final int logId = image == null ? 0 : aeronSessionId;
+                DebugLogger.log(logTag, FIND_IMAGE_CLOSING_FORMATTER.get(), replaySessionId, logId);
+                if (image == null)
+                {
+                    return false;
+                }
 
-        return true;
+                state = State.POLL_IMAGE_CLOSING;
+                return attemptClose();
+            }
+
+            case POLL_IMAGE_CLOSING:
+            {
+                // Attempt to poll the image to the end where possible
+                DebugLogger.log(logTag, POLL_IMAGE_CLOSING_FORMATTER.get(), replaySessionId);
+                if (image != null)
+                {
+                    if (!(image.isClosed() || image.isEndOfStream()))
+                    {
+                        image.poll(EMPTY_FRAGMENT_HANDLER, Integer.MAX_VALUE);
+                    }
+
+                    if (!(image.isClosed() || image.isEndOfStream()))
+                    {
+                        return false;
+                    }
+                }
+
+                logClosed();
+                state = State.CLOSED;
+                return true;
+            }
+
+            default:
+                logClosed();
+                return true;
+        }
     }
 
     private void logClosed()
@@ -172,20 +228,10 @@ public class ReplayOperation implements AutoCloseable
         DebugLogger.log(logTag, CLOSED_FORMATTER.get(), replaySessionId);
     }
 
-    @SuppressWarnings("MethodLength")
     private boolean attemptReplay()
     {
         if (recordingRange == null)
         {
-            if (null != subscription)
-            {
-                CloseHelper.quietClose(subscription);
-                subscription = null;
-                image = null;
-                replaySessionId = 0;
-                aeronSessionId = 0;
-            }
-
             DebugLogger.log(logTag, "Acquiring Recording Range");
             if (ranges.isEmpty())
             {
@@ -196,7 +242,7 @@ public class ReplayOperation implements AutoCloseable
             logRange();
             final long beginPosition = recordingRange.position;
             final long length = recordingRange.length;
-            final long endPosition = beginPosition + length;
+            endPosition = beginPosition + length;
             final long recordingId = recordingRange.recordingId;
             final int count = recordingRange.count;
 
@@ -222,28 +268,21 @@ public class ReplayOperation implements AutoCloseable
                     IPC_CHANNEL,
                     archiveReplayStream);
                 aeronSessionId = (int)replaySessionId;
-                subscription = aeronArchive.context().aeron().addSubscription(
-                    IPC_CHANNEL + "?session-id=" + aeronSessionId, archiveReplayStream);
 
                 messageTracker.reset(count);
 
                 logStart(count);
+
+                // reset the image if the new recordingRange requires it
+                if (image != null && aeronSessionId != image.sessionId())
+                {
+                    image = null;
+                }
             }
             catch (final Throwable exception)
             {
-                CloseHelper.quietClose(subscription);
-                if (replaySessionId != 0)
-                {
-                    try
-                    {
-                        aeronArchive.stopReplay(replaySessionId);
-                    }
-                    catch (final Exception ignored)
-                    {
-                    }
-                }
-
                 errorHandler.onError(exception);
+
                 return true;
             }
         }
@@ -339,7 +378,7 @@ public class ReplayOperation implements AutoCloseable
         replayedMessages += recordingRangeCount;
         recordingRange = null;
 
-        return false;
+        return ranges.isEmpty();
     }
 
     private boolean onEndOfImage(final int recordingRangeCount, final boolean closed, final boolean endOfStream)
@@ -350,10 +389,13 @@ public class ReplayOperation implements AutoCloseable
                 .with(image.position()).with(closed).with(endOfStream));
         }
 
+        aeronSessionId = 0;
+        replaySessionId = 0;
         replayedMessages += recordingRangeCount;
         recordingRange = null;
+        image = null;
 
-        return false;
+        return ranges.isEmpty();
     }
 
     int replayedMessages()
@@ -376,12 +418,15 @@ public class ReplayOperation implements AutoCloseable
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close()
+    public void startClose()
     {
-        internalClose();
+        state = State.INIT_CLOSING;
+    }
+
+    // Close the session immediately. Can leave open images that will be cleaned up by it's parent.
+    public void closeNow()
+    {
+        startClose();
+        attemptClose();
     }
 }

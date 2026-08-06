@@ -17,7 +17,6 @@ package uk.co.real_logic.artio.engine.framer;
 
 import io.aeron.logbuffer.ControlledFragmentHandler;
 import io.aeron.logbuffer.Header;
-import org.agrona.CloseHelper;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.MutableDirectBuffer;
@@ -471,7 +470,6 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
 
                 if (replayOperation.pollReplay())
                 {
-                    CloseHelper.quietClose(replayOperation);
                     state = State.COMPLETE_REPLAY;
                     return BACK_PRESSURED;
                 }
@@ -595,6 +593,9 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
 
     public void close()
     {
-        CloseHelper.quietClose(replayOperation);
+        if (replayOperation != null)
+        {
+            replayOperation.closeNow();
+        }
     }
 }

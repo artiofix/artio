@@ -21,6 +21,7 @@ import io.aeron.logbuffer.BufferClaim;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
+import org.agrona.collections.CollectionUtil;
 import org.agrona.collections.IntHashSet;
 import org.agrona.collections.Long2ObjectHashMap;
 import org.agrona.collections.LongHashSet;
@@ -41,6 +42,7 @@ import uk.co.real_logic.artio.util.CharFormatter;
 import uk.co.real_logic.artio.util.Lazy;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -92,6 +94,7 @@ public class Replayer extends AbstractReplayer
     private final FixPMessageEncoder fixPMessageEncoder = new FixPMessageEncoder();
     private final ReplayTimestamper timestamper;
 
+    private final List<ReplayChannel> closingChannels = new ArrayList<>();
     private final Long2ObjectHashMap<ReplayChannel> connectionIdToReplayerChannel = new Long2ObjectHashMap<>();
 
     private final int maxBytesInBuffer;
@@ -437,13 +440,15 @@ public class Replayer extends AbstractReplayer
 
                 currentReplayCount.decrement();
                 // replay was in progress at the time of disconnect
-                channel.closeSession();
+                if (!channel.startClose())
+                {
+                    closingChannels.add(channel);
+                }
             }
             else
             {
                 if (channel.attemptReplay())
                 {
-                    channel.closeSession();
                     // Replay complete
                     final EnqueuedReplay enqueuedReplay = channel.pollReplay();
                     if (enqueuedReplay == null)
@@ -485,12 +490,12 @@ public class Replayer extends AbstractReplayer
             }
         }
 
-        return size;
+        return size + CollectionUtil.removeIf(closingChannels, ReplayChannel::attemptReplay);
     }
 
     public void onClose()
     {
-        connectionIdToReplayerChannel.values().forEach(ReplayChannel::closeSession);
+        connectionIdToReplayerChannel.values().forEach(ReplayChannel::closeNow);
         connectionIdToReplayerChannel.clear();
         currentReplayCount.set(0);
         currentReplayCount.close();

@@ -63,7 +63,8 @@ class FixReplayerSession extends ReplayerSession
         START_REPLAY,
         REPLAYING,
         CHECK_REPLAY,
-        SEND_COMPLETE_MESSAGE
+        SEND_COMPLETE_MESSAGE,
+        CLOSING
     }
 
     private final GapFillEncoder gapFillEncoder;
@@ -422,6 +423,11 @@ class FixReplayerSession extends ReplayerSession
             case SEND_COMPLETE_MESSAGE:
                 return sendCompleteMessage();
 
+            case CLOSING:
+            {
+                return replayOperation.pollReplay();
+            }
+
             default:
                 return false;
         }
@@ -489,6 +495,12 @@ class FixReplayerSession extends ReplayerSession
         }
 
         return true;
+    }
+
+    void startClose()
+    {
+        state = State.CLOSING;
+        super.startClose();
     }
 
     public String toString()

@@ -60,6 +60,7 @@ public class FixPReplayerSession extends ReplayerSession
     {
         REPLAYING,
         SEND_COMPLETE_MESSAGE,
+        CLOSING
     }
 
     private State state;
@@ -136,6 +137,11 @@ public class FixPReplayerSession extends ReplayerSession
                 return false;
             }
 
+            case CLOSING:
+            {
+                return replayOperation.pollReplay();
+            }
+
             default:
                 return false;
         }
@@ -203,5 +209,11 @@ public class FixPReplayerSession extends ReplayerSession
     {
         binaryProxy.ids(connectionId, sessionId);
         return !Pressure.isBackPressured(binaryProxy.sendSequence(sessionId, nextSentSequenceNumber));
+    }
+
+    void startClose()
+    {
+        state = State.CLOSING;
+        super.startClose();
     }
 }

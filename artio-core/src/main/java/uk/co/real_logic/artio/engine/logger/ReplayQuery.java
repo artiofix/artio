@@ -15,7 +15,9 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
+import io.aeron.Subscription;
 import io.aeron.archive.client.AeronArchive;
+import org.agrona.CloseHelper;
 import org.agrona.ErrorHandler;
 import org.agrona.IoUtil;
 import org.agrona.collections.Long2LongHashMap;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.function.LongFunction;
 
 import static io.aeron.Aeron.NULL_VALUE;
+import static io.aeron.CommonContext.IPC_CHANNEL;
 import static io.aeron.logbuffer.FrameDescriptor.FRAME_ALIGNMENT;
 import static uk.co.real_logic.artio.DebugLogger.IS_REPLAY_ATTEMPT_ENABLED;
 import static uk.co.real_logic.artio.engine.logger.ReplayIndexDescriptor.*;
@@ -73,6 +76,8 @@ public class ReplayQuery implements AutoCloseable
     private final int segmentSizeBitShift;
     private final int segmentCount;
     private final long indexFileSize;
+
+    private Subscription replaySubscription;
 
     public ReplayQuery(
         final String logFileDir,
@@ -192,6 +197,8 @@ public class ReplayQuery implements AutoCloseable
     public void close()
     {
         fixSessionToIndex.clear();
+
+        CloseHelper.close(replaySubscription);
     }
 
     public void onReset(final long fixSessionId)
@@ -217,10 +224,17 @@ public class ReplayQuery implements AutoCloseable
     public ReplayOperation newReplayOperation(
         final List<RecordingRange> ranges, final LogTag logTag, final MessageTracker messageTracker)
     {
+        if (replaySubscription == null)
+        {
+            replaySubscription = aeronArchive.context().aeron().addSubscription(
+                IPC_CHANNEL, archiveReplayStream);
+        }
+
         return new ReplayOperation(
             ranges,
             aeronArchive,
             errorHandler,
+            replaySubscription,
             archiveReplayStream,
             logTag,
             messageTracker);
