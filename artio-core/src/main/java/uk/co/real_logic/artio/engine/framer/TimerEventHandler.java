@@ -43,7 +43,12 @@ final class TimerEventHandler implements DeadlineTimerWheel.TimerHandler
         }
         else
         {
-            return pendingAcceptorLogon.onLingerTimeout();
+            final boolean handled = pendingAcceptorLogon.onLingerTimeout();
+            if (handled)
+            {
+                timerIdToPendingAcceptorLogons.remove(timerId);
+            }
+            return handled;
         }
     }
 
