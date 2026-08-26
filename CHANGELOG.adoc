@@ -22,6 +22,7 @@
 * Remove the pending logon from TimerEventHandler once its linger timer completes, from https://github.com/artiofix/artio/pull/581[#581]
 * Upgrade to `Aeron` 1.53.0.
 * Upgrade to `Agrona` 2.6.0.
+* Upgrade to `SBE` 1.40.1.
 * Upgrade to `Gradle` 9.7.1.
 * Upgrade to `JUnit` 6.1.3.
 * Upgrade to `Shadow` 9.6.1.
