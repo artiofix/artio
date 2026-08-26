@@ -2,6 +2,8 @@
 
 == Unreleased
 
+== 0.182 (2026-08-26)
+
 * `[Java]` Suppress `this-escape` warnings from generated encoders and decoders, required for them to compile without warnings on JDK 21.
 * Reject invalid week-of-month in `MonthYear` decode.
 * Check status when using `CatchupReplayer` in tests.
