@@ -108,6 +108,7 @@ public class DefaultTcpChannelSupplier extends TcpChannelSupplier
                             channelHandler.onInitiatedChannel(null, e);
                             it.remove();
                             openingSocketChannels.remove(channel);
+                            CloseHelper.quietClose(channel);
                         }
                     }
                 }
@@ -175,6 +176,11 @@ public class DefaultTcpChannelSupplier extends TcpChannelSupplier
                 }
             },
             listeningChannel);
+
+        for (final SocketChannel channel : openingSocketChannels)
+        {
+            CloseHelper.quietClose(channel);
+        }
     }
 
     public void open(final InetSocketAddress address, final TcpChannelSupplier.InitiatedChannelHandler channelHandler)
