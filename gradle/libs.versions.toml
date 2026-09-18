@@ -1,6 +1,6 @@
 [versions]
 aeron = "1.53.1" # snapshot="1.54.0-SNAPSHOT"
-agrona = "2.6.0"
+agrona = "2.6.1"
 checkstyle = "12.3.1"
 commons-codec = "1.15"
 commons-lang3 = "3.8.1"
