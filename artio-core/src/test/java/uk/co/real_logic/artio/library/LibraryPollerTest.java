@@ -90,7 +90,7 @@ public class LibraryPollerTest
         when(transport.outboundPublication()).thenReturn(outboundPublication);
         when(transport.inboundSubscription()).thenReturn(inboundSubscription);
 
-        when(counters.getLibraryDutyCycleTracker(anyInt(), anyLong())).thenReturn(mock(DutyCycleTracker.class));
+        when(counters.getLibraryDutyCycleTracker(anyLong())).thenReturn(mock(DutyCycleTracker.class));
         when(counters.receivedMsgSeqNo(anyLong(), anyLong())).thenReturn(mock(AtomicCounter.class));
         when(counters.sentMsgSeqNo(anyLong(), anyLong())).thenReturn(mock(AtomicCounter.class));
 

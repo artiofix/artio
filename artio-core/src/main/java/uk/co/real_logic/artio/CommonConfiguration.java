@@ -128,6 +128,12 @@ public class CommonConfiguration
      * Property name for character to separate debug logging of FIX messages
      */
     public static final String LOGGING_SEPARATOR_PROPERTY = "fix.core.debug.separator";
+
+    /**
+     * Property name for the id of the gateway
+     */
+    public static final String GATEWAY_ID_PROPERTY = "fix.gateway.id";
+
     public static final int NO_FIXP_MAX_RETRANSMISSION_RANGE = 0;
     public static final ResendRequestController DEFAULT_RESEND_REQUEST_CONTROLLER =
         (session, resendRequest, correctedEndSeqNo, response) -> response.resend();
@@ -314,6 +320,7 @@ public class CommonConfiguration
     private ResendRequestController resendRequestController = DEFAULT_RESEND_REQUEST_CONTROLLER;
     private int forcedHeartbeatIntervalInS = NO_FORCED_HEARTBEAT_INTERVAL;
     private boolean disableHeartbeatRepliesToTestRequests = false;
+    private long gatewayId = Long.getLong(GATEWAY_ID_PROPERTY, 0);
 
     private final AtomicBoolean isConcluded = new AtomicBoolean(false);
 
@@ -844,6 +851,18 @@ public class CommonConfiguration
         return this;
     }
 
+    /**
+     * Configures the id of the gateway.
+     *
+     * @param gatewayId the id of the gateway.
+     * @return this
+     */
+    public CommonConfiguration gatewayId(final long gatewayId)
+    {
+        this.gatewayId = gatewayId;
+        return this;
+    }
+
     // ------------------------
     // END SETTERS
     // ------------------------
@@ -1093,5 +1112,10 @@ public class CommonConfiguration
     public ThreadFactory threadFactory()
     {
         return threadFactory;
+    }
+
+    public long gatewayId()
+    {
+        return gatewayId;
     }
 }
