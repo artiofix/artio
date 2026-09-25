@@ -2,6 +2,11 @@
 
 == Unreleased
 
+== 0.185 (2026-09-25)
+
+* Distinguish counters by `gatewayId` and `libraryId`. (https://github.com/artiofix/artio/pull/584[#584])
+* Upgrade to https://github.com/aeron-io/aeron/releases/tag/1.53.3[Aeron 1.53.3].
+
 == 0.184 (2026-09-18)
 
 * Upgrade to https://github.com/aeron-io/aeron/releases/tag/1.53.2[Aeron 1.53.2].
