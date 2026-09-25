@@ -19,6 +19,8 @@ import io.aeron.Aeron;
 import io.aeron.Counter;
 import io.aeron.driver.DutyCycleTracker;
 import io.aeron.driver.status.DutyCycleStallTracker;
+import org.agrona.ExpandableArrayBuffer;
+import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.IntHashSet;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.agrona.concurrent.status.CountersReader;
@@ -29,11 +31,15 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
+import static org.agrona.BitUtil.SIZE_OF_INT;
+import static org.agrona.BitUtil.SIZE_OF_LONG;
 import static uk.co.real_logic.artio.FixCounters.FixCountersId.*;
 import static uk.co.real_logic.artio.GatewayProcess.NO_CONNECTION_ID;
 
 public class FixCounters implements AutoCloseable
 {
+    private static final String GATEWAY_ID_LABEL_SUFFIX = " gatewayId=";
+    private static final String LIBRARY_ID_LABEL_SUFFIX = " libraryId=";
     private static final int MINIMUM_ARTIO_TYPE_ID = 10_000;
 
     public enum FixCountersId
@@ -78,6 +84,8 @@ public class FixCounters implements AutoCloseable
     private final AtomicCounter currentReplayCount;
     private final AtomicCounter negativeTimestamps;
     private final Aeron aeron;
+    private final int libraryId;
+    private final long gatewayId;
 
     public static IntHashSet lookupCounterIds(
         final FixCountersId counterTypeId, final CountersReader countersReader)
@@ -100,21 +108,21 @@ public class FixCounters implements AutoCloseable
         return counterIds;
     }
 
-    FixCounters(final Aeron aeron, final boolean isEngine, final int libraryId)
+    FixCounters(final Aeron aeron, final boolean isEngine, final int libraryId, final long gatewayId)
     {
         this.aeron = aeron;
+        this.libraryId = libraryId;
+        this.gatewayId = gatewayId;
+
         aeron.addUnavailableCounterHandler((countersReader, registrationId, counterId) ->
             counters.removeIf(counter -> counter.id() == counterId));
-        failedInboundPublications = newCounter(FAILED_INBOUND_TYPE_ID.id(),
-                "Failed offer to inbound publication " + libraryId);
-        failedOutboundPublications = newCounter(FAILED_OUTBOUND_TYPE_ID.id(),
-                "Failed offer to outbound publication " + libraryId);
-        failedReplayPublications = newCounter(FAILED_REPLAY_TYPE_ID.id(),
-                "Failed offer to replay publication " + libraryId);
+        failedInboundPublications = newCounter(FAILED_INBOUND_TYPE_ID.id(), "Failed offer to inbound publication");
+        failedOutboundPublications = newCounter(FAILED_OUTBOUND_TYPE_ID.id(), "Failed offer to outbound publication");
+        failedReplayPublications = newCounter(FAILED_REPLAY_TYPE_ID.id(), "Failed offer to replay publication");
         failedAdminReplyPublications = newCounter(FAILED_ADMIN_REPLY_TYPE_ID.id(),
-            "Failed offer to admin reply publication " + libraryId);
+            "Failed offer to admin reply publication");
 
-        negativeTimestamps = newCounter(NEGATIVE_TIMESTAMP_TYPE_ID.id(), "negative timestamps " + libraryId);
+        negativeTimestamps = newCounter(NEGATIVE_TIMESTAMP_TYPE_ID.id(), "negative timestamps");
 
         if (isEngine)
         {
@@ -187,7 +195,7 @@ public class FixCounters implements AutoCloseable
         );
     }
 
-    public DutyCycleTracker getLibraryDutyCycleTracker(final int libraryId, final long threshold)
+    public DutyCycleTracker getLibraryDutyCycleTracker(final long threshold)
     {
         if (threshold == 0)
         {
@@ -195,9 +203,9 @@ public class FixCounters implements AutoCloseable
         }
 
         return new DutyCycleStallTracker(
-            newCounter(LIBRARY_MAX_CYCLE_TIME_TYPE_ID.id(), "library " + libraryId + " max cycle time in ns"),
+            newCounter(LIBRARY_MAX_CYCLE_TIME_TYPE_ID.id(), "library max cycle time in ns"),
             newCounter(LIBRARY_CYCLE_TIME_THRESHOLD_EXCEEDED_TYPE_ID.id(),
-                    "library " + libraryId + " work cycle time exceeded count: threshold=" + threshold),
+                    "library work cycle time exceeded count: threshold=" + threshold),
             threshold
         );
     }
@@ -261,7 +269,19 @@ public class FixCounters implements AutoCloseable
 
     private AtomicCounter newCounter(final int typeId, final String label)
     {
-        final Counter counter = aeron.addCounter(typeId, label);
+        final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
+        int index = 0;
+        buffer.putInt(index, libraryId);
+        index += SIZE_OF_INT;
+        buffer.putLong(index, gatewayId);
+        index += SIZE_OF_LONG;
+        final int keyLength = index;
+
+        index += buffer.putStringWithoutLengthAscii(index, label);
+        index += appendLibraryIdLabel(buffer, index);
+        index += appendGatewayIdLabel(buffer, index);
+
+        final Counter counter = aeron.addCounter(typeId, buffer, 0, keyLength, buffer, keyLength, index - keyLength);
         counters.add(counter);
         return counter;
     }
@@ -271,4 +291,19 @@ public class FixCounters implements AutoCloseable
         Exceptions.closeAll(counters);
     }
 
+    private int appendGatewayIdLabel(final MutableDirectBuffer buffer, final int offset)
+    {
+        int suffixLength = 0;
+        suffixLength += buffer.putStringWithoutLengthAscii(offset, GATEWAY_ID_LABEL_SUFFIX);
+        suffixLength += buffer.putLongAscii(offset + suffixLength, gatewayId);
+        return suffixLength;
+    }
+
+    private int appendLibraryIdLabel(final MutableDirectBuffer buffer, final int offset)
+    {
+        int suffixLength = 0;
+        suffixLength += buffer.putStringWithoutLengthAscii(offset, LIBRARY_ID_LABEL_SUFFIX);
+        suffixLength += buffer.putLongAscii(offset + suffixLength, libraryId);
+        return suffixLength;
+    }
 }

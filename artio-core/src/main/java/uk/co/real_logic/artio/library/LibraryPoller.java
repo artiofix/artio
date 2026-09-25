@@ -261,8 +261,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         this.isReproductionEnabled = configuration.isReproductionEnabled();
         this.reproductionClock = isReproductionEnabled ? configuration.reproductionConfiguration().clock() : null;
 
-        this.dutyCycleTracker = fixCounters.getLibraryDutyCycleTracker(
-            configuration.libraryId(), configuration.libraryCycleThresholdNs());
+        this.dutyCycleTracker = fixCounters.getLibraryDutyCycleTracker(configuration.libraryCycleThresholdNs());
     }
 
     boolean isConnected()

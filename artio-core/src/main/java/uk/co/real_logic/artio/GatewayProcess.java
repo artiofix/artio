@@ -31,6 +31,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.aeron.Aeron.NULL_VALUE;
 import static uk.co.real_logic.artio.CommonConfiguration.TIME_MESSAGES;
 import static uk.co.real_logic.artio.dictionary.generation.Exceptions.closeAll;
 
@@ -48,6 +49,7 @@ public abstract class GatewayProcess implements AutoCloseable
     protected Aeron aeron;
     protected MonitoringAgent monitoringAgent;
     protected Agent monitoringCompositeAgent;
+    protected long gatewayId = NULL_VALUE;
 
     protected void init(final CommonConfiguration configuration, final int libraryId)
     {
@@ -79,8 +81,21 @@ public abstract class GatewayProcess implements AutoCloseable
     {
         final Aeron.Context context = configureAeronContext(configuration);
         aeron = Aeron.connect(context);
+
+        setGatewayId(configuration);
+
         CloseChecker.onOpen(context.aeronDirectoryName(), aeron);
-        fixCounters = new FixCounters(aeron, this instanceof FixEngine, libraryId);
+        fixCounters = new FixCounters(aeron, this instanceof FixEngine, libraryId, gatewayId);
+    }
+
+    private void setGatewayId(final CommonConfiguration configuration)
+    {
+        gatewayId = configuration.gatewayId();
+
+        if (NULL_VALUE == gatewayId)
+        {
+            gatewayId = aeron.clientId();
+        }
     }
 
     protected Aeron.Context configureAeronContext(final CommonConfiguration configuration)
