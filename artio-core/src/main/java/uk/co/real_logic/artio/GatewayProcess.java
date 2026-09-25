@@ -82,20 +82,10 @@ public abstract class GatewayProcess implements AutoCloseable
         final Aeron.Context context = configureAeronContext(configuration);
         aeron = Aeron.connect(context);
 
-        setGatewayId(configuration);
+        gatewayId = configuration.gatewayId();
 
         CloseChecker.onOpen(context.aeronDirectoryName(), aeron);
         fixCounters = new FixCounters(aeron, this instanceof FixEngine, libraryId, gatewayId);
-    }
-
-    private void setGatewayId(final CommonConfiguration configuration)
-    {
-        gatewayId = configuration.gatewayId();
-
-        if (NULL_VALUE == gatewayId)
-        {
-            gatewayId = aeron.clientId();
-        }
     }
 
     protected Aeron.Context configureAeronContext(final CommonConfiguration configuration)

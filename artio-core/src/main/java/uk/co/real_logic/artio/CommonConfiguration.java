@@ -45,7 +45,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.aeron.Aeron.NULL_VALUE;
 import static java.lang.Integer.getInteger;
 import static java.lang.System.getProperty;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -321,7 +320,7 @@ public class CommonConfiguration
     private ResendRequestController resendRequestController = DEFAULT_RESEND_REQUEST_CONTROLLER;
     private int forcedHeartbeatIntervalInS = NO_FORCED_HEARTBEAT_INTERVAL;
     private boolean disableHeartbeatRepliesToTestRequests = false;
-    private long gatewayId = Long.getLong(GATEWAY_ID_PROPERTY, NULL_VALUE);
+    private long gatewayId = Long.getLong(GATEWAY_ID_PROPERTY, 0);
 
     private final AtomicBoolean isConcluded = new AtomicBoolean(false);
 
