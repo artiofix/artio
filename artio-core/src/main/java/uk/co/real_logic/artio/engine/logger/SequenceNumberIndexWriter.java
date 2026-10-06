@@ -38,6 +38,7 @@ import uk.co.real_logic.artio.storage.messages.LastKnownSequenceNumberEncoder;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -64,6 +65,7 @@ import static uk.co.real_logic.artio.storage.messages.LastKnownSequenceNumberEnc
 public class SequenceNumberIndexWriter implements Index
 {
     private static final long MISSING_RECORD = -1L;
+    private static final CopyOption[] ATOMIC_MOVE_OPTIONS = { StandardCopyOption.ATOMIC_MOVE };
     private static final long UNINITIALISED = -1;
     public static final long NO_REQUIRED_POSITION = -1000;
 
@@ -798,7 +800,7 @@ public class SequenceNumberIndexWriter implements Index
     {
         try
         {
-            Files.move(src, dest, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(src, dest, ATOMIC_MOVE_OPTIONS);
             return true;
         }
         catch (final IOException e)
