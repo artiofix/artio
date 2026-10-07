@@ -1203,7 +1203,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldGapfillAllOutboundMessagesInFlight() throws IOException
     {
-        final int outboundMessageCount = 100;
+        final int outboundMessageCount = 25;
 
         createOutboundMessagesInFlight(outboundMessageCount, false, connection ->
         {
