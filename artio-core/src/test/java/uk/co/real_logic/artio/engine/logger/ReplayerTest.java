@@ -50,7 +50,9 @@ import uk.co.real_logic.artio.fields.RejectReason;
 import uk.co.real_logic.artio.fields.UtcTimestampDecoder;
 import uk.co.real_logic.artio.messages.FixPProtocolType;
 import uk.co.real_logic.artio.messages.MessageHeaderDecoder;
+import uk.co.real_logic.artio.messages.MessageHeaderEncoder;
 import uk.co.real_logic.artio.messages.ReplayCompleteDecoder;
+import uk.co.real_logic.artio.messages.ThrottleRejectEncoder;
 import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
@@ -520,6 +522,56 @@ public class ReplayerTest extends AbstractLogTest
     }
 
     @Test
+    public void shouldGapFillHoleAfterReplayedMessageFromTheNextSequenceNumber()
+    {
+        final int endSeqNo = BEGIN_SEQ_NO + 3;
+        setupCapturingClaim();
+        final List<String> replayed = recordReplayedFixMessages();
+        setReplayedMessages(2);
+
+        onReplay(endSeqNo, inv ->
+        {
+            onExampleMessage(BEGIN_SEQ_NO);
+            onExampleMessage(endSeqNo);
+
+            return true;
+        });
+
+        replayer.doWork();
+
+        assertEquals(List.of(
+            exampleMessageSummary(BEGIN_SEQ_NO),
+            gapFillSummary(BEGIN_SEQ_NO + 1, endSeqNo),
+            exampleMessageSummary(endSeqNo)), replayed);
+        verifyIllegalStateException();
+    }
+
+    @Test
+    public void shouldGapFillHoleBeforeThrottleRejectFromTheNextSequenceNumber()
+    {
+        final int endSeqNo = BEGIN_SEQ_NO + 3;
+        setupCapturingClaim();
+        final List<String> replayed = recordReplayedFixMessages();
+        setReplayedMessages(2);
+
+        onReplay(endSeqNo, inv ->
+        {
+            onExampleMessage(BEGIN_SEQ_NO);
+            onThrottleReject(endSeqNo);
+
+            return true;
+        });
+
+        replayer.doWork();
+
+        assertEquals(List.of(
+            exampleMessageSummary(BEGIN_SEQ_NO),
+            gapFillSummary(BEGIN_SEQ_NO + 1, endSeqNo),
+            "35=j 34=" + endSeqNo), replayed);
+        verifyIllegalStateException();
+    }
+
+    @Test
     public void shouldReplayMessageWithExpandingBodyLength()
     {
         onReplay(END_SEQ_NO, inv ->
@@ -658,6 +710,60 @@ public class ReplayerTest extends AbstractLogTest
     {
         bufferContainsTestRequest(sequenceNumber);
         onFragment(fragmentLength(), CONTINUE, getMessageTracker());
+    }
+
+    private void onThrottleReject(final int sequenceNumber)
+    {
+        final ThrottleRejectEncoder throttleReject = new ThrottleRejectEncoder()
+            .wrapAndApplyHeader(buffer, START, header)
+            .libraryId(LIBRARY_ID)
+            .connection(CONNECTION_ID)
+            .refMsgType(MESSAGE_TYPE)
+            .refSeqNum(sequenceNumber)
+            .sequenceNumber(sequenceNumber)
+            .session(SESSION_ID)
+            .sequenceIndex(SEQUENCE_INDEX)
+            .putBusinessRejectRefID(new byte[0], 0, 0);
+        onFragment(
+            MessageHeaderEncoder.ENCODED_LENGTH + throttleReject.encodedLength(), CONTINUE, getMessageTracker());
+    }
+
+    /**
+     * Records the MsgType, MsgSeqNum and NewSeqNo of each FIX message committed to the publication.
+     */
+    private List<String> recordReplayedFixMessages()
+    {
+        final List<String> replayed = new ArrayList<>();
+        final Pattern fixMessage = Pattern.compile("8=FIX.*?\00110=\\d{3}\001");
+        doAnswer(inv ->
+        {
+            final Matcher matcher = fixMessage.matcher(resultAsciiBuffer.getAscii(0, resultAsciiBuffer.capacity()));
+            if (matcher.find())
+            {
+                final String message = matcher.group();
+                final String newSeqNo = field(message, "36");
+                replayed.add("35=" + field(message, "35") + " 34=" + field(message, "34") +
+                    (newSeqNo == null ? "" : " 36=" + newSeqNo));
+            }
+            return null;
+        }).when(claim).commit();
+        return replayed;
+    }
+
+    private static String field(final String message, final String tag)
+    {
+        final Matcher matcher = Pattern.compile("\001" + tag + "=([^\001]*)\001").matcher(message);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private static String exampleMessageSummary(final int msgSeqNum)
+    {
+        return "35=" + ExampleMessageDecoder.MESSAGE_TYPE_AS_STRING + " 34=" + msgSeqNum;
+    }
+
+    private static String gapFillSummary(final int msgSeqNum, final int newSeqNo)
+    {
+        return "35=4 34=" + msgSeqNum + " 36=" + newSeqNo;
     }
 
     private int endSeqNoForTwoMessages()
