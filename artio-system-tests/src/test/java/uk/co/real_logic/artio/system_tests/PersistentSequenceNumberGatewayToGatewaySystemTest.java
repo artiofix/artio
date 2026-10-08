@@ -767,6 +767,30 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertReceivedReplayedReport(secondReportSeqNum);
     }
 
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
+    public void shouldGapFillHoleAfterReplayedMessageFromTheNextSequenceNumber()
+    {
+        launch(this::nothing);
+        final ReadablePosition positionCounter = testSystem.libraryPosition(acceptingEngine, acceptingLibrary);
+
+        // Messages 3 and 4 are never written, leaving a hole between two replayable reports.
+        final SessionWriter sessionWriter = createFollowerSession(TEST_TIMEOUT_IN_MS);
+        sendReportOnFollowerSession(testSystem, sessionWriter, 1, PossDupOption.MISSING_FIELD);
+        sendReportOnFollowerSession(testSystem, sessionWriter, 2, PossDupOption.MISSING_FIELD);
+        final long position = sendReportOnFollowerSession(
+            testSystem, sessionWriter, 5, PossDupOption.MISSING_FIELD);
+        testSystem.awaitPosition(positionCounter, position);
+
+        onAcquireSession = this::nothing;
+        connectPersistingSessions(1, 1, false);
+
+        assertReceivedReplayedReport(1);
+        assertReceivedReplayedReport(2);
+        assertReceivedReplaySequenceReset(2, 5);
+        assertReceivedReplayedReport(5);
+    }
+
     private void assertReceivedReplaySequenceReset(final int firstReportSeqNum, final int secondReportSeqNum)
     {
         final Predicate<FixMessage> p = msg -> msg.messageSequenceNumber() == firstReportSeqNum + 1;
