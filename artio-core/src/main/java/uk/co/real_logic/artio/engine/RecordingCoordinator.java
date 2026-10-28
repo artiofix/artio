@@ -298,7 +298,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
                 setMtuLength(libraryExtendPosition.mtuLength, channelUri);
                 final String channel = channelUri.toString();
                 publication = aeron.addExclusivePublication(channel, streamId);
-                extendRecording(streamId, libraryExtendPosition, publication.sessionId());
+                extendRecording(streamId, libraryExtendPosition, publication.sessionId(), LOCAL);
             }
             else
             {
@@ -370,14 +370,17 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
     }
 
     private void extendRecording(
-        final int streamId, final LibraryExtendPosition libraryExtendPosition, final int sessionId)
+        final int streamId,
+        final LibraryExtendPosition libraryExtendPosition,
+        final int sessionId,
+        final SourceLocation sourceLocation)
     {
         try
         {
             final String recordingChannel = ChannelUri.addSessionId(channel, sessionId);
             final long recordingId = libraryExtendPosition.recordingId;
             final long registrationId = archive.extendRecording(
-                recordingId, recordingChannel, streamId, LOCAL);
+                recordingId, recordingChannel, streamId, sourceLocation);
             trackedRegistrationIdToRecordingId.put(registrationId, recordingId);
         }
         catch (final ArchiveException e)
@@ -458,7 +461,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
             extendPosition = acquireRecording(streamId, outboundRecordingIds, libraryId);
             if (extendPosition != null)
             {
-                extendRecording(streamId, extendPosition, extendPosition.newSessionId);
+                extendRecording(streamId, extendPosition, extendPosition.newSessionId, outboundLocation);
                 saveRecordingIdsFile();
                 // Library needs to be informed of its extend position.
                 libraryIdToExtendPosition.put(libraryId, extendPosition);
