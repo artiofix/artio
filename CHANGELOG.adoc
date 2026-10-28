@@ -14,9 +14,11 @@
     - Check the alignment on AtomicBuffers when assigned to fields during object construction. (https://github.com/artiofix/artio/pull/587[#587])
     - Change the buffers in the EngineConfiguration to be off-heap aligned buffers.
 * Avoid varargs allocation in `SequenceNumberIndexWriter.rename`. (https://github.com/artiofix/artio/pull/585[#585])
-* **[Java]** Upgrade to `Gradle` 9.8.2.
-* **[Java]** Upgrade to `Mockito` 5.24.0.
-* **[Java]** Upgrade to `Versions` 0.66.0.
+* Upgrade to `Gradle` 9.8.2.
+* Upgrade to `Mockito` 5.24.0.
+* Upgrade to `Versions` 0.66.0.
+* Upgrade to `Aeron` 1.54.0.
+* Upgrade to `Json` 20260814.
 
 == 0.185 (2026-09-25)
 
