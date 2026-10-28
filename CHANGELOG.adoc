@@ -8,6 +8,7 @@
 
 == 0.186 (2026-10-20)
 
+* Fix UDP library recording extension source location. (https://github.com/artiofix/artio/pull/590[#590])
 * Fix replay gap fill for a hole after a replayed message reusing that message's MsgSeqNum. (https://github.com/artiofix/artio/pull/586[#586])
 * Improve support for newer JDKs, specifically compact object headers.
     - Check the alignment on AtomicBuffers when assigned to fields during object construction. (https://github.com/artiofix/artio/pull/587[#587])
