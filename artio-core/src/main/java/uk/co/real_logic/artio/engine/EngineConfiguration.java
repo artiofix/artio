@@ -2296,12 +2296,12 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
 
         if (Strings.isEmpty(aeronContext().clientName()))
         {
-            aeronContext().clientName("fix-library-" + ENGINE_LIBRARY_ID);
+            aeronContext().clientName("fix-library-" + gatewayId() + "-" + ENGINE_LIBRARY_ID);
         }
 
         if (Strings.isEmpty(archiveContext.clientName()))
         {
-            archiveContext.clientName("fix-library-" + ENGINE_LIBRARY_ID);
+            archiveContext.clientName("fix-library-" + gatewayId() + "-" + ENGINE_LIBRARY_ID);
         }
 
         aeronContextClone = aeronContext().clone();

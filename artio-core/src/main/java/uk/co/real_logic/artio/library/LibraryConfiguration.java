@@ -412,7 +412,7 @@ public final class LibraryConfiguration extends CommonConfiguration
 
         if (Strings.isEmpty(aeronContext().clientName()))
         {
-            aeronContext().clientName("fix-library-" + libraryId);
+            aeronContext().clientName("fix-library-" + gatewayId() + "-" + libraryId);
         }
 
         return this;
