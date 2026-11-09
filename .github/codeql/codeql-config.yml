@@ -2,7 +2,3 @@ name: "Artio CodeQL Scanning"
 
 queries:
   - uses: security-and-quality
-
-query-filters:
-  - exclude:
-      id: java/missing-override-annotation
