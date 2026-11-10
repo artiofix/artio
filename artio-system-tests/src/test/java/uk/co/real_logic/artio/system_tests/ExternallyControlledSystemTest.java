@@ -15,14 +15,17 @@
  */
 package uk.co.real_logic.artio.system_tests;
 
+import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
+import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.EpochNanoClock;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import uk.co.real_logic.artio.*;
 import uk.co.real_logic.artio.builder.*;
+import uk.co.real_logic.artio.decoder.ResendRequestDecoder;
+import uk.co.real_logic.artio.decoder.SequenceResetDecoder;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.FixEngine;
@@ -35,8 +38,12 @@ import uk.co.real_logic.artio.library.SessionAcquiredInfo;
 import uk.co.real_logic.artio.library.SessionHandler;
 import uk.co.real_logic.artio.messages.CancelOnDisconnectOption;
 import uk.co.real_logic.artio.messages.DisconnectReason;
+import uk.co.real_logic.artio.messages.SessionState;
+import uk.co.real_logic.artio.messages.ValidResendRequestDecoder;
+import uk.co.real_logic.artio.messages.ValidResendRequestEncoder;
 import uk.co.real_logic.artio.protocol.GatewayPublication;
 import uk.co.real_logic.artio.session.*;
+import uk.co.real_logic.artio.validation.SessionPersistenceStrategy;
 
 import java.util.List;
 
@@ -50,6 +57,7 @@ import static uk.co.real_logic.artio.Reply.State.COMPLETED;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.Timing.DEFAULT_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.Timing.withTimeout;
+import static uk.co.real_logic.artio.library.SessionConfiguration.AUTOMATIC_INITIAL_SEQUENCE_NUMBER;
 import static uk.co.real_logic.artio.messages.InitialAcceptedSessionOwner.SOLE_LIBRARY;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 
@@ -73,17 +81,25 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
 
     private int sessionProxyRequests = 0;
 
-    @BeforeEach
-    public void launch()
+    public void launch(final boolean withPersistenceStrategy)
     {
         mediaDriver = launchMediaDriver();
 
         final EngineConfiguration acceptingConfig = acceptingConfig(port, ACCEPTOR_ID, INITIATOR_ID, nanoClock);
         acceptingConfig.deleteLogFileDirOnStart(true);
         acceptingConfig.initialAcceptedSessionOwner(SOLE_LIBRARY);
+        acceptingConfig.sessionPersistenceStrategy(withPersistenceStrategy ?
+            SessionPersistenceStrategy.alwaysPersistent() : SessionPersistenceStrategy.alwaysTransient());
 
         acceptingEngine = FixEngine.launch(acceptingConfig);
-        initiatingEngine = launchInitiatingEngine(libraryAeronPort, nanoClock);
+
+        final EngineConfiguration initiatingConfig = initiatingConfig(libraryAeronPort, nanoClock);
+        initiatingConfig.deleteLogFileDirOnStart(true);
+        initiatingConfig.initialAcceptedSessionOwner(SOLE_LIBRARY);
+        initiatingConfig.sessionPersistenceStrategy(withPersistenceStrategy ?
+            SessionPersistenceStrategy.alwaysPersistent() : SessionPersistenceStrategy.alwaysTransient());
+
+        initiatingEngine = FixEngine.launch(initiatingConfig);
 
         final LibraryConfiguration acceptingLibraryConfig = acceptingLibraryConfig(acceptingHandler, nanoClock)
             .sessionProxyFactory(this::sessionProxyFactory);
@@ -95,7 +111,89 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
 
     @Test
     @Timeout(TEST_TIMEOUT_IN_MS)
+    public void shouldValidResendRequestGoThroughSessionProxy()
+    {
+        launch(true);
+
+        connectSessions();
+        acceptingSession = acceptingHandler.lastSession();
+        messagesCanBeExchanged();
+
+        testSystem.awaitSend("Initiator disconnect", () -> initiatingSession.requestDisconnect());
+        testSystem.await("Acceptor disconnected", () -> acceptingSession.state() == SessionState.DISCONNECTED);
+
+        OrderFactory.sendOrder(initiatingSession);
+        OrderFactory.sendOrder(initiatingSession);
+        ReportFactory.sendOneReport(testSystem, acceptingSession, Side.BUY);
+        ReportFactory.sendOneReport(testSystem, acceptingSession, Side.BUY);
+
+        final Reply<Session> initateReply = connectPersistentSessions(
+            AUTOMATIC_INITIAL_SEQUENCE_NUMBER, AUTOMATIC_INITIAL_SEQUENCE_NUMBER, false);
+        initiatingSession = completeConnectSessions(initateReply);
+
+        testSystem.await("Acceptor sends Resend Request via External System",
+            () -> 1 == fakeSessionProxy.sentResendRequests);
+
+        testSystem.await("Acceptor receives resend request", () ->
+        {
+            final FixMessage last = acceptingOtfAcceptor.messages().get(acceptingOtfAcceptor.messages().size() - 1);
+            return 6 == last.messageSequenceNumber() && ResendRequestDecoder.MESSAGE_TYPE == last.messageType();
+        });
+        testSystem.await("Acceptor sends Valid Resend Request via External System",
+            () -> 1 == fakeSessionProxy.sentValidResendRequest);
+
+        final int msgSeqNo = fakeSessionProxy.resend.header().msgSeqNum();
+        testSystem.awaitSend("Acceptor sends Resend Request From External System",
+            () -> acceptingSessionWriter.send(fakeSessionProxy.resend, msgSeqNo));
+        testSystem.await("Initiator receives resend request", () ->
+        {
+            final FixMessage last = initiatingOtfAcceptor.messages().get(initiatingOtfAcceptor.messages().size() - 1);
+            return 6 == last.messageSequenceNumber() && ResendRequestDecoder.MESSAGE_TYPE == last.messageType();
+        });
+        testSystem.await("Acceptor receives gapfill", () ->
+        {
+            final FixMessage last = acceptingOtfAcceptor.messages().get(acceptingOtfAcceptor.messages().size() - 1);
+            return 5 == last.messageSequenceNumber() && SequenceResetDecoder.MESSAGE_TYPE == last.messageType();
+        });
+
+        testSystem.awaitSend("Acceptor sends ValidResendRequest from External System", () ->
+        {
+            final ValidResendRequestDecoder validResendRequestDecoder = new ValidResendRequestDecoder();
+            validResendRequestDecoder.wrap(
+                fakeSessionProxy.lastValidResendRequestBuffer,
+                0,
+                ValidResendRequestDecoder.BLOCK_LENGTH,
+                ValidResendRequestDecoder.SCHEMA_VERSION);
+            return acceptingSessionWriter.sendValidResendRequest(
+                validResendRequestDecoder.session(),
+                validResendRequestDecoder.connection(),
+                validResendRequestDecoder.beginSequenceNumber(),
+                validResendRequestDecoder.endSequenceNumber(),
+                validResendRequestDecoder.sequenceIndex(),
+                validResendRequestDecoder.correlationId(),
+                validResendRequestDecoder.overriddenBeginSequenceNumber(),
+                fakeSessionProxy.lastValidResendRequestBuffer,
+                ValidResendRequestDecoder.BLOCK_LENGTH + ValidResendRequestEncoder.bodyHeaderLength(),
+                validResendRequestDecoder.bodyLength());
+        });
+        testSystem.await("Initiator receives gapfill", () ->
+        {
+            final FixMessage last = initiatingOtfAcceptor.messages().get(initiatingOtfAcceptor.messages().size() - 1);
+            return 5 == last.messageSequenceNumber() && SequenceResetDecoder.MESSAGE_TYPE == last.messageType();
+        });
+
+        messagesCanBeExchanged();
+    }
+
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRoundTripMessagesViaExternalSystem()
+    {
+        launch(false);
+        roundTripMessagesViaExternalSystem();
+    }
+
+    private void roundTripMessagesViaExternalSystem()
     {
         connectSessions();
 
@@ -120,7 +218,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReconnectConnections()
     {
-        shouldRoundTripMessagesViaExternalSystem();
+        launch(false);
+        roundTripMessagesViaExternalSystem();
 
         disconnectSessions();
         acceptingSession = null;
@@ -141,13 +240,14 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToContinueProcessingAFollowersSession()
     {
+        launch(false);
         final SessionWriter sessionWriter = writeMessageWithFollowerSessionWriter();
         final long writerSessionId = sessionWriter.id();
 
         fakeSessionProxy.sequenceNumberAdjustment = 1;
 
         awaitsNewOrderSingle = true;
-        shouldRoundTripMessagesViaExternalSystem();
+        roundTripMessagesViaExternalSystem();
 
         assertEquals(acceptingSession.id(), writerSessionId);
 
@@ -166,6 +266,7 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToAdjustSequenceNumbersFromTheControlSystem()
     {
+        launch(false);
         connectSessions();
         awaitForwardingOfAcceptingSession();
 
@@ -187,6 +288,7 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveLogoutBeforeDisconnectInClusteredCaseInitiatorSentLogout()
     {
+        launch(false);
         connectSessions();
 
         final SessionWriter followerSessionWriter = followerSession();
@@ -208,6 +310,7 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveLogoutBeforeDisconnectInClusteredCaseAcceptorSentLogout()
     {
+        launch(false);
         connectSessions();
         awaitForwardingOfAcceptingSession();
         final SessionWriter followerSession = followerSession();
@@ -327,10 +430,14 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         private final UtcTimestampEncoder timestampEncoder = new UtcTimestampEncoder();
         private final HeartbeatEncoder heartbeat = new HeartbeatEncoder();
         private final LogonEncoder logon = new LogonEncoder();
+        private final ResendRequestEncoder resend = new ResendRequestEncoder();
         private final LogoutEncoder logout = new LogoutEncoder();
-        private final List<HeaderEncoder> headers = asList(logon.header(), heartbeat.header(), logout.header());
+        private final List<HeaderEncoder> headers = asList(
+            logon.header(), heartbeat.header(), resend.header(), logout.header());
         private GatewayPublication gatewayPublication;
         private int libraryId;
+
+        private final ExpandableArrayBuffer lastValidResendRequestBuffer = new ExpandableArrayBuffer();
 
         FakeSessionProxy()
         {
@@ -341,6 +448,7 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         private int sentLogouts = 0;
         private int sentHeartbeats = 0;
         private int sentResendRequests = 0;
+        private int sentValidResendRequest = 0;
 
         private int sequenceNumberAdjustment = 0;
 
@@ -379,6 +487,14 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
             final int lastMsgSeqNumProcessed)
         {
             sentResendRequests++;
+
+            final int adjustedMsgSeqNo = msgSeqNo + sequenceNumberAdjustment;
+            final HeaderEncoder header = resend.header();
+            setupHeader(header, adjustedMsgSeqNo);
+            resend
+                .beginSeqNo(beginSeqNo)
+                .endSeqNo(endSeqNo);
+
             DebugLogger.log(LogTag.FIX_TEST, "FakeSessionProxy.sendResendRequest");
             return 0;
         }
@@ -580,6 +696,35 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         public long sendCancelOnDisconnectTrigger(final long id, final long timeInNs)
         {
             DebugLogger.log(LogTag.FIX_TEST, "FakeSessionProxy.sendCancelOnDisconnectTrigger");
+            return 0;
+        }
+
+        public long sendValidResendRequest(
+            final long sessionId,
+            final long connectionId,
+            final long beginSequenceNumber,
+            final long endSequenceNumber,
+            final int sequenceIndex,
+            final long correlationId,
+            final long overriddenBeginSequenceNumber,
+            final DirectBuffer bodyBuffer,
+            final int bodyOffset,
+            final int bodyLength)
+        {
+            sentValidResendRequest++;
+
+            final ValidResendRequestEncoder lastValidResendRequest = new ValidResendRequestEncoder();
+            lastValidResendRequest.wrap(lastValidResendRequestBuffer, 0)
+                .session(sessionId)
+                .connection(connectionId)
+                .beginSequenceNumber(beginSequenceNumber)
+                .endSequenceNumber(endSequenceNumber)
+                .sequenceIndex(sequenceIndex)
+                .correlationId(correlationId)
+                .overriddenBeginSequenceNumber(overriddenBeginSequenceNumber)
+                .putBody(bodyBuffer, bodyOffset, bodyLength);
+
+            DebugLogger.log(LogTag.FIX_TEST, "FakeSessionProxy.sendValidResendRequest");
             return 0;
         }
 
