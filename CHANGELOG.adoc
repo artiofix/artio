@@ -2,6 +2,8 @@
 
 == Unreleased
 
+* Print configuration on startup for FixEngine, FixLibrary, ArtioAdmin, and FixMessageLogger
+
 == 0.187 (2026-10-28)
 
 * Fix UDP library recording extension source location. (https://github.com/artiofix/artio/pull/590[#590])

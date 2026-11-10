@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.library;
 
+import io.aeron.CommonContext;
 import org.agrona.Strings;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
@@ -415,6 +416,11 @@ public final class LibraryConfiguration extends CommonConfiguration
             aeronContext().clientName("fix-library-" + gatewayId() + "-" + libraryId);
         }
 
+        if (CommonContext.shouldPrintConfigurationOnStart())
+        {
+            System.out.println(this);
+        }
+
         return this;
     }
 
@@ -470,5 +476,29 @@ public final class LibraryConfiguration extends CommonConfiguration
     {
         this.libraryName = libraryName;
         return this;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LibraryConfiguration" +
+            "\n{" +
+            "\n    libraryId=" + libraryId +
+            "\n    sessionAcquireHandler=" + sessionAcquireHandler +
+            "\n    libraryIdleStrategy=" + libraryIdleStrategy +
+            "\n    sessionExistsHandler=" + sessionExistsHandler +
+            "\n    gatewayErrorHandler=" + gatewayErrorHandler +
+            "\n    libraryAeronChannels=" + libraryAeronChannels +
+            "\n    libraryConnectHandler=" + libraryConnectHandler +
+            "\n    scheduler=" + scheduler +
+            "\n    libraryName='" + libraryName + '\'' +
+            "\n    sessionProxyFactory=" + sessionProxyFactory +
+            "\n    fixPConnectionExistsHandler=" + fixPConnectionExistsHandler +
+            "\n    fixPConnectionAcquiredHandler=" + fixPConnectionAcquiredHandler +
+            "\n    reproductionConfiguration=" + reproductionConfiguration +
+            "\n    libraryCycleThresholdNs=" + libraryCycleThresholdNs +
+            "\n}" +
+            "\nLibraryConfiguration." + super.toString();
+
     }
 }
