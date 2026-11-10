@@ -1685,9 +1685,29 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
      * {@inheritDoc}
      */
     @Override
-    public EngineConfiguration maxFixPKeepaliveTimeoutInMs(final long maxFixpKeepaliveTimeoutInMs)
+    public EngineConfiguration maxFixPKeepaliveTimeoutInMs(final long maxFixPKeepaliveTimeoutInMs)
     {
-        super.maxFixPKeepaliveTimeoutInMs(maxFixpKeepaliveTimeoutInMs);
+        super.maxFixPKeepaliveTimeoutInMs(maxFixPKeepaliveTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EngineConfiguration minFixPKeepaliveTimeoutInMs(final long minFixPKeepaliveTimeoutInMs)
+    {
+        super.minFixPKeepaliveTimeoutInMs(minFixPKeepaliveTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EngineConfiguration acceptorFixPKeepaliveTimeoutInMs(final long acceptorFixPKeepaliveTimeoutInMs)
+    {
+        super.acceptorFixPKeepaliveTimeoutInMs(acceptorFixPKeepaliveTimeoutInMs);
         return this;
     }
 
@@ -1719,6 +1739,16 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public EngineConfiguration resendRequestController(final ResendRequestController resendRequestController)
     {
         super.resendRequestController(resendRequestController);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EngineConfiguration gatewayId(final long gatewayId)
+    {
+        super.gatewayId(gatewayId);
         return this;
     }
 

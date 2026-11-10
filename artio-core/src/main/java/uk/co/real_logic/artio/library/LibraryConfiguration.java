@@ -19,16 +19,24 @@ import io.aeron.CommonContext;
 import org.agrona.Strings;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
+import org.agrona.concurrent.errors.ErrorConsumer;
 import uk.co.real_logic.artio.CommonConfiguration;
+import uk.co.real_logic.artio.ErrorHandlerFactory;
+import uk.co.real_logic.artio.MonitoringAgentFactory;
 import uk.co.real_logic.artio.ReproductionClock;
 import uk.co.real_logic.artio.engine.FixEngine;
+import uk.co.real_logic.artio.fields.EpochFractionFormat;
 import uk.co.real_logic.artio.session.DirectSessionProxy;
 import uk.co.real_logic.artio.session.ResendRequestController;
+import uk.co.real_logic.artio.session.SessionCustomisationStrategy;
 import uk.co.real_logic.artio.session.SessionIdStrategy;
 import uk.co.real_logic.artio.session.SessionProxyFactory;
+import uk.co.real_logic.artio.timing.HistogramHandler;
+import uk.co.real_logic.artio.validation.MessageValidationStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
@@ -231,6 +239,37 @@ public final class LibraryConfiguration extends CommonConfiguration
      * {@inheritDoc}
      */
     @Override
+    public LibraryConfiguration sessionCustomisationStrategy(
+            final SessionCustomisationStrategy sessionCustomisationStrategy)
+    {
+        super.sessionCustomisationStrategy(sessionCustomisationStrategy);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration messageValidationStrategy(final MessageValidationStrategy messageValidationStrategy)
+    {
+        super.messageValidationStrategy(messageValidationStrategy);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration reasonableTransmissionTimeInMs(final long reasonableTransmissionTimeInMs)
+    {
+        super.reasonableTransmissionTimeInMs(reasonableTransmissionTimeInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public LibraryConfiguration monitoringBuffersLength(final Integer monitoringBuffersLength)
     {
         super.monitoringBuffersLength(monitoringBuffersLength);
@@ -244,6 +283,70 @@ public final class LibraryConfiguration extends CommonConfiguration
     public LibraryConfiguration monitoringFile(final String monitoringFile)
     {
         super.monitoringFile(monitoringFile);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings("Deprecated")
+    @Deprecated
+    public LibraryConfiguration printErrorMessages(final boolean printErrorMessages)
+    {
+        super.printErrorMessages(printErrorMessages);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings("Deprecated")
+    @Deprecated
+    public LibraryConfiguration customErrorConsumer(final ErrorConsumer customErrorConsumer)
+    {
+        super.customErrorConsumer(customErrorConsumer);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration errorHandlerFactory(final ErrorHandlerFactory errorHandlerFactory)
+    {
+        super.errorHandlerFactory(errorHandlerFactory);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration monitoringAgentFactory(final MonitoringAgentFactory monitoringAgentFactory)
+    {
+        super.monitoringAgentFactory(monitoringAgentFactory);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration monitoringThreadIdleStrategy(final IdleStrategy errorPrinterIdleStrategy)
+    {
+        super.monitoringThreadIdleStrategy(errorPrinterIdleStrategy);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration gatewayId(final long gatewayId)
+    {
+        super.gatewayId(gatewayId);
         return this;
     }
 
@@ -310,6 +413,13 @@ public final class LibraryConfiguration extends CommonConfiguration
     // BEGIN INHERITED SETTERS
     // ------------------------
 
+    @Override
+    public LibraryConfiguration sendingTimeWindowInMs(final long sendingTimeWindowInMs)
+    {
+        super.sendingTimeWindowInMs(sendingTimeWindowInMs);
+        return this;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -317,6 +427,176 @@ public final class LibraryConfiguration extends CommonConfiguration
     public LibraryConfiguration replyTimeoutInMs(final long replyTimeoutInMs)
     {
         super.replyTimeoutInMs(replyTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration inboundMaxClaimAttempts(final int inboundMaxClaimAttempts)
+    {
+        super.inboundMaxClaimAttempts(inboundMaxClaimAttempts);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration outboundMaxClaimAttempts(final int outboundMaxClaimAttempts)
+    {
+        super.outboundMaxClaimAttempts(outboundMaxClaimAttempts);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration sessionBufferSize(final int bufferSize)
+    {
+        super.sessionBufferSize(bufferSize);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration histogramPollPeriodInMs(final long histogramPollPeriodInMs)
+    {
+        super.histogramPollPeriodInMs(histogramPollPeriodInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration histogramLoggingFile(final String histogramLoggingFile)
+    {
+        super.histogramLoggingFile(histogramLoggingFile);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration histogramHandler(final HistogramHandler histogramHandler)
+    {
+        super.histogramHandler(histogramHandler);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration agentNamePrefix(final String agentNamePrefix)
+    {
+        super.agentNamePrefix(agentNamePrefix);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration printAeronStreamIdentifiers(final boolean printAeronStreamIdentifiers)
+    {
+        super.printAeronStreamIdentifiers(printAeronStreamIdentifiers);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration inboundLibraryStream(final int inboundLibraryStream)
+    {
+        super.inboundLibraryStream(inboundLibraryStream);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration outboundLibraryStream(final int outboundLibraryStream)
+    {
+        super.outboundLibraryStream(outboundLibraryStream);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration threadFactory(final ThreadFactory threadFactory)
+    {
+        super.threadFactory(threadFactory);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration validateCompIdsOnEveryMessage(final boolean validateCompIdsOnEveryMessage)
+    {
+        super.validateCompIdsOnEveryMessage(validateCompIdsOnEveryMessage);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration validateTimeStrictly(final boolean validateTimeStrictly)
+    {
+        super.validateTimeStrictly(validateTimeStrictly);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration sessionEpochFractionFormat(final EpochFractionFormat sessionEpochFractionFormat)
+    {
+        super.sessionEpochFractionFormat(sessionEpochFractionFormat);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration maxFixPKeepaliveTimeoutInMs(final long maxFixpKeepaliveTimeoutInMs)
+    {
+        super.maxFixPKeepaliveTimeoutInMs(maxFixpKeepaliveTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration minFixPKeepaliveTimeoutInMs(final long minFixPKeepaliveTimeoutInMs)
+    {
+        super.minFixPKeepaliveTimeoutInMs(minFixPKeepaliveTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LibraryConfiguration acceptorFixPKeepaliveTimeoutInMs(final long acceptorFixPKeepaliveTimeoutInMs)
+    {
+        super.acceptorFixPKeepaliveTimeoutInMs(acceptorFixPKeepaliveTimeoutInMs);
         return this;
     }
 
