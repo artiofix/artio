@@ -62,6 +62,7 @@ public class SenderSequenceNumber implements ReplayerCommand
         senderSequenceNumbers.onSenderClosed(this);
     }
 
+    @Override
     public void execute()
     {
         senderSequenceNumbers.onSenderSequenceNumber(this);

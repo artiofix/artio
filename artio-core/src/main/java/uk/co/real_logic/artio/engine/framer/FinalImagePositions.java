@@ -37,6 +37,7 @@ class FinalImagePositions implements UnavailableImageHandler
     // Hashtable picked over CHM due to low contention factor + expected small size
     private final Map<Integer, Long> sessionIdToPosition = new Hashtable<>();
 
+    @Override
     public void onUnavailableImage(final Image image)
     {
         final Integer sessionId = image.sessionId();

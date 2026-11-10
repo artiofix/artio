@@ -23,21 +23,25 @@ class StartReproduction implements AdminCommand, Reply<Void>
 
     private Throwable error;
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onStartReproduction(this);
     }
 
+    @Override
     public Throwable error()
     {
         return error;
     }
 
+    @Override
     public Void resultIfPresent()
     {
         return null;
     }
 
+    @Override
     public State state()
     {
         return state;

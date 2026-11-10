@@ -59,10 +59,12 @@ public final class LibraryConfiguration extends CommonConfiguration
         logonSequenceIndex) -> {};
     public static final LibraryConnectHandler DEFAULT_LIBRARY_CONNECT_HANDLER = new LibraryConnectHandler()
     {
+        @Override
         public void onConnect(final FixLibrary library)
         {
         }
 
+        @Override
         public void onDisconnect(final FixLibrary library)
         {
         }

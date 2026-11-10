@@ -133,6 +133,7 @@ public class ReadOnlyDecimalFloat implements Comparable<ReadOnlyDecimalFloat>
         CodecUtil.appendFloat(builder, this);
     }
 
+    @Override
     public String toString()
     {
         final StringBuilder builder = new StringBuilder();
@@ -140,6 +141,7 @@ public class ReadOnlyDecimalFloat implements Comparable<ReadOnlyDecimalFloat>
         return builder.toString();
     }
 
+    @Override
     public final int compareTo(final ReadOnlyDecimalFloat other)
     {
         final long value = this.value;
@@ -200,6 +202,7 @@ public class ReadOnlyDecimalFloat implements Comparable<ReadOnlyDecimalFloat>
      * @param o object to compare with
      * @return true if any combination of ReadOnlyDecimalFloat or DecimalFloat is equal each other
      */
+    @Override
     public final boolean equals(final Object o)
     {
         if (this == o)
@@ -217,6 +220,7 @@ public class ReadOnlyDecimalFloat implements Comparable<ReadOnlyDecimalFloat>
         return scale == that.scale && value == that.value;
     }
 
+    @Override
     public final int hashCode()
     {
         final int result = (int)(value ^ (value >>> 32));

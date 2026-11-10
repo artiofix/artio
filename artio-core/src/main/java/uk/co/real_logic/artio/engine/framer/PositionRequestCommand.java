@@ -31,21 +31,25 @@ public class PositionRequestCommand implements AdminCommand, Reply<ReadablePosit
         this.libraryId = libraryId;
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public ReadablePosition resultIfPresent()
     {
         return position;
     }
 
+    @Override
     public State state()
     {
         return state;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onPositionRequest(this);

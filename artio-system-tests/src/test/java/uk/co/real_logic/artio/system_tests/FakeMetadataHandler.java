@@ -27,6 +27,7 @@ class FakeMetadataHandler implements MetadataHandler
     private MetaDataStatus status;
     private UnsafeBuffer buffer;
 
+    @Override
     public void onMetaData(
         final long sessionId,
         final MetaDataStatus status,

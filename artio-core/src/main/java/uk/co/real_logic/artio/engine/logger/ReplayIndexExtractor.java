@@ -50,6 +50,7 @@ public final class ReplayIndexExtractor
     {
         private final StartPositionQuery startPositionQuery = new StartPositionQuery();
 
+        @Override
         public void onEntry(final ReplayIndexRecordDecoder indexRecord)
         {
             final long beginPosition = indexRecord.position();
@@ -60,6 +61,7 @@ public final class ReplayIndexExtractor
             startPositionQuery.updateStartPosition(sequenceNumber, sequenceIndex, recordingId, beginPosition);
         }
 
+        @Override
         public void onLapped()
         {
             System.err.println("Error: lapped by writer currently updating the file");
@@ -97,6 +99,7 @@ public final class ReplayIndexExtractor
             return sequenceIndex;
         }
 
+        @Override
         public String toString()
         {
             return "SequencePosition{" +
@@ -119,6 +122,7 @@ public final class ReplayIndexExtractor
             this.min = min;
         }
 
+        @Override
         public void onEntry(final ReplayIndexRecordDecoder indexRecord)
         {
             final long beginPosition = trueBeginPosition(indexRecord.position());
@@ -160,6 +164,7 @@ public final class ReplayIndexExtractor
             }
         }
 
+        @Override
         public void onLapped()
         {
             System.err.println("Error: lapped by writer currently updating the file");
@@ -210,6 +215,7 @@ public final class ReplayIndexExtractor
             out.write("beginPosition,sequenceIndex,sequenceNumber,recordingId,readLength\n");
         }
 
+        @Override
         public void onEntry(final ReplayIndexRecordDecoder indexRecord)
         {
             final long beginPosition = indexRecord.position();
@@ -233,6 +239,7 @@ public final class ReplayIndexExtractor
             }
         }
 
+        @Override
         public void onLapped()
         {
             System.err.println("Error: lapped by writer currently updating the file");

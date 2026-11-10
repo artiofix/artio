@@ -64,6 +64,7 @@ public class ExchangeSessionHandler implements SessionHandler
     {
     }
 
+    @Override
     public Action onMessage(
         final DirectBuffer buffer,
         final int offset,

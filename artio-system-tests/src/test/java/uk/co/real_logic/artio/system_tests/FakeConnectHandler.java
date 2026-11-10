@@ -23,6 +23,7 @@ class FakeConnectHandler implements LibraryConnectHandler
     private boolean shouldCloseOnConnect = false;
     private Exception exception;
 
+    @Override
     public void onConnect(final FixLibrary library)
     {
         if (shouldCloseOnConnect)
@@ -38,6 +39,7 @@ class FakeConnectHandler implements LibraryConnectHandler
         }
     }
 
+    @Override
     public void onDisconnect(final FixLibrary library)
     {
     }

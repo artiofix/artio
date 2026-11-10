@@ -426,6 +426,7 @@ public final class FixEngine extends GatewayProcess
      *
      * This does not remove files associated with the engine, that are persistent over multiple runs of the engine.
      */
+    @Override
     public void close()
     {
         synchronized (closeMutex)
@@ -508,6 +509,7 @@ public final class FixEngine extends GatewayProcess
     }
 
     // Exceptions here are always on internal FixEngine threads and should not cause those threads to terminate.
+    @Override
     protected boolean shouldRethrowExceptionInErrorHandler()
     {
         return false;

@@ -32,6 +32,7 @@ class UnbindCommand implements AdminCommand, Reply<Void>
         this.disconnect = disconnect;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onUnbind(this);
@@ -57,16 +58,19 @@ class UnbindCommand implements AdminCommand, Reply<Void>
         }
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public Void resultIfPresent()
     {
         return null;
     }
 
+    @Override
     public State state()
     {
         return state;
@@ -77,6 +81,7 @@ class UnbindCommand implements AdminCommand, Reply<Void>
         return disconnect;
     }
 
+    @Override
     public String toString()
     {
         return "UnbindCommand{" +

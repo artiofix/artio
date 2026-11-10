@@ -66,6 +66,7 @@ class InitiatorFixPReceiverEndPoint extends FixPReceiverEndPoint
         sessionId(context.surrogateSessionId());
     }
 
+    @Override
     void checkMessage(final MutableAsciiBuffer buffer, final int offset, final int messageSize)
     {
         if (readTemplateId(buffer, offset) == negotiationResponse)
@@ -81,11 +82,13 @@ class InitiatorFixPReceiverEndPoint extends FixPReceiverEndPoint
         }
     }
 
+    @Override
     void trackDisconnect()
     {
         context.onInitiatorDisconnect();
     }
 
+    @Override
     boolean requiresAuthentication()
     {
         return false;

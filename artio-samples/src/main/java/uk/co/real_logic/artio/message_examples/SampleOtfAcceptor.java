@@ -29,12 +29,14 @@ public class SampleOtfAcceptor implements OtfMessageAcceptor
     private boolean wantsToSell;
     private String symbol;
 
+    @Override
     public MessageControl onNext()
     {
         System.out.println("a NewOrderSingle has arrived");
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onField(final int tag, final AsciiBuffer buffer, final int offset, final int length)
     {
         switch (tag)
@@ -55,6 +57,7 @@ public class SampleOtfAcceptor implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onGroupHeader(final int tag, final int numInGroup)
     {
         // Some FIX fields consist of repeating groups, you get callbacks
@@ -62,16 +65,19 @@ public class SampleOtfAcceptor implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onGroupBegin(final int tag, final int numInGroup, final int index)
     {
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onGroupEnd(final int tag, final int numInGroup, final int index)
     {
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onComplete()
     {
         // Message has been parsed and passed its checksum check.
@@ -84,6 +90,7 @@ public class SampleOtfAcceptor implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public boolean onError(
         final ValidationError error, final long messageType, final int tagNumber, final AsciiFieldFlyweight value)
     {

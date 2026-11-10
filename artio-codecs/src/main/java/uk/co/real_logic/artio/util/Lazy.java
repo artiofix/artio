@@ -27,6 +27,7 @@ public final class Lazy<T> implements Supplier<T>
         this.factory = factory;
     }
 
+    @Override
     public T get()
     {
         if (value == null)

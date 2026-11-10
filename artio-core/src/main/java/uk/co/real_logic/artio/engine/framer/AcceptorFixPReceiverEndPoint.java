@@ -63,6 +63,7 @@ class AcceptorFixPReceiverEndPoint extends FixPReceiverEndPoint
         finishedReceivingTemplateId = protocol.finishedReceivingTemplateId();
     }
 
+    @Override
     void checkMessage(final MutableAsciiBuffer buffer, final int offset, final int messageSize)
     {
         if (requiresAuthentication && pendingAcceptorLogon == null)
@@ -89,6 +90,7 @@ class AcceptorFixPReceiverEndPoint extends FixPReceiverEndPoint
         }
     }
 
+    @Override
     boolean requiresAuthentication()
     {
         return requiresAuthentication;
@@ -100,6 +102,7 @@ class AcceptorFixPReceiverEndPoint extends FixPReceiverEndPoint
         framer.receiverEndPointPollingOptional(connectionId);
     }
 
+    @Override
     void trackDisconnect()
     {
     }

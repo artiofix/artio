@@ -41,11 +41,13 @@ public final class ContendedHybridBufferPingPong extends AbstractContendedPingPo
         mappedWriteBuffer = writeChannel.map(READ_WRITE, 0, MESSAGE_SIZE);
     }
 
+    @Override
     protected void sendPing(final SocketChannel channel, final long time) throws IOException
     {
         writeChannel(channel, writeChannel, mappedWriteBuffer, time);
     }
 
+    @Override
     protected long readResponse(final SocketChannel channel) throws IOException
     {
         return readByteBuffer(channel, readResponseBuffer);

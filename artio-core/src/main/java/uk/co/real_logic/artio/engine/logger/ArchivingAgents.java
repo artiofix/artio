@@ -50,6 +50,7 @@ public class ArchivingAgents implements Agent, FragmentHandler
         this.completionPosition = completionPosition;
     }
 
+    @Override
     public void onStart()
     {
         indexer.onStart();
@@ -59,6 +60,7 @@ public class ArchivingAgents implements Agent, FragmentHandler
         }
     }
 
+    @Override
     public int doWork() throws Exception
     {
         int workCount = 0;
@@ -71,6 +73,7 @@ public class ArchivingAgents implements Agent, FragmentHandler
         return workCount;
     }
 
+    @Override
     public void onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
     {
         indexer.onFragment(buffer, offset, length, header);
@@ -85,6 +88,7 @@ public class ArchivingAgents implements Agent, FragmentHandler
         indexer.catchIndexUp(aeronArchive, errorHandler);
     }
 
+    @Override
     public void onClose()
     {
         quiesce();
@@ -130,6 +134,7 @@ public class ArchivingAgents implements Agent, FragmentHandler
         return completionPosition.positions().get(aeronSessionId);
     }
 
+    @Override
     public String roleName()
     {
         if (null != abstractReplayer)

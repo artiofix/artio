@@ -480,6 +480,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
         return null;
     }
 
+    @Override
     public void onRecordingDescriptor(
         final long controlSessionId, final long correlationId, final long recordingId,
         final long startTimestamp, final long stopTimestamp, final long startPosition,
@@ -561,6 +562,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
     }
 
     // Must be called after the framer has shutdown, uses shutdown order
+    @Override
     public void close()
     {
         if (!closed)
@@ -693,6 +695,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
             return false;
         }
 
+        @Override
         public String toString()
         {
             return "CompletingRecording{" +
@@ -777,6 +780,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
             return recordingId;
         }
 
+        @Override
         public String toString()
         {
             return "RecordingIds{" +
@@ -820,6 +824,7 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
             this.mtuLength = mtuLength;
         }
 
+        @Override
         public String toString()
         {
             return "LibraryExtendPosition{" +

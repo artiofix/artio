@@ -32,11 +32,13 @@ public class MultiVersionAuthenticationStrategy implements AuthenticationStrateg
         this.fixDictionaryClass = fixDictionaryClass;
     }
 
+    @Override
     public boolean authenticate(final AbstractLogonDecoder logon)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void authenticateAsync(final AbstractLogonDecoder logon, final AuthenticationProxy authProxy)
     {
         if (expectedSenderCompID.equals(logon.header().senderCompIDAsString()))

@@ -308,6 +308,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         replaySubscriber = new ImageControlledFragmentAssembler(ProtocolSubscription.of(
             new ProtocolHandler()
             {
+                @Override
                 public Action onMessage(
                     final DirectBuffer buffer,
                     final int offset,
@@ -326,12 +327,14 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
                     return fixSenderEndPoints.onReplayMessage(connectionId, buffer, offset, length, sequenceNumber);
                 }
 
+                @Override
                 public Action onDisconnect(final int libraryId, final long connectionId, final DisconnectReason reason)
                 {
                     // Should never be replayed.
                     return Action.CONTINUE;
                 }
 
+                @Override
                 public Action onFixPMessage(final long connectionId, final DirectBuffer buffer, final int offset)
                 {
                     return fixPSenderEndPoints.onMessage(connectionId, buffer, offset, true);
@@ -382,11 +385,13 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             MILLISECONDS, epochClock.time(), 128, 512);
     }
 
+    @Override
     public void onStart()
     {
         dutyCycleTracker.update(clock.nanoTime());
     }
 
+    @Override
     public int doWork() throws Exception
     {
         final long timeInNs = clock.nanoTime();
@@ -796,6 +801,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         }
     }
 
+    @Override
     public Action onInitiateILinkConnection(
         final int libraryId, final int port, final long correlationId,
         final boolean reestablishConnection, final boolean useBackupHost,
@@ -900,6 +906,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public void onCancelOnDisconnectTrigger(final long sessionId, final long timeInNs)
     {
         if (acceptsFixP)
@@ -926,6 +933,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
 
             schedule(new CancelOnDisconnectTimeoutOperation(sessionId, timeInNs, clock, errorHandler)
             {
+                @Override
                 protected void onCancelOnDisconnectTimeout()
                 {
                     handler.onCancelOnDisconnectTimeout(sessionId, context);
@@ -949,6 +957,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             final CompositeKey sessionKey = entry.getKey();
             schedule(new CancelOnDisconnectTimeoutOperation(sessionId, timeInNs, clock, errorHandler)
             {
+                @Override
                 protected void onCancelOnDisconnectTimeout()
                 {
                     handler.onCancelOnDisconnectTimeout(sessionId, sessionKey);
@@ -963,6 +972,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             " disconnect timeout: " + sessionId));
     }
 
+    @Override
     public Action onThrottleReject(
         final int libraryId,
         final long connectionId,
@@ -988,6 +998,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         );
     }
 
+    @Override
     public Action onThrottleConfiguration(
         final int libraryId,
         final long correlationId,
@@ -1285,6 +1296,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             this.address = address;
         }
 
+        @Override
         public long attempt()
         {
             if (!hasScannedIndex)
@@ -1323,6 +1335,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         }
     }
 
+    @Override
     public Action onInitiateConnection(
         final int libraryId, final int port, final String host,
         final String senderCompId, final String senderSubId, final String senderLocationId,
@@ -1453,6 +1466,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return saveError(GatewayError.UNKNOWN_LIBRARY, libraryId, correlationId, "Unknown Library");
     }
 
+    @Override
     public Action onMidConnectionDisconnect(final int libraryId, final long correlationId)
     {
         final LiveLibraryInfo library = idToLibrary.get(libraryId);
@@ -1701,6 +1715,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return saveError(error, libraryId, replyToId, message == null ? e.getClass().getName() : message);
     }
 
+    @Override
     public Action onMessage(
         final DirectBuffer buffer,
         final int offset,
@@ -1741,6 +1756,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onValidResendRequest(
         final long session, final long connection, final long correlationId, final Header header)
     {
@@ -1768,6 +1784,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         }
     }
 
+    @Override
     public Action onFixPMessage(final long connectionId, final DirectBuffer buffer, final int offset)
     {
         return fixPSenderEndPoints.onMessage(connectionId, buffer, offset, false);
@@ -1820,11 +1837,13 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return gatewaySession;
     }
 
+    @Override
     public Action onRequestDisconnect(final int libraryId, final long connectionId, final DisconnectReason reason)
     {
         return onDisconnect(libraryId, connectionId, reason);
     }
 
+    @Override
     public Action onDisconnect(final int libraryId, final long connectionId, final DisconnectReason reason)
     {
         receiverEndPoints.removeConnection(connectionId, reason);
@@ -1849,6 +1868,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onSeqIndexSync(final int libraryId, final long sessionId, final int sequenceIndex)
     {
         final long timeInNs = clock.nanoTime();
@@ -1856,6 +1876,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onLibraryConnect(
         final int libraryId,
         final String libraryName,
@@ -1980,6 +2001,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         }
     }
 
+    @Override
     public Action onApplicationHeartbeat(
         final int libraryId, final int aeronSessionId, final int messageTemplateId, final long timestampInNs)
     {
@@ -2011,6 +2033,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onReleaseSession(
         final int libraryId,
         final long connectionId,
@@ -2086,6 +2109,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onRequestSession(
         final int libraryId,
         final long sessionId,
@@ -2659,6 +2683,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         }
     }
 
+    @Override
     public Action onReplayMessages(
         final int libraryId,
         final long sessionId,
@@ -2720,6 +2745,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onFollowerSessionRequest(
         final int libraryId,
         final long correlationId,
@@ -3303,6 +3329,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             receivedSequenceNumberIndex.lastKnownSequenceNumber(1) != UNK_SESSION;
     }
 
+    @Override
     public Action onWriteMetaData(
         final int libraryId,
         final long sessionId,
@@ -3317,6 +3344,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onReadMetaData(
         final int libraryId,
         final long sessionId,
@@ -3337,6 +3365,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return CONTINUE;
     }
 
+    @Override
     public void onClose()
     {
         closeAll(
@@ -3374,6 +3403,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         recordingCoordinator.completionPositions(inboundPositions, outboundPositions);
     }
 
+    @Override
     public String roleName()
     {
         return agentNamePrefix + "Framer";
@@ -3501,6 +3531,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             this.aeronSessionId = String.valueOf(aeronSessionId);
         }
 
+        @Override
         public void accept(final int counterId, final int typeId, final DirectBuffer keyBuffer, final String label)
         {
             if (typeId == AeronCounters.DRIVER_SUBSCRIBER_POSITION_TYPE_ID &&
@@ -3842,6 +3873,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
     {
         long sessionId;
 
+        @Override
         public boolean test(final Continuation continuation)
         {
             return continuation instanceof CancelOnDisconnectTimeoutOperation &&
@@ -3858,6 +3890,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             this.slow = slow;
         }
 
+        @Override
         public Action onReplayComplete(final long connectionId, final long correlationId)
         {
             final Action action = fixSenderEndPoints.onReplayComplete(connectionId, correlationId, slow);
@@ -3868,6 +3901,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
             return action;
         }
 
+        @Override
         public Action onStartReplay(
             final long session, final long connection, final long correlationId, final long position)
         {

@@ -38,6 +38,7 @@ public class SampleSessionHandler implements SessionHandler
     {
     }
 
+    @Override
     public Action onMessage(
         final DirectBuffer buffer,
         final int offset,
@@ -56,20 +57,24 @@ public class SampleSessionHandler implements SessionHandler
         return CONTINUE;
     }
 
+    @Override
     public void onTimeout(final int libraryId, final Session session)
     {
     }
 
+    @Override
     public void onSlowStatus(final int libraryId, final Session session, final boolean hasBecomeSlow)
     {
     }
 
+    @Override
     public Action onDisconnect(final int libraryId, final Session session, final DisconnectReason reason)
     {
         System.out.printf("%d Disconnected: %s%n", session.id(), reason);
         return CONTINUE;
     }
 
+    @Override
     public void onSessionStart(final Session session)
     {
     }

@@ -49,6 +49,7 @@ class IndexQuery
             endTimestampExclusive != NO_END;
     }
 
+    @Override
     public String toString()
     {
         return "IndexPlan{" +

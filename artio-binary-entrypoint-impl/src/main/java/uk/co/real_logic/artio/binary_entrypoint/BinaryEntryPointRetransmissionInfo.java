@@ -20,11 +20,13 @@ import uk.co.real_logic.artio.fixp.RetransmissionInfo;
 
 class BinaryEntryPointRetransmissionInfo extends RetransmissionInfo
 {
+    @Override
     protected void initRequest(final long timestampInNs, final long fromSeqNo, final long count)
     {
         super.initRequest(timestampInNs, fromSeqNo, count);
     }
 
+    @Override
     public void reject(final Object rejectionCode)
     {
         if (!(rejectionCode instanceof RetransmitRejectCode))

@@ -35,6 +35,7 @@ class SessionHeaderMatcher implements Predicate<SessionInfo>
         this.value = value;
     }
 
+    @Override
     public boolean test(final SessionInfo sessionInfo)
     {
         final CompositeKey compositeKey = sessionInfo.sessionKey();
@@ -52,6 +53,7 @@ class SessionHeaderMatcher implements Predicate<SessionInfo>
         }
     }
 
+    @Override
     public String toString()
     {
         return "SessionHeaderMatcher{" +

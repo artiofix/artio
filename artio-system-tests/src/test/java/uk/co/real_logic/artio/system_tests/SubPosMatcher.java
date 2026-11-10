@@ -66,6 +66,7 @@ final class SubPosMatcher
         return counterValue >= expectedPosition;
     }
 
+    @Override
     public String toString()
     {
         return "SubPosMatcher{" +

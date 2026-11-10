@@ -20,11 +20,13 @@ import uk.co.real_logic.artio.library.LibraryConnectHandler;
 
 public class LoggingLibraryConnectHandler implements LibraryConnectHandler
 {
+    @Override
     public void onConnect(final FixLibrary library)
     {
         System.out.println("Library Connected");
     }
 
+    @Override
     public void onDisconnect(final FixLibrary library)
     {
         System.out.println("Library Disconnected");

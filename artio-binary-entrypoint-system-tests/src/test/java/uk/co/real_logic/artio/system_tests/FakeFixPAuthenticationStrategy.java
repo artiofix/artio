@@ -46,6 +46,7 @@ public class FakeFixPAuthenticationStrategy implements FixPAuthenticationStrateg
         this.accept = false;
     }
 
+    @Override
     public void authenticate(final FixPContext context, final FixPAuthenticationProxy authProxy)
     {
         lastSessionId = context;

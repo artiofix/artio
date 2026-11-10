@@ -90,6 +90,7 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         return finishedSending;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onBusinessMessage(
         final FixPConnection connection,
         final int templateId,
@@ -119,6 +120,7 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         return CONTINUE;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onFinishedSending(final FixPConnection connection)
     {
         finishedSending = true;
@@ -172,6 +174,7 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         return position;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onNotApplied(
         final FixPConnection connection,
         final long fromSequenceNumber,
@@ -183,6 +186,7 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         return CONTINUE;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onRetransmitReject(
         final FixPConnection connection,
         final String reason,
@@ -192,16 +196,19 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         return CONTINUE;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onRetransmitTimeout(final FixPConnection connection)
     {
         return CONTINUE;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onSequence(final FixPConnection connection, final long nextSeqNo)
     {
         return CONTINUE;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onError(final FixPConnection connection, final Exception ex)
     {
         exceptions.add(ex);
@@ -209,6 +216,7 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         return CONTINUE;
     }
 
+    @Override
     public ControlledFragmentHandler.Action onDisconnect(final FixPConnection connection, final DisconnectReason reason)
     {
         this.disconnectReason = reason;
@@ -251,6 +259,7 @@ public class FakeBinaryEntrypointConnectionHandler implements FixPConnectionHand
         sessionIds.clear();
     }
 
+    @Override
     public ControlledFragmentHandler.Action onRetransmitRequest(
         final FixPConnection connection, final RetransmissionInfo retransmissionInfo)
     {

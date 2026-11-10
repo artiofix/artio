@@ -233,6 +233,7 @@ public class StreamTimestampZipper implements AutoCloseable
         this.logEntryHandler.owner = originalOwner;
     }
 
+    @Override
     public void close()
     {
         dumpBuffer();
@@ -258,6 +259,7 @@ public class StreamTimestampZipper implements AutoCloseable
             this.length = length;
         }
 
+        @Override
         public String toString()
         {
             return "BufferedPosition{" +
@@ -271,6 +273,7 @@ public class StreamTimestampZipper implements AutoCloseable
 
     static class TimestampComparator implements Comparator<BufferedPosition>
     {
+        @Override
         public int compare(final BufferedPosition o1, final BufferedPosition o2)
         {
             return Long.compare(o1.timestamp, o2.timestamp);
@@ -279,6 +282,7 @@ public class StreamTimestampZipper implements AutoCloseable
 
     static class UnstableReverseTimestampComparator implements Comparator<BufferedPosition>
     {
+        @Override
         public int compare(final BufferedPosition o1, final BufferedPosition o2)
         {
             final int timestampCompare = Long.compare(o2.timestamp, o1.timestamp);
@@ -296,6 +300,7 @@ public class StreamTimestampZipper implements AutoCloseable
 
     static class OffsetComparator implements Comparator<BufferedPosition>
     {
+        @Override
         public int compare(final BufferedPosition o1, final BufferedPosition o2)
         {
             return Long.compare(o1.offset, o2.offset);
@@ -355,6 +360,7 @@ public class StreamTimestampZipper implements AutoCloseable
             minBufferedTimestamp = NOTHING_BUFFERED;
         }
 
+        @Override
         public String toString()
         {
             return "StreamPoller{" +
@@ -431,6 +437,7 @@ public class StreamTimestampZipper implements AutoCloseable
             this.fixPHandler = fixPHandler;
         }
 
+        @Override
         public void onFragment(
             final DirectBuffer buffer, final int start, final int length, final Header header)
         {

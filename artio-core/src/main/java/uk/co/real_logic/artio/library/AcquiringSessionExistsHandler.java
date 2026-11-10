@@ -50,6 +50,7 @@ public class AcquiringSessionExistsHandler implements SessionExistsHandler
         return requests;
     }
 
+    @Override
     public void onSessionExists(
         final FixLibrary library,
         final long surrogateSessionId,

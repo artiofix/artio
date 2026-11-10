@@ -78,6 +78,7 @@ public final class EngineStreamInfo
         return outboundPublicationPosition;
     }
 
+    @Override
     public String toString()
     {
         return "EngineStreamInfo{" +

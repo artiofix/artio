@@ -70,6 +70,7 @@ public class GapFiller extends AbstractReplayer
         timestamper = new ReplayTimestamper(publication.dataPublication(), clock);
     }
 
+    @Override
     public void onFragment(final DirectBuffer buffer, final int start, final int length, final Header header)
     {
         // Avoid fragmented messages
@@ -137,6 +138,7 @@ public class GapFiller extends AbstractReplayer
         }
     }
 
+    @Override
     public int doWork()
     {
         int workCount = 0;
@@ -193,6 +195,7 @@ public class GapFiller extends AbstractReplayer
         return workCount;
     }
 
+    @Override
     public String roleName()
     {
         return agentNamePrefix + "GapFiller";

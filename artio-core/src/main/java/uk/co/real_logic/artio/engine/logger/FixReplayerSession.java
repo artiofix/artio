@@ -173,6 +173,7 @@ class FixReplayerSession extends ReplayerSession
     }
 
     // Callback for the ReplayQuery:
+    @Override
     public Action onFragment(
         final DirectBuffer srcBuffer, final int srcOffset, final int srcLength, final Header header)
     {
@@ -384,6 +385,7 @@ class FixReplayerSession extends ReplayerSession
         }
     }
 
+    @Override
     boolean attemptReplay()
     {
         switch (state)
@@ -485,6 +487,7 @@ class FixReplayerSession extends ReplayerSession
         return true;
     }
 
+    @Override
     public String toString()
     {
         return "FixReplayerSession{" +

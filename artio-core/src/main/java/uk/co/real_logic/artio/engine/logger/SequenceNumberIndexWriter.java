@@ -248,6 +248,7 @@ public class SequenceNumberIndexWriter implements Index
         file.getFD().sync();
     }
 
+    @Override
     public void onCatchup(
         final DirectBuffer buffer,
         final int offset,
@@ -258,6 +259,7 @@ public class SequenceNumberIndexWriter implements Index
         onFragment(buffer, offset, length, header, recordingId);
     }
 
+    @Override
     public void onFragment(
         final DirectBuffer buffer,
         final int srcOffset,
@@ -660,6 +662,7 @@ public class SequenceNumberIndexWriter implements Index
         }
     }
 
+    @Override
     public int doWork()
     {
         int work = positionWriter != null ? positionWriter.checkRecordings() : 0;
@@ -821,6 +824,7 @@ public class SequenceNumberIndexWriter implements Index
         return writableFile.isOpen();
     }
 
+    @Override
     public void close()
     {
         try
@@ -849,6 +853,7 @@ public class SequenceNumberIndexWriter implements Index
         }
     }
 
+    @Override
     public void readLastPosition(final IndexedPositionConsumer consumer)
     {
         if (positionWriter != null)

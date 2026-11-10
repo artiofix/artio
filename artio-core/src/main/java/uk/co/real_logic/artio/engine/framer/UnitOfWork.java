@@ -40,6 +40,7 @@ class UnitOfWork implements Continuation
         this.workList = workList;
     }
 
+    @Override
     public long attempt()
     {
         for (final int size = workList.size(); index < size; index++)

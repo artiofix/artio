@@ -167,6 +167,7 @@ class PasswordCleaner
 
     private final class FieldScanner implements OtfMessageAcceptor
     {
+        @Override
         public MessageControl onNext()
         {
             passwordOffset = NO_ENTRY;
@@ -177,6 +178,7 @@ class PasswordCleaner
             return MessageControl.CONTINUE;
         }
 
+        @Override
         public MessageControl onField(final int tag, final AsciiBuffer buffer, final int offset, final int length)
         {
             switch (tag)
@@ -200,26 +202,31 @@ class PasswordCleaner
             return MessageControl.CONTINUE;
         }
 
+        @Override
         public MessageControl onGroupHeader(final int tag, final int numInGroup)
         {
             return MessageControl.CONTINUE;
         }
 
+        @Override
         public MessageControl onGroupBegin(final int tag, final int numInGroup, final int index)
         {
             return MessageControl.CONTINUE;
         }
 
+        @Override
         public MessageControl onGroupEnd(final int tag, final int numInGroup, final int index)
         {
             return MessageControl.CONTINUE;
         }
 
+        @Override
         public MessageControl onComplete()
         {
             return MessageControl.CONTINUE;
         }
 
+        @Override
         public boolean onError(
             final ValidationError error,
             final long messageType,

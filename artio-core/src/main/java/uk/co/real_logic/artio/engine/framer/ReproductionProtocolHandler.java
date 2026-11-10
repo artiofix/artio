@@ -69,6 +69,7 @@ public class ReproductionProtocolHandler implements ReproductionFixProtocolConsu
         tcpChannelSupplier.registerEndOperation(this::endOperation);
     }
 
+    @Override
     public void onMessage(
         final FixMessageDecoder message,
         final DirectBuffer buffer,
@@ -108,6 +109,7 @@ public class ReproductionProtocolHandler implements ReproductionFixProtocolConsu
         }
     }
 
+    @Override
     public void onConnect(
         final ConnectDecoder connectDecoder,
         final DirectBuffer buffer,
@@ -126,6 +128,7 @@ public class ReproductionProtocolHandler implements ReproductionFixProtocolConsu
         tcpChannelSupplier.enqueueConnect(connectDecoder);
     }
 
+    @Override
     public void onApplicationHeartbeat(
         final ApplicationHeartbeatDecoder decoder, final DirectBuffer buffer, final int start, final int length)
     {

@@ -606,6 +606,7 @@ class FixSenderEndPoint extends SenderEndPoint
         disconnectEndpoint(EXCEPTION);
     }
 
+    @Override
     public void close()
     {
         invalidLibraryAttempts.close();
@@ -672,6 +673,7 @@ class FixSenderEndPoint extends SenderEndPoint
         disconnected = true;
     }
 
+    @Override
     public Action onReplayComplete(final long correlationId)
     {
         if (IS_REPLAY_LOG_TAG_ENABLED)
@@ -761,6 +763,7 @@ class FixSenderEndPoint extends SenderEndPoint
         this.requiresRetry = requiresRetry;
     }
 
+    @Override
     public String toString()
     {
         return "FixSenderEndPoint{" +
@@ -816,6 +819,7 @@ class FixSenderEndPoint extends SenderEndPoint
         }
     }
 
+    @Override
     protected void sendSlowStatus(final boolean hasBecomeSlow)
     {
         if (IS_SLOW_CONSUMER_LOG_TAG_ENABLED)

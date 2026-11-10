@@ -111,6 +111,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
         return enteringFirm;
     }
 
+    @Override
     public boolean fromNegotiate()
     {
         return fromNegotiate;
@@ -197,6 +198,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
         }
     }
 
+    @Override
     public int compareVersion(final FixPContext fixPContext)
     {
         validateType(fixPContext);
@@ -214,11 +216,13 @@ public class BinaryEntryPointContext implements InternalFixPContext
         unsupported();
     }
 
+    @Override
     public boolean onInitiatorNegotiateResponse()
     {
         return unsupported();
     }
 
+    @Override
     public void onInitiatorDisconnect()
     {
         unsupported();
@@ -313,11 +317,13 @@ public class BinaryEntryPointContext implements InternalFixPContext
         this.ended = ended;
     }
 
+    @Override
     public long surrogateSessionId()
     {
         return sessionID;
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -343,6 +349,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
         return requestTimestampInNs == that.requestTimestampInNs;
     }
 
+    @Override
     public int hashCode()
     {
         int result = (int)(sessionID ^ (sessionID >>> 32));
@@ -351,6 +358,7 @@ public class BinaryEntryPointContext implements InternalFixPContext
         return result;
     }
 
+    @Override
     public String toString()
     {
         return "BinaryEntryPointContext{" +
@@ -366,11 +374,13 @@ public class BinaryEntryPointContext implements InternalFixPContext
             '}';
     }
 
+    @Override
     public boolean hasUnsentMessagesAtNegotiate()
     {
         return hasUnsentMessagesAtNegotiate;
     }
 
+    @Override
     public void validate(final Enum<?> rejectCode)
     {
         if (fromNegotiate())

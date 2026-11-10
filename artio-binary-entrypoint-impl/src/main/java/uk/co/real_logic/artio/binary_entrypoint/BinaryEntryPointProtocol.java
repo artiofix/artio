@@ -49,6 +49,7 @@ public class BinaryEntryPointProtocol extends FixPProtocol
         return LazyLoader.IR;
     }
 
+    @Override
     protected Ir loadIr()
     {
         return loadSbeIr();
@@ -81,11 +82,13 @@ public class BinaryEntryPointProtocol extends FixPProtocol
             "b3.entrypoint.fixp.sbe");
     }
 
+    @Override
     public BinaryEntryPointParser makeParser(final FixPConnection connection)
     {
         return new BinaryEntryPointParser((InternalBinaryEntryPointConnection)connection);
     }
 
+    @Override
     public BinaryEntryPointProxy makeProxy(
         final FixPMessageDissector fixPDissector,
         final ExclusivePublication publication,
@@ -94,11 +97,13 @@ public class BinaryEntryPointProtocol extends FixPProtocol
         return new BinaryEntryPointProxy(this, fixPDissector, 0, publication, epochNanoClock);
     }
 
+    @Override
     public BinaryEntryPointOffsets makeOffsets()
     {
         return new BinaryEntryPointOffsets();
     }
 
+    @Override
     public InternalFixPConnection makeAcceptorConnection(
         final long connectionId,
         final GatewayPublication outboundPublication,
@@ -127,11 +132,13 @@ public class BinaryEntryPointProtocol extends FixPProtocol
             dissector);
     }
 
+    @Override
     public AbstractFixPStorage makeStorage(final EpochNanoClock clock)
     {
         return new BinaryEntryPointStorage();
     }
 
+    @Override
     public AbstractFixPSequenceExtractor makeSequenceExtractor(
         final FixPSequenceNumberHandler handler,
         final SequenceNumberIndexReader sequenceNumberReader)
@@ -141,6 +148,7 @@ public class BinaryEntryPointProtocol extends FixPProtocol
             sequenceNumberReader);
     }
 
+    @Override
     public boolean explicitSequenceNumbers()
     {
         return false;

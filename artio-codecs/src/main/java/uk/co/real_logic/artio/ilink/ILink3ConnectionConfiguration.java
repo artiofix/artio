@@ -256,6 +256,7 @@ public final class ILink3ConnectionConfiguration
         }
     }
 
+    @Override
     public String toString()
     {
         return "ILink3SessionConfiguration{" +

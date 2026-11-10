@@ -38,6 +38,7 @@ public class FakeResendRequestController implements ResendRequestController
     private boolean customResend = false;
     private int maxResends = Integer.MAX_VALUE;
 
+    @Override
     public void onResend(
         final Session session,
         final AbstractResendRequestDecoder resendRequest,
@@ -79,6 +80,7 @@ public class FakeResendRequestController implements ResendRequestController
         }
     }
 
+    @Override
     public void onResendComplete(final Session session, final int remainingReplaysInFlight)
     {
         assertNotNull(session);

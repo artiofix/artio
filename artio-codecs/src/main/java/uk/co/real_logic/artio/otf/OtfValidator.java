@@ -53,6 +53,7 @@ public final class OtfValidator implements OtfMessageAcceptor
         this.requiredFields = requiredFields;
     }
 
+    @Override
     public MessageControl onNext()
     {
         delegate.onNext();
@@ -62,6 +63,7 @@ public final class OtfValidator implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onComplete()
     {
         final IntHashSet missingFields = requiredFields.values(messageType).difference(fieldsForMessage);
@@ -79,6 +81,7 @@ public final class OtfValidator implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onField(final int tag, final AsciiBuffer buffer, final int offset, final int length)
     {
         if (groupLevel == 0)
@@ -104,17 +107,20 @@ public final class OtfValidator implements OtfMessageAcceptor
         return delegate.onField(tag, buffer, offset, length);
     }
 
+    @Override
     public MessageControl onGroupHeader(final int tag, final int numInGroup)
     {
         groupLevel++;
         return delegate.onGroupHeader(tag, numInGroup);
     }
 
+    @Override
     public MessageControl onGroupBegin(final int tag, final int numInGroup, final int index)
     {
         return delegate.onGroupBegin(tag, numInGroup, index);
     }
 
+    @Override
     public MessageControl onGroupEnd(final int tag, final int numInGroup, final int index)
     {
         final MessageControl control = delegate.onGroupEnd(tag, numInGroup, index);
@@ -125,6 +131,7 @@ public final class OtfValidator implements OtfMessageAcceptor
         return control;
     }
 
+    @Override
     public boolean onError(
         final ValidationError error, final long messageType, final int tagNumber, final AsciiFieldFlyweight value)
     {

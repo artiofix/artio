@@ -29,6 +29,7 @@ abstract class CompositeFixMessagePredicate implements FixMessagePredicate
         this.right = right;
     }
 
+    @Override
     public void reset()
     {
         left.reset();
@@ -53,6 +54,7 @@ class FixMessageAnd extends CompositeFixMessagePredicate
         super(left, right);
     }
 
+    @Override
     public boolean test(final FixMessageDecoder message)
     {
         final int limit = message.limit();
@@ -75,6 +77,7 @@ class FixMessageOr extends CompositeFixMessagePredicate
         super(left, right);
     }
 
+    @Override
     public boolean test(final FixMessageDecoder message)
     {
         final int limit = message.limit();

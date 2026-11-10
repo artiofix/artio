@@ -34,6 +34,7 @@ import static uk.co.real_logic.artio.session.Session.ACTIVE_VALUE;
 
 public class AcceptorSessionTest extends AbstractSessionTest
 {
+    @Override
     protected InternalSession newSession()
     {
         final InternalSession acceptorSession = new InternalSession(
@@ -156,6 +157,7 @@ public class AcceptorSessionTest extends AbstractSessionTest
         verifySendLogon(SEQUENCE_INDEX, false);
     }
 
+    @Override
     protected void readyForLogon()
     {
         // Deliberately blank

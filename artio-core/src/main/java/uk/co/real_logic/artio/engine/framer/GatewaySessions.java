@@ -321,11 +321,13 @@ abstract class GatewaySessions
             }
         }
 
+        @Override
         public DisconnectReason reason()
         {
             return reason;
         }
 
+        @Override
         public void accept()
         {
             validateState();
@@ -346,6 +348,7 @@ abstract class GatewaySessions
             }
         }
 
+        @Override
         public boolean poll()
         {
             switch (state)
@@ -454,6 +457,7 @@ abstract class GatewaySessions
             }
         }
 
+        @Override
         public abstract void reject();
 
         protected void reject(final DisconnectReason reason)
@@ -464,11 +468,13 @@ abstract class GatewaySessions
             this.setState(AuthenticationState.SAVING_REJECTED_LOGON_NO_REPLY);
         }
 
+        @Override
         public boolean isAccepted()
         {
             return AuthenticationState.ACCEPTED == state;
         }
 
+        @Override
         public long connectionId()
         {
             return connectionId;

@@ -31,16 +31,19 @@ public class BufferAsciiSequence implements CharSequence
         return this;
     }
 
+    @Override
     public int length()
     {
         return length;
     }
 
+    @Override
     public char charAt(final int index)
     {
         return (char)buffer.getByte(index + offset);
     }
 
+    @Override
     public CharSequence subSequence(final int start, final int end)
     {
         if (start < 0 || end < 0 || end > length || start > end)
@@ -52,6 +55,7 @@ public class BufferAsciiSequence implements CharSequence
         return new BufferAsciiSequence().wrap(buffer, offset + start, end - start);
     }
 
+    @Override
     public String toString()
     {
         return buffer.getStringWithoutLengthUtf8(offset, length);

@@ -161,6 +161,7 @@ public class Replayer extends AbstractReplayer
         timestamper = new ReplayTimestamper(publication, clock);
     }
 
+    @Override
     public void onFragment(
         final DirectBuffer buffer, final int start, final int length, final Header header)
     {
@@ -406,6 +407,7 @@ public class Replayer extends AbstractReplayer
             recordingRanges);
     }
 
+    @Override
     public int doWork()
     {
         final long timeInNs = clock.nanoTime();
@@ -488,6 +490,7 @@ public class Replayer extends AbstractReplayer
         return size;
     }
 
+    @Override
     public void onClose()
     {
         connectionIdToReplayerChannel.values().forEach(ReplayChannel::closeSession);
@@ -498,6 +501,7 @@ public class Replayer extends AbstractReplayer
         super.onClose();
     }
 
+    @Override
     public String roleName()
     {
         return agentNamePrefix + "Replayer";

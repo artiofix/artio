@@ -79,12 +79,14 @@ public class ReproductionTcpChannelSupplier extends TcpChannelSupplier
             this.events = events;
         }
 
+        @Override
         public SelectionKey register(final Selector sel, final int ops, final Object att)
             throws ClosedChannelException
         {
             return null; // we null-check elsewhere so this is safe
         }
 
+        @Override
         public int write(final ByteBuffer src, final int seqNum, final boolean replay) throws IOException
         {
             ByteBuffer writeBuffer = src;
@@ -152,6 +154,7 @@ public class ReproductionTcpChannelSupplier extends TcpChannelSupplier
             return src;
         }
 
+        @Override
         public int read(final ByteBuffer dst) throws IOException
         {
             final int length = this.length;
@@ -169,10 +172,12 @@ public class ReproductionTcpChannelSupplier extends TcpChannelSupplier
             return 0;
         }
 
+        @Override
         public void close()
         {
         }
 
+        @Override
         public void onReplayComplete(final long correlationId)
         {
             endOperation.run();
@@ -195,14 +200,17 @@ public class ReproductionTcpChannelSupplier extends TcpChannelSupplier
         }
     }
 
+    @Override
     public void open(final InetSocketAddress address, final InitiatedChannelHandler channelHandler) throws IOException
     {
     }
 
+    @Override
     public void stopConnecting(final InetSocketAddress address) throws IOException
     {
     }
 
+    @Override
     public int pollSelector(final long timeInMs, final NewChannelHandler handler) throws IOException
     {
         if (address != null)
@@ -227,14 +235,17 @@ public class ReproductionTcpChannelSupplier extends TcpChannelSupplier
         return reproductionLog.lookupEvents(connectionId);
     }
 
+    @Override
     public void unbind() throws IOException
     {
     }
 
+    @Override
     public void bind() throws IOException
     {
     }
 
+    @Override
     public void close() throws Exception
     {
     }

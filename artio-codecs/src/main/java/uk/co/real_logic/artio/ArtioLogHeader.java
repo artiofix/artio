@@ -38,6 +38,7 @@ public class ArtioLogHeader
         return streamId;
     }
 
+    @Override
     public String toString()
     {
         return "ArtioLogHeader{" +

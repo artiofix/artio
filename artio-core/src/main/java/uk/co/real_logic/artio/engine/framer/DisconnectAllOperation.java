@@ -49,6 +49,7 @@ class DisconnectAllOperation implements Continuation
         this.onSuccess = onSuccess;
     }
 
+    @Override
     public long attempt()
     {
         switch (step)

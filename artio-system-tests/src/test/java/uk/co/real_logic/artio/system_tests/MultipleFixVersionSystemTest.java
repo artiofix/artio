@@ -324,6 +324,7 @@ class FixTSessionCustomisationStrategy implements SessionCustomisationStrategy
         this.applVerID = applVerID;
     }
 
+    @Override
     public void configureLogon(final AbstractLogonEncoder abstractLogon, final long sessionId)
     {
         if (abstractLogon instanceof LogonEncoder)
@@ -333,10 +334,12 @@ class FixTSessionCustomisationStrategy implements SessionCustomisationStrategy
         }
     }
 
+    @Override
     public void configureLogout(final AbstractLogoutEncoder logout, final long sessionId)
     {
     }
 
+    @Override
     public void configureHeader(final SessionHeaderEncoder sessionHeader, final long sessionId)
     {
         if (sessionHeader instanceof HeaderEncoder)

@@ -120,6 +120,7 @@ public class SenderEndPoint implements AutoCloseable
         framer.slowStatus(libraryId, connectionId, hasBecomeSlow);
     }
 
+    @Override
     public void close()
     {
         bytesInBuffer.close();

@@ -46,6 +46,7 @@ public final class Message extends Aggregate
         return category;
     }
 
+    @Override
     public String toString()
     {
         return "Message{" +

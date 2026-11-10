@@ -112,6 +112,7 @@ public final class ILink3Context implements InternalFixPContext
         return offset;
     }
 
+    @Override
     public boolean onInitiatorNegotiateResponse()
     {
         uuid = connectUuid;
@@ -120,6 +121,7 @@ public final class ILink3Context implements InternalFixPContext
         return lastUuid == 0;
     }
 
+    @Override
     public void onInitiatorDisconnect()
     {
         if (backupConnected)
@@ -152,21 +154,25 @@ public final class ILink3Context implements InternalFixPContext
         return connectUuid;
     }
 
+    @Override
     public FixPFirstMessageResponse checkAccept(final FixPContext context, final boolean ignoreFromNegotiate)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public int compareVersion(final FixPContext oldContext)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean fromNegotiate()
     {
         return newlyAllocated;
     }
 
+    @Override
     public void initiatorReconnect(final boolean reestablishConnection)
     {
         final long connectLastUuid = uuid();
@@ -189,21 +195,25 @@ public final class ILink3Context implements InternalFixPContext
         }
     }
 
+    @Override
     public FixPProtocolType protocolType()
     {
         return FixPProtocolType.ILINK_3;
     }
 
+    @Override
     public void onEndSequence()
     {
         // Never happens in iLink3 as it doesn't support the FinishedSending and FinishedReceiving abstractions.
     }
 
+    @Override
     public ILink3Key key()
     {
         return key;
     }
 
+    @Override
     public String toString()
     {
         return "ILink3Context{connectLastUuid=" + connectLastUuid +
@@ -216,16 +226,19 @@ public final class ILink3Context implements InternalFixPContext
             '}';
     }
 
+    @Override
     public long surrogateSessionId()
     {
         return connectUuid;
     }
 
+    @Override
     public boolean hasUnsentMessagesAtNegotiate()
     {
         return false;
     }
 
+    @Override
     public void validate(final Enum<?> rejectCode)
     {
     }

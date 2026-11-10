@@ -124,6 +124,7 @@ class ResetSequenceNumberCommand implements Reply<Void>, AdminCommand
         this.timeoutInNs = TimeUnit.MILLISECONDS.toNanos(timeoutInMs);
     }
 
+    @Override
     public Exception error()
     {
         return error;
@@ -135,16 +136,19 @@ class ResetSequenceNumberCommand implements Reply<Void>, AdminCommand
         state = ERRORED;
     }
 
+    @Override
     public Void resultIfPresent()
     {
         return null;
     }
 
+    @Override
     public State state()
     {
         return state;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onResetSequenceNumber(this);
@@ -315,6 +319,7 @@ class ResetSequenceNumberCommand implements Reply<Void>, AdminCommand
         }
     }
 
+    @Override
     public String toString()
     {
         return "ResetSequenceNumberReply{" +

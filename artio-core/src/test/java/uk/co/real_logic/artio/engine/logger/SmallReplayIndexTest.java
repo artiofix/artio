@@ -76,6 +76,7 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
 
     private final ExistingBufferFactory existingBufferFactory = spy(new ExistingBufferFactory()
     {
+        @Override
         public ByteBuffer map(final File fileName)
         {
             return LoggerUtil.mapExistingFile(fileName);
@@ -83,6 +84,7 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
     });
     private final BufferFactory newBufferFactory = spy(new BufferFactory()
     {
+        @Override
         public ByteBuffer map(final File file, final int size)
         {
             return LoggerUtil.map(file, size);
@@ -474,6 +476,7 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         }
     }
 
+    @Override
     public void onEndChangeRead()
     {
         endChangeReadCount++;
@@ -484,6 +487,7 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         }
     }
 
+    @Override
     public void onLapped()
     {
         lappedCount++;
@@ -494,6 +498,7 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         LongHashSet positions = new LongHashSet();
         int times = 0;
 
+        @Override
         public Action onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
         {
             positions.add(header.position());

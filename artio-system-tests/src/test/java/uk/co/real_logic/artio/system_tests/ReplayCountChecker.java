@@ -51,6 +51,7 @@ class ReplayCountChecker implements Runnable
         assertThat(replayCounterIds, hasSize(greaterThan(0)));
     }
 
+    @Override
     public void run()
     {
         for (final int replayCounterId : replayCounterIds)

@@ -140,16 +140,19 @@ class SessionContext implements SessionInfo
         }
     }
 
+    @Override
     public int sequenceIndex()
     {
         return sequenceIndex;
     }
 
+    @Override
     public long sessionId()
     {
         return sessionId;
     }
 
+    @Override
     public CompositeKey sessionKey()
     {
         return compositeKey;
@@ -170,6 +173,7 @@ class SessionContext implements SessionInfo
         return lastFixDictionary;
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -187,11 +191,13 @@ class SessionContext implements SessionInfo
         return sessionId == that.sessionId;
     }
 
+    @Override
     public int hashCode()
     {
         return (int)(sessionId ^ (sessionId >>> 32));
     }
 
+    @Override
     public String toString()
     {
         return "SessionContext{" +

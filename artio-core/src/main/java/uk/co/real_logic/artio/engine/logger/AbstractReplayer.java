@@ -105,6 +105,7 @@ public abstract class AbstractReplayer implements Agent, FragmentHandler
         return false;
     }
 
+    @Override
     public void onStart()
     {
         dutyCycleTracker.update(clock.nanoTime());
@@ -115,6 +116,7 @@ public abstract class AbstractReplayer implements Agent, FragmentHandler
         dutyCycleTracker.measureAndUpdate(timeInNs);
     }
 
+    @Override
     public void onClose()
     {
         publication.close();

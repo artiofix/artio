@@ -66,6 +66,7 @@ public class ReproductionSystemTest extends AbstractMessageBasedAcceptorSystemTe
 
         private int i;
 
+        @Override
         public void onMessage(final long connectionId, final ByteBuffer bytes)
         {
             try
@@ -104,6 +105,7 @@ public class ReproductionSystemTest extends AbstractMessageBasedAcceptorSystemTe
     {
         private volatile boolean failed = false;
 
+        @Override
         public void accept(final int count)
         {
             System.err.println("Invalid Count: " + count);

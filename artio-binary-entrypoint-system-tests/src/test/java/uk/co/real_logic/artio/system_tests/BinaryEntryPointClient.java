@@ -347,6 +347,7 @@ public final class BinaryEntryPointClient implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         CloseHelper.close(socket);

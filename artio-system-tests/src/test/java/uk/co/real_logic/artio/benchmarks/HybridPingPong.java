@@ -45,6 +45,7 @@ public final class HybridPingPong extends AbstractPingPong
         mappedPongWriteBuffer = pongWriteBuffer.map(READ_WRITE, 0, MESSAGE_SIZE);
     }
 
+    @Override
     protected void ping(final SocketChannel channel, final long time) throws IOException
     {
         writeChannel(channel, pingWriteBuffer, mappedPingWriteBuffer, time);
@@ -54,6 +55,7 @@ public final class HybridPingPong extends AbstractPingPong
         checkEqual(time, result);
     }
 
+    @Override
     protected void pong(final SocketChannel channel) throws IOException
     {
         final long value = readByteBuffer(channel, pongReadBuffer);

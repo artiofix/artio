@@ -37,6 +37,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
 
     private AgentRunner runner;
 
+    @Override
     public synchronized void launch(
         final LibraryConfiguration configuration,
         final ErrorHandler errorHandler,
@@ -76,6 +77,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
         }
     }
 
+    @Override
     public synchronized void close(final int libraryId)
     {
         final Agent agentToRemove = libraryIdToDelegateAgent.remove(libraryId);
@@ -100,6 +102,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
         }
     }
 
+    @Override
     public void configure(final Aeron.Context aeronContext)
     {
         aeronContext
@@ -125,6 +128,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
             this.errorHandler = errorHandler;
         }
 
+        @Override
         public void onStart()
         {
             FixLibrary.setClientConductorThread();
@@ -135,6 +139,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
             clientConductorAgent.onStart();
         }
 
+        @Override
         public int doWork()
         {
             int count = 0;
@@ -155,6 +160,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
             return count;
         }
 
+        @Override
         public String roleName()
         {
             return roleName;

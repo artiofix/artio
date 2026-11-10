@@ -26,6 +26,7 @@ public class FakeDisconnectHandler implements BiConsumer<Session, DisconnectReas
     private DisconnectReason reason;
     private long timeInMs;
 
+    @Override
     public void accept(final Session session, final DisconnectReason reason)
     {
         this.session = session;

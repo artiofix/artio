@@ -207,17 +207,20 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
 
     private final FixPSessionOwner fixPSessionOwner = new FixPSessionOwner()
     {
+        @Override
         public void enqueueTask(final BooleanSupplier task)
         {
             enqueueTask(task);
         }
 
+        @Override
         public void remove(final InternalFixPConnection connection)
         {
             fixPConnections = ArrayUtil.remove(fixPConnections, connection);
             connectionIdToFixPSubscription.remove(connection.connectionId());
         }
 
+        @Override
         public Reply<ThrottleConfigurationStatus> messageThrottle(
             final long sessionId, final int throttleWindowInMs, final int throttleLimitOfMessages)
         {
@@ -917,6 +920,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
     private final ControlledFragmentHandler outboundSubscription = new ControlledFragmentAssembler(
         ProtocolSubscription.of(this, new LibraryProtocolSubscription(this)));
 
+    @Override
     public Action onManageSession(
         final int libraryId,
         final long connectionId,
@@ -1235,6 +1239,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         }
     }
 
+    @Override
     public Action onMessage(
         final DirectBuffer buffer,
         final int offset,
@@ -1275,6 +1280,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onDisconnect(
         final int libraryId, final long connectionId, final DisconnectReason reason)
     {
@@ -1355,6 +1361,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onFixPMessage(final long connectionId, final DirectBuffer buffer, final int offset)
     {
         final FixPSubscription subscription = connectionIdToFixPSubscription.get(connectionId);
@@ -1366,6 +1373,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onError(
         final int libraryId,
         final GatewayError errorType,
@@ -1388,11 +1396,13 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return configuration.gatewayErrorHandler().onError(errorType, libraryId, message);
     }
 
+    @Override
     public Action onApplicationHeartbeat(final int libraryId, final int messageTemplateId)
     {
         return onApplicationHeartbeat(libraryId, messageTemplateId, NO_MESSAGE_TIMESTAMP);
     }
 
+    @Override
     public Action onApplicationHeartbeat(final int libraryId, final int messageTemplateId, final long timestampInNs)
     {
         if (libraryId == this.libraryId)
@@ -1447,6 +1457,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         }
     }
 
+    @Override
     public Action onReleaseSessionReply(final int libraryId, final long replyToId, final SessionReplyStatus status)
     {
         final ReleaseToGatewayReply reply = (ReleaseToGatewayReply)correlationIdToReply.remove(replyToId);
@@ -1458,6 +1469,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onRequestSessionReply(final int libraryId, final long replyToId, final SessionReplyStatus status)
     {
         final RequestSessionReply reply = (RequestSessionReply)correlationIdToReply.remove(replyToId);
@@ -1469,6 +1481,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onFollowerSessionReply(final int libraryId, final long replyToId, final long sessionId)
     {
         final LibraryReply<?> reply = correlationIdToReply.remove(replyToId);
@@ -1523,6 +1536,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         }
     }
 
+    @Override
     public Action onReplayMessagesReply(final int libraryId, final long replyToId, final ReplayMessagesStatus status)
     {
         final ReplayMessagesReply reply = (ReplayMessagesReply)correlationIdToReply.remove(replyToId);
@@ -1534,6 +1548,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onWriteMetaDataReply(final int libraryId, final long replyToId, final MetaDataStatus status)
     {
         final WriteMetaDataReply reply = (WriteMetaDataReply)correlationIdToReply.remove(replyToId);
@@ -1545,6 +1560,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onILinkConnect(
         final int libraryId,
         final long correlationId,
@@ -1645,6 +1661,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         }
     }
 
+    @Override
     public Action onReadMetaDataReply(
         final int libraryId,
         final long replyToId,
@@ -1665,6 +1682,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onThrottleConfigurationReply(
         final int libraryId, final long replyToId, final ThrottleConfigurationStatus status)
     {
@@ -1680,6 +1698,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onEngineClose(final int libraryId)
     {
         if (libraryId == this.libraryId)
@@ -1761,6 +1780,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         }
     }
 
+    @Override
     public Action onControlNotification(
         final int libraryId,
         final InitialAcceptedSessionOwner initialAcceptedSessionOwner,
@@ -1881,6 +1901,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return BREAK;
     }
 
+    @Override
     public Action onLibraryExtendPosition(
         final int libraryId,
         final long correlationId,
@@ -1927,6 +1948,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onSlowStatusNotification(
         final int libraryId, final long connectionId, final boolean hasBecomeSlow)
     {
@@ -1942,6 +1964,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onResetLibrarySequenceNumber(final int libraryId, final long sessionId)
     {
         if (libraryId == this.libraryId)
@@ -1959,6 +1982,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return Action.CONTINUE;
     }
 
+    @Override
     public Action onReplayComplete(final int libraryId, final long connection, final long correlationId)
     {
         if (libraryId == this.libraryId)
@@ -1983,6 +2007,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return CONTINUE;
     }
 
+    @Override
     public Action onInboundFixPConnect(
         final long connection,
         final long sessionId,
@@ -2007,6 +2032,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
                 context);
     }
 
+    @Override
     public Action onManageFixPConnection(
         final int libraryId,
         final long correlationId,
@@ -2127,6 +2153,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         return action;
     }
 
+    @Override
     public Action onThrottleNotification(
         final int libraryId,
         final long connectionId,
@@ -2403,6 +2430,7 @@ final class LibraryPoller implements LibraryEndPointHandler, ProtocolHandler, Au
         }
     }
 
+    @Override
     public void close()
     {
         if (state != CLOSED)
@@ -2474,11 +2502,13 @@ class UnmodifiableWrapper<T> extends AbstractList<T>
         this.sessions = sessions;
     }
 
+    @Override
     public T get(final int index)
     {
         return sessions.get()[index];
     }
 
+    @Override
     public int size()
     {
         return sessions.get().length;

@@ -64,6 +64,7 @@ public class FixPGatewaySessions extends GatewaySessions
         this.fixPContexts = fixPContexts;
     }
 
+    @Override
     protected void setLastSequenceResetTime(final GatewaySession gatewaySession)
     {
     }
@@ -170,6 +171,7 @@ public class FixPGatewaySessions extends GatewaySessions
             }
         }
 
+        @Override
         protected void onAuthenticated()
         {
             final FixPGatewaySession session = (FixPGatewaySession)this.session;
@@ -206,11 +208,13 @@ public class FixPGatewaySessions extends GatewaySessions
             }
         }
 
+        @Override
         protected void encodeRejectMessage()
         {
             rejectEncodeBuffer = fixPProxy.encodeReject(identification, fixPFirstMessageResponse, rejectCode);
         }
 
+        @Override
         protected SendRejectResult sendReject()
         {
             try
@@ -224,11 +228,13 @@ public class FixPGatewaySessions extends GatewaySessions
             }
         }
 
+        @Override
         public void reject()
         {
             reject((Enum<?>)null);
         }
 
+        @Override
         public void reject(final Enum<?> rejectCode)
         {
             internalReject(FixPFirstMessageResponse.CREDENTIALS, rejectCode);
@@ -248,6 +254,7 @@ public class FixPGatewaySessions extends GatewaySessions
             setState(AuthenticationState.SAVING_REJECTED_LOGON_WITH_REPLY);
         }
 
+        @Override
         public String remoteAddress()
         {
             return channel.remoteAddr();

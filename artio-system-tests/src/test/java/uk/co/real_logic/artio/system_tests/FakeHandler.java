@@ -115,6 +115,7 @@ public class FakeHandler
 
     // ----------- EVENTS -----------
 
+    @Override
     public Action onMessage(
         final DirectBuffer buffer,
         final int offset,
@@ -150,6 +151,7 @@ public class FakeHandler
         return CONTINUE;
     }
 
+    @Override
     public void onTimeout(final int libraryId, final Session session)
     {
         hasTimedOut = true;
@@ -179,6 +181,7 @@ public class FakeHandler
         timedOutSession = null;
     }
 
+    @Override
     public void onSlowStatus(final int libraryId, final Session session, final boolean hasBecomeSlow)
     {
         if (hasBecomeSlow)
@@ -191,6 +194,7 @@ public class FakeHandler
         }
     }
 
+    @Override
     public Action onDisconnect(final int libraryId, final Session session, final DisconnectReason reason)
     {
         sessions.remove(session);
@@ -202,6 +206,7 @@ public class FakeHandler
         return CONTINUE;
     }
 
+    @Override
     public void onSessionStart(final Session session)
     {
         onSessionStartCalled = true;
@@ -212,6 +217,7 @@ public class FakeHandler
         }
     }
 
+    @Override
     public SessionHandler onSessionAcquired(final Session session, final SessionAcquiredInfo acquiredInfo)
     {
         if (spamLogonMessages && session.isActive())
@@ -237,6 +243,7 @@ public class FakeHandler
         return this;
     }
 
+    @Override
     public void onSessionExists(
         final FixLibrary library,
         final long sessionId,

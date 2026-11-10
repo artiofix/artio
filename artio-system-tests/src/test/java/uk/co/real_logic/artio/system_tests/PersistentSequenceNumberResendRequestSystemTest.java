@@ -54,6 +54,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
             private final MutableAsciiBuffer asciiBuffer = new MutableAsciiBuffer();
             private final ReportFactory reportFactory = new ReportFactory();
 
+            @Override
             public Action onMessage(
                 final DirectBuffer buffer,
                 final int offset,

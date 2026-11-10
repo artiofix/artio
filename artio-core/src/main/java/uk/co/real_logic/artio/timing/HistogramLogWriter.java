@@ -46,6 +46,7 @@ class HistogramLogWriter implements HistogramHandler
         this.logFile = open(logFile);
     }
 
+    @Override
     public void identifyTimer(final int id, final String name)
     {
         final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
@@ -54,23 +55,27 @@ class HistogramLogWriter implements HistogramHandler
         buffer.put(nameBytes);
     }
 
+    @Override
     public void onEndTimerIdentification()
     {
         writeBuffer();
     }
 
+    @Override
     public void onTimerUpdate(final int id, final Histogram histogram)
     {
         buffer.putInt(id);
         histogram.encodeIntoByteBuffer(buffer);
     }
 
+    @Override
     public void onBeginTimerUpdate(final long currentTimeInMs)
     {
         buffer.clear();
         buffer.putLong(currentTimeInMs);
     }
 
+    @Override
     public void onEndTimerUpdate()
     {
         writeBuffer();
@@ -109,6 +114,7 @@ class HistogramLogWriter implements HistogramHandler
         }
     }
 
+    @Override
     public void close()
     {
         try

@@ -501,6 +501,7 @@ public class EngineContext implements AutoCloseable
         return operation;
     }
 
+    @Override
     public void close()
     {
         Exceptions.closeAll(

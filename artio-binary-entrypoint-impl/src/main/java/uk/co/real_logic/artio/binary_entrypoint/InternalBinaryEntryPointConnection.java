@@ -193,36 +193,43 @@ class InternalBinaryEntryPointConnection
         return lastReceivedSequenceNumber + 1;
     }
 
+    @Override
     public long sessionId()
     {
         return sessionId;
     }
 
+    @Override
     public long sessionVerId()
     {
         return sessionVerId;
     }
 
+    @Override
     public BinaryEntryPointKey key()
     {
         return context.key();
     }
 
+    @Override
     public CancelOnDisconnectType cancelOnDisconnectType()
     {
         return cancelOnDisconnectType;
     }
 
+    @Override
     public long codTimeoutWindow()
     {
         return codTimeoutWindowInMs;
     }
 
+    @Override
     protected void keepAliveExpiredTerminate()
     {
         terminate(TerminationCode.KEEPALIVE_INTERVAL_LAPSED);
     }
 
+    @Override
     public void terminate(final TerminationCode terminationCode)
     {
         validateCanSend();
@@ -230,6 +237,7 @@ class InternalBinaryEntryPointConnection
         internalTerminateInclResend(terminationCode);
     }
 
+    @Override
     public long trySendNotApplied(final long fromSeqNo, final long count)
     {
         return this.proxy.sendNotApplied(fromSeqNo, count, requestTimestampInNs());
@@ -241,6 +249,7 @@ class InternalBinaryEntryPointConnection
         sendTerminate(terminationCode, State.UNBINDING, State.RESEND_TERMINATE);
     }
 
+    @Override
     public long trySendSequence()
     {
         final long position = proxy.sendSequence(sessionId, nextSentSeqNo);
@@ -256,6 +265,7 @@ class InternalBinaryEntryPointConnection
     // Internal Methods below, not part of the public API
     // --------------------------------------------------
 
+    @Override
     protected int poll(final long timeInMs)
     {
         if (backpressuredRetransmitRejectCode != null)
@@ -297,26 +307,31 @@ class InternalBinaryEntryPointConnection
         }
     }
 
+    @Override
     protected int pollExtraEstablished(final long timeInMs)
     {
         return 0;
     }
 
+    @Override
     protected long sendSequence(final boolean lapsed)
     {
         return trySendSequence();
     }
 
+    @Override
     protected void onReplayComplete()
     {
         replaying = false;
     }
 
+    @Override
     public boolean isReplaying()
     {
         return replaying;
     }
 
+    @Override
     protected void onOfflineReconnect(final long connectionId, final FixPContext fixPContext)
     {
         final BinaryEntryPointContext context = (BinaryEntryPointContext)fixPContext;
@@ -677,6 +692,7 @@ class InternalBinaryEntryPointConnection
         return CONTINUE;
     }
 
+    @Override
     protected Action unbindState(final DisconnectReason reason)
     {
         if (!DisconnectReason.LOGOUT.equals(reason))
@@ -827,6 +843,7 @@ class InternalBinaryEntryPointConnection
         return false;
     }
 
+    @Override
     public void finishSending()
     {
         final State state = state();
@@ -1069,6 +1086,7 @@ class InternalBinaryEntryPointConnection
         return CONTINUE;
     }
 
+    @Override
     public Reply<ThrottleConfigurationStatus> throttleMessagesAt(
         final int throttleWindowInMs, final int throttleLimitOfMessages)
     {
@@ -1077,6 +1095,7 @@ class InternalBinaryEntryPointConnection
         return owner.messageThrottle(sessionId, throttleWindowInMs, throttleLimitOfMessages);
     }
 
+    @Override
     protected boolean onThrottleNotification(
         final long refMsgTypeValue,
         final DirectBuffer rejectRefIDBuffer,
@@ -1101,6 +1120,7 @@ class InternalBinaryEntryPointConnection
         return true;
     }
 
+    @Override
     public long startEndOfDay()
     {
         final State state = this.state;
@@ -1115,6 +1135,7 @@ class InternalBinaryEntryPointConnection
         }
     }
 
+    @Override
     public String toString()
     {
         return "InternalBinaryEntryPointConnection{" +

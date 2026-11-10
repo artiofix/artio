@@ -219,6 +219,7 @@ public final class MonthYear
         return SHORT_LENGTH;
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -239,6 +240,7 @@ public final class MonthYear
             weekOfMonth == monthYear.weekOfMonth;
     }
 
+    @Override
     public int hashCode()
     {
         int result = year;
@@ -248,6 +250,7 @@ public final class MonthYear
         return result;
     }
 
+    @Override
     public String toString()
     {
         if (hasDayOfMonth())

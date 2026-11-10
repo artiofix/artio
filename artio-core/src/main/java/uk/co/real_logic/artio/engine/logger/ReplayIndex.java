@@ -232,6 +232,7 @@ public class ReplayIndex implements Index
     private int continuedSequenceIndex;
     private long continuedTimestamp;
 
+    @Override
     public void onCatchup(
         final DirectBuffer buffer,
         final int offset,
@@ -242,6 +243,7 @@ public class ReplayIndex implements Index
         onFragment(buffer, offset, length, header, recordingId);
     }
 
+    @Override
     public void onFragment(
         final DirectBuffer buffer,
         final int offset,
@@ -476,11 +478,13 @@ public class ReplayIndex implements Index
             .computeIfAbsent(fixSessionId, newSessionIndex);
     }
 
+    @Override
     public int doWork()
     {
         return positionWriter.checkRecordings() + timeIndex.doWork();
     }
 
+    @Override
     public void close()
     {
         Exceptions.closeAll(
@@ -498,6 +502,7 @@ public class ReplayIndex implements Index
         }
     }
 
+    @Override
     public void readLastPosition(final IndexedPositionConsumer consumer)
     {
         positionReader.readLastPosition(consumer);
@@ -640,6 +645,7 @@ public class ReplayIndex implements Index
             }
         }
 
+        @Override
         public void close()
         {
             ReplayIndexDescriptor.unmapBuffers(headerBuffer, segmentBuffers);

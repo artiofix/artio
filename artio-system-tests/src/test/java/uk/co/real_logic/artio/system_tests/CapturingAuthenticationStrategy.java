@@ -36,6 +36,7 @@ public class CapturingAuthenticationStrategy implements AuthenticationStrategy
         this.delegate = delegate;
     }
 
+    @Override
     public boolean authenticate(final AbstractLogonDecoder logon)
     {
         logonPassword = logon.passwordAsString();
@@ -43,6 +44,7 @@ public class CapturingAuthenticationStrategy implements AuthenticationStrategy
         return delegate.validate(logon.header());
     }
 
+    @Override
     public void onUserRequest(
         final AbstractUserRequestDecoder userRequest, final long sessionId)
     {

@@ -53,11 +53,13 @@ abstract class GatewaySession implements AbstractConnectedSessionInfo
         this.receiverEndPoint = receiverEndPoint;
     }
 
+    @Override
     public long connectionId()
     {
         return connectionId;
     }
 
+    @Override
     public abstract String address();
 
     public long sessionId()

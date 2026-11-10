@@ -49,6 +49,7 @@ class ReplayMessagesReply extends LibraryReply<ReplayMessagesStatus>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveReplayMessages(

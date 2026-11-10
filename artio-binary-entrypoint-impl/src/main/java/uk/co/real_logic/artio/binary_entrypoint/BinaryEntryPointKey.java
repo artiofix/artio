@@ -27,6 +27,7 @@ public class BinaryEntryPointKey implements FixPKey
         this.sessionID = sessionID;
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -43,21 +44,25 @@ public class BinaryEntryPointKey implements FixPKey
         return sessionID == that.sessionID;
     }
 
+    @Override
     public int hashCode()
     {
         return (int)(sessionID ^ (sessionID >>> 32));
     }
 
+    @Override
     public FixPProtocolType protocolType()
     {
         return FixPProtocolType.BINARY_ENTRYPOINT;
     }
 
+    @Override
     public long sessionIdIfExists()
     {
         return sessionID;
     }
 
+    @Override
     public String toString()
     {
         return "BinaryEntryPointKey{" +

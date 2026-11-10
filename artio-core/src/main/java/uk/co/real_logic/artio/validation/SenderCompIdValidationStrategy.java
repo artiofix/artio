@@ -35,6 +35,7 @@ class SenderCompIdValidationStrategy implements MessageValidationStrategy
         this.validSenderIds = new CharArraySet(validSenderIds);
     }
 
+    @Override
     public boolean validate(final SessionHeaderDecoder header)
     {
         final char[] senderCompID = header.senderCompID();
@@ -43,11 +44,13 @@ class SenderCompIdValidationStrategy implements MessageValidationStrategy
         return validSenderIds.contains(senderCompID, senderCompIDLength);
     }
 
+    @Override
     public int invalidTagId()
     {
         return SessionConstants.SENDER_COMP_ID;
     }
 
+    @Override
     public int rejectReason()
     {
         return COMPID_PROBLEM.representation();

@@ -34,12 +34,14 @@ public class DefaultTcpChannel extends TcpChannel
         this.socketChannel = socketChannel;
     }
 
+    @Override
     public SelectionKey register(final Selector sel, final int ops, final Object att) throws ClosedChannelException
     {
         return socketChannel.register(sel, ops, att);
     }
 
     // Any subclass should maintain the API that negative numbers of bytes are never returned
+    @Override
     public int write(final ByteBuffer src, final int seqNum, final boolean replay) throws IOException
     {
         final int written = socketChannel.write(src);
@@ -51,11 +53,13 @@ public class DefaultTcpChannel extends TcpChannel
         return written;
     }
 
+    @Override
     public int read(final ByteBuffer dst) throws IOException
     {
         return socketChannel.read(dst);
     }
 
+    @Override
     public void close()
     {
         if (socketChannel.isOpen())
@@ -71,6 +75,7 @@ public class DefaultTcpChannel extends TcpChannel
         }
     }
 
+    @Override
     public void onReplayComplete(final long correlationId)
     {
     }

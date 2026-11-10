@@ -83,6 +83,7 @@ public class FixPExchangeAgent implements Agent
     {
         private final List<Reply<SessionReplyStatus>> replies = new ArrayList<>();
 
+        @Override
         public Action onConnectionExists(
             final FixLibrary library,
             final long surrogateSessionId,

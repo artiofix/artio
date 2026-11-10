@@ -179,6 +179,7 @@ public class FixAdminSession implements SessionInfo
         return isSlow;
     }
 
+    @Override
     public String toString()
     {
         return "FixAdminSession{" +

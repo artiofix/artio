@@ -38,6 +38,7 @@ abstract class CancelOnDisconnectTimeoutOperation implements Continuation
         this.errorHandler = errorHandler;
     }
 
+    @Override
     public long attempt()
     {
         if (clock.nanoTime() > timeInNs)

@@ -60,6 +60,7 @@ public final class LibraryProtocolSubscription implements ControlledFragmentHand
         this.handler = handler;
     }
 
+    @Override
     @SuppressWarnings("FinalParameters")
     public Action onFragment(final DirectBuffer buffer, int offset, final int length, final Header header)
     {

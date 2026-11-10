@@ -457,6 +457,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
             reset();
         }
 
+        @Override
         public void authenticateAsync(final AbstractLogonDecoder logon, final AuthenticationProxy authProxy)
         {
             authConnectionId = authProxy.connectionId();
@@ -470,6 +471,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
             }
         }
 
+        @Override
         public boolean authenticate(final AbstractLogonDecoder logon)
         {
             blockingAuthenticateCalled = true;
@@ -512,6 +514,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
             authProxy = null;
         }
 
+        @Override
         public void onDisconnect(
             final long sessionId,
             final long connectionId,

@@ -36,6 +36,7 @@ class PositionRange
         return endPosition;
     }
 
+    @Override
     public String toString()
     {
         return "PositionRange{" +

@@ -40,6 +40,7 @@ public class FakeEpochClock implements EpochClock
         time += duration;
     }
 
+    @Override
     public long time()
     {
         return time;

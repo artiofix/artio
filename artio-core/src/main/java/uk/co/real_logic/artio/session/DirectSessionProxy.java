@@ -135,6 +135,7 @@ public class DirectSessionProxy implements SessionProxy
         timestampEncoder.initialise(timestampNs, TimeUnit.NANOSECONDS);
     }
 
+    @Override
     public void fixDictionary(final FixDictionary dictionary)
     {
         this.dictionary = dictionary;
@@ -157,6 +158,7 @@ public class DirectSessionProxy implements SessionProxy
             sequenceReset.header());
     }
 
+    @Override
     public void setupSession(final long sessionId, final CompositeKey sessionKey)
     {
         requireNonNull(sessionKey, "sessionKey");
@@ -169,11 +171,13 @@ public class DirectSessionProxy implements SessionProxy
         }
     }
 
+    @Override
     public void connectionId(final long connectionId)
     {
         this.connectionId = connectionId;
     }
 
+    @Override
     public long sendResendRequest(
         final int msgSeqNo,
         final int beginSeqNo,
@@ -191,11 +195,13 @@ public class DirectSessionProxy implements SessionProxy
         return send(result, RESEND_REQUEST_MESSAGE_TYPE, sequenceIndex, resendRequest, msgSeqNo);
     }
 
+    @Override
     public long sendRequestDisconnect(final long connectionId, final DisconnectReason reason)
     {
         return gatewayPublication.saveRequestDisconnect(libraryId, connectionId, reason);
     }
 
+    @Override
     public long sendLogon(
         final int msgSeqNo,
         final int heartbeatIntervalInS,
@@ -273,6 +279,7 @@ public class DirectSessionProxy implements SessionProxy
         return string != null && string.length() > 0;
     }
 
+    @Override
     public long sendLogout(
         final int msgSeqNo,
         final int sequenceIndex,
@@ -282,6 +289,7 @@ public class DirectSessionProxy implements SessionProxy
         return sendLogout(msgSeqNo, text, text == null ? 0 : text.length, sequenceIndex, lastMsgSeqNumProcessed);
     }
 
+    @Override
     public long sendLogout(
         final int msgSeqNo, final int sequenceIndex, final int rejectReason, final int lastMsgSeqNumProcessed)
     {
@@ -318,6 +326,7 @@ public class DirectSessionProxy implements SessionProxy
         return send(result, LOGOUT_MESSAGE_TYPE, sequenceIndex, logout, msgSeqNo);
     }
 
+    @Override
     public long sendLowSequenceNumberLogout(
         final int msgSeqNo,
         final int expectedSeqNo,
@@ -336,24 +345,28 @@ public class DirectSessionProxy implements SessionProxy
         return position;
     }
 
+    @Override
     public long sendIncorrectBeginStringLogout(
         final int msgSeqNo, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
         return sendLogout(msgSeqNo, INCORRECT_BEGIN_STRING, sequenceIndex, lastMsgSeqNumProcessed);
     }
 
+    @Override
     public long sendNegativeHeartbeatLogout(
         final int msgSeqNo, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
         return sendLogout(msgSeqNo, NEGATIVE_HEARTBEAT, sequenceIndex, lastMsgSeqNumProcessed);
     }
 
+    @Override
     public long sendReceivedMessageWithoutSequenceNumber(
         final int msgSeqNo, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
         return sendLogout(msgSeqNo, NO_MSG_SEQ_NO, sequenceIndex, lastMsgSeqNumProcessed);
     }
 
+    @Override
     public long sendRejectWhilstNotLoggedOn(
         final int msgSeqNo, final RejectReason reason, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
@@ -361,12 +374,14 @@ public class DirectSessionProxy implements SessionProxy
             msgSeqNo, NOT_LOGGED_ON_SESSION_REJECT_REASONS[reason.ordinal()], sequenceIndex, lastMsgSeqNumProcessed);
     }
 
+    @Override
     public long sendHeartbeat(final int msgSeqNo, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
         return sendHeartbeat(
             msgSeqNo, null, 0, sequenceIndex, lastMsgSeqNumProcessed);
     }
 
+    @Override
     public long sendHeartbeat(
         final int msgSeqNo, final char[] testReqId,
         final int testReqIdLength,
@@ -391,6 +406,7 @@ public class DirectSessionProxy implements SessionProxy
         return send(result, HEARTBEAT_MESSAGE_TYPE, sequenceIndex, heartbeat, msgSeqNo);
     }
 
+    @Override
     public long sendReject(
         final int msgSeqNo,
         final int refSeqNum,
@@ -429,6 +445,7 @@ public class DirectSessionProxy implements SessionProxy
         return send(result, REJECT_MESSAGE_TYPE, sequenceIndex, reject, msgSeqNo);
     }
 
+    @Override
     public long sendTestRequest(
         final int msgSeqNo, final CharSequence testReqID, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
@@ -443,6 +460,7 @@ public class DirectSessionProxy implements SessionProxy
         return send(result, TEST_REQUEST_MESSAGE_TYPE, sequenceIndex, testRequest, msgSeqNo);
     }
 
+    @Override
     public long sendSequenceReset(
         final int msgSeqNo, final int newSeqNo, final int sequenceIndex, final int lastMsgSeqNumProcessed)
     {
@@ -508,21 +526,25 @@ public class DirectSessionProxy implements SessionProxy
         return lastSentPosition;
     }
 
+    @Override
     public void libraryConnected(final boolean libraryConnected)
     {
         this.libraryConnected = libraryConnected;
     }
 
+    @Override
     public boolean seqNumResetRequested()
     {
         return seqNumResetRequested;
     }
 
+    @Override
     public long sendCancelOnDisconnectTrigger(final long sessionId, final long timeInNs)
     {
         return gatewayPublication.saveCancelOnDisconnectTrigger(sessionId, timeInNs);
     }
 
+    @Override
     public boolean isAsync()
     {
         return false;

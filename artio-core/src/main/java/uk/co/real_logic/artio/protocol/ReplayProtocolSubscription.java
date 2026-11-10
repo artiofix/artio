@@ -36,6 +36,7 @@ public final class ReplayProtocolSubscription implements ControlledFragmentHandl
         this.handler = handler;
     }
 
+    @Override
     public Action onFragment(
         final DirectBuffer buffer, final int offset, final int length, final Header header)
     {

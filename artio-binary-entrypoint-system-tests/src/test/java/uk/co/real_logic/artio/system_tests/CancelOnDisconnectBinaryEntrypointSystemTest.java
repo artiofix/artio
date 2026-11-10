@@ -236,6 +236,7 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
         private final AtomicInteger invokeCount = new AtomicInteger(0);
         private volatile TimeoutResult result;
 
+        @Override
         public void onCancelOnDisconnectTimeout(final long sessionId, final FixPContext context)
         {
             this.result = new TimeoutResult(sessionId, context, nanoClock.nanoTime());

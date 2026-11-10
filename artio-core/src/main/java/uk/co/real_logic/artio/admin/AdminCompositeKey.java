@@ -42,36 +42,43 @@ class AdminCompositeKey implements CompositeKey
         this.remoteLocationId = remoteLocationId;
     }
 
+    @Override
     public String localCompId()
     {
         return localCompId;
     }
 
+    @Override
     public String localSubId()
     {
         return localSubId;
     }
 
+    @Override
     public String localLocationId()
     {
         return localLocationId;
     }
 
+    @Override
     public String remoteCompId()
     {
         return remoteCompId;
     }
 
+    @Override
     public String remoteSubId()
     {
         return remoteSubId;
     }
 
+    @Override
     public String remoteLocationId()
     {
         return remoteLocationId;
     }
 
+    @Override
     public String toString()
     {
         final StringBuilder builder = new StringBuilder()

@@ -38,6 +38,7 @@ class ReadMetaDataReply extends LibraryReply<MetaDataStatus>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveReadMetaData(sessionId, correlationId);

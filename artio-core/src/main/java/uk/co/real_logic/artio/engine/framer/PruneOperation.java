@@ -105,22 +105,26 @@ public class PruneOperation
         replyState = State.EXECUTING;
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public Long2LongHashMap resultIfPresent()
     {
         return result;
     }
 
+    @Override
     public State state()
     {
         return replyState;
     }
 
     // On Framer thread
+    @Override
     public void execute(final Framer framer)
     {
         DebugLogger.log(STATE_CLEANUP, "PruneOperation: starting on Framer Thread");
@@ -135,6 +139,7 @@ public class PruneOperation
     }
 
     // On Replayer Thread
+    @Override
     public void execute()
     {
         DebugLogger.log(STATE_CLEANUP, "PruneOperation: starting on Replayer Thread");
@@ -273,6 +278,7 @@ public class PruneOperation
         }
     }
 
+    @Override
     public void onRecordingDescriptor(
         final long controlSessionId, final long correlationId, final long recordingId, final long startTimestamp,
         final long stopTimestamp, final long startPosition, final long stopPosition, final int initialTermId,
@@ -301,6 +307,7 @@ public class PruneOperation
         replyState = State.ERRORED;
     }
 
+    @Override
     public String toString()
     {
         return "PruneOperation{" +

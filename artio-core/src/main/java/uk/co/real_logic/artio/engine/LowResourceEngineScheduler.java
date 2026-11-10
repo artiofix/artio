@@ -45,6 +45,7 @@ public class LowResourceEngineScheduler implements EngineScheduler
     {
     }
 
+    @Override
     public void launch(
         final EngineConfiguration configuration,
         final ErrorHandler errorHandler,
@@ -77,6 +78,7 @@ public class LowResourceEngineScheduler implements EngineScheduler
         startOnThread(runner, configuration.threadFactory());
     }
 
+    @Override
     public void close()
     {
         EngineScheduler.awaitRunnerStart(runner);
@@ -84,6 +86,7 @@ public class LowResourceEngineScheduler implements EngineScheduler
         CloseHelper.close(runner);
     }
 
+    @Override
     public int pollFramer()
     {
         if (framer != null)
@@ -109,6 +112,7 @@ public class LowResourceEngineScheduler implements EngineScheduler
         return 0;
     }
 
+    @Override
     public void configure(final Aeron.Context aeronContext)
     {
         aeronContext.useConductorAgentInvoker(true);

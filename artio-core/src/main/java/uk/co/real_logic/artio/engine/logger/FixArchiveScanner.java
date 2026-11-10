@@ -295,6 +295,7 @@ public class FixArchiveScanner implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         agent.close();

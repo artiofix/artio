@@ -27,6 +27,7 @@ import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
 
 public class FakeILink3ConnectionHandler implements ILink3ConnectionHandler
 {
+    @Override
     public Action onNotApplied(
         final FixPConnection connection,
         final long fromSequenceNumber, final long msgCount, final NotAppliedResponse response)
@@ -34,32 +35,38 @@ public class FakeILink3ConnectionHandler implements ILink3ConnectionHandler
         return CONTINUE;
     }
 
+    @Override
     public Action onRetransmitReject(
         final FixPConnection connection, final String reason, final long requestTimestamp, final int errorCodes)
     {
         return CONTINUE;
     }
 
+    @Override
     public Action onRetransmitTimeout(final FixPConnection connection)
     {
         return CONTINUE;
     }
 
+    @Override
     public Action onSequence(final FixPConnection connection, final long nextSeqNo)
     {
         return CONTINUE;
     }
 
+    @Override
     public Action onError(final FixPConnection connection, final Exception ex)
     {
         return CONTINUE;
     }
 
+    @Override
     public Action onDisconnect(final FixPConnection connection, final DisconnectReason reason)
     {
         return CONTINUE;
     }
 
+    @Override
     public Action onBusinessMessage(
         final FixPConnection connection,
         final int templateId,

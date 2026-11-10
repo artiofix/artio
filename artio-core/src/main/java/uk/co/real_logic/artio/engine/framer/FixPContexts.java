@@ -248,6 +248,7 @@ public class FixPContexts implements SessionContexts
         return sessionInfos;
     }
 
+    @Override
     public void sequenceReset(final long sessionId, final long resetTimeInNs)
     {
         final InternalFixPContext context = lookupContext(sessionId);
@@ -263,6 +264,7 @@ public class FixPContexts implements SessionContexts
         }
     }
 
+    @Override
     public boolean isKnownSessionId(final long sessionId)
     {
         return lookupContext(sessionId) != null;
@@ -282,6 +284,7 @@ public class FixPContexts implements SessionContexts
         return null;
     }
 
+    @Override
     public boolean isAuthenticated(final long sessionId)
     {
         return authenticatedSessionIdToConnectionId.containsKey(sessionId);
@@ -296,11 +299,13 @@ public class FixPContexts implements SessionContexts
             this.context = context;
         }
 
+        @Override
         public FixPKey key()
         {
             return context.key();
         }
 
+        @Override
         public String toString()
         {
             return "InfoWrapper{" +
