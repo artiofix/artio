@@ -2,6 +2,14 @@
 
 == Unreleased
 
+=== New & Noteworthy
+
+* **Breaking:** SessionProxy#sendValidResendRequest has been introduced to allow replying to a resend request to pass through an external system.
+If you are using SessionProxy please see DirectSessionProxy#sendValidResendRequest to retain existing behavior.
+
+=== Changelog
+
+* Allow replying to a resend request to pass through an external system. Addresses https://github.com/artiofix/artio/issues/503[#503]
 * Print configuration on startup for FixEngine, FixLibrary, ArtioAdmin, and FixMessageLogger
 
 == 0.187 (2026-10-28)

@@ -2142,7 +2142,7 @@ public class Session
 
             // Notify the sender end point that a replay is going to happen.
             if (saveValidResendRequest(beginSeqNum, messageBuffer, messageOffset, messageLength, correctedEndSeqNo,
-                correlationId, overriddenBeginSeqNum, outboundPublication))
+                correlationId, overriddenBeginSeqNum))
             {
                 lastReceivedMsgSeqNum(oldLastReceivedMsgSeqNum);
                 backpressuredResendRequestResponse = true;
@@ -2183,10 +2183,9 @@ public class Session
 
     private boolean saveValidResendRequest(
         final int beginSeqNum, final AsciiBuffer messageBuffer, final int messageOffset, final int messageLength,
-        final int correctedEndSeqNo, final long correlationId, final int overriddenBeginSeqNum,
-        final GatewayPublication publication)
+        final int correctedEndSeqNo, final long correlationId, final int overriddenBeginSeqNum)
     {
-        return Pressure.isBackPressured(publication.saveValidResendRequest(
+        return Pressure.isBackPressured(proxy.sendValidResendRequest(
             id,
             connectionId,
             beginSeqNum,
