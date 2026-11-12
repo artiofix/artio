@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.session;
 
+import org.agrona.DirectBuffer;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
 import uk.co.real_logic.artio.fields.RejectReason;
 import uk.co.real_logic.artio.messages.CancelOnDisconnectOption;
@@ -108,6 +109,18 @@ public interface SessionProxy
     boolean seqNumResetRequested();
 
     long sendCancelOnDisconnectTrigger(long id, long timeInNs);
+
+    long sendValidResendRequest(
+        long sessionId,
+        long connectionId,
+        long beginSequenceNumber,
+        long endSequenceNumber,
+        int sequenceIndex,
+        long correlationId,
+        long overriddenBeginSequenceNumber,
+        DirectBuffer bodyBuffer,
+        int bodyOffset,
+        int bodyLength);
 
     /**
      * Determines whether this implementation is asynchronous, for example, that it round-trips a message

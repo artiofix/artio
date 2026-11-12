@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import io.aeron.Aeron;
+import io.aeron.CommonContext;
 import io.aeron.FragmentAssembler;
 import io.aeron.Subscription;
 import org.agrona.DirectBuffer;
@@ -257,6 +258,11 @@ public class FixMessageLogger implements Agent
 
                 aeron = Aeron.connect(context);
             }
+
+            if (CommonContext.shouldPrintConfigurationOnStart())
+            {
+                System.out.println(this);
+            }
         }
 
         public static void validateMaxAndCompactionSize(final int maximumBufferSize, final int compactionSize)
@@ -289,6 +295,25 @@ public class FixMessageLogger implements Agent
             {
                 throw new IllegalArgumentException("Compaction size must be positive, but is: " + compactionSize);
             }
+        }
+
+        @Override
+        public String toString()
+        {
+            return "FixMessageLogger.Configuration" +
+                "\n{" +
+                "\n    fixMessageConsumer=" + fixMessageConsumer +
+                "\n    context=" + context +
+                "\n    ownsAeronClient=" + ownsAeronClient +
+                "\n    aeron=" + aeron +
+                "\n    libraryAeronChannel='" + libraryAeronChannel + '\'' +
+                "\n    inboundStreamId=" + inboundStreamId +
+                "\n    outboundStreamId=" + outboundStreamId +
+                "\n    outboundReplayStreamId=" + outboundReplayStreamId +
+                "\n    compactionSize=" + compactionSize +
+                "\n    maximumBufferSize=" + maximumBufferSize +
+                "\n    fixPMessageConsumer=" + fixPMessageConsumer +
+                "\n}";
         }
     }
 

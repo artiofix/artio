@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.admin;
 
 import io.aeron.Aeron;
+import io.aeron.CommonContext;
 import org.agrona.Strings;
 import org.agrona.SystemUtil;
 import org.agrona.concurrent.EpochNanoClock;
@@ -229,11 +230,33 @@ public final class ArtioAdminConfiguration
             {
                 aeronContext.clientName("fix-artio-admin");
             }
+
+            if (CommonContext.shouldPrintConfigurationOnStart())
+            {
+                System.out.println(this);
+            }
         }
         else
         {
             throw new IllegalStateException(
                 "This configuration has already been concluded, are you trying to re-use it?");
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "ArtioAdminConfiguration" +
+            "\n{" +
+            "\n    isConcluded=" + isConcluded +
+            "\n    aeronContext=" + aeronContext +
+            "\n    idleStrategy=" + idleStrategy +
+            "\n    epochNanoClock=" + epochNanoClock +
+            "\n    inboundAdminStream=" + inboundAdminStream +
+            "\n    outboundAdminStream=" + outboundAdminStream +
+            "\n    aeronChannel='" + aeronChannel + '\'' +
+            "\n    replyTimeoutInNs=" + replyTimeoutInNs +
+            "\n    connectTimeoutNs=" + connectTimeoutNs +
+            "\n}";
     }
 }
