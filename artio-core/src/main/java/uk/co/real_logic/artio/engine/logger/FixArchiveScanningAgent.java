@@ -104,7 +104,8 @@ public class FixArchiveScanningAgent implements AutoCloseable
         final int received = timestampZipper.poll(fragmentLimit);
 
         // Don't need to do this check in follow mode as we're just going to keep running and not terminate.
-        if (0 == received && !follow) // lgtm [java/constant-loop-condition]
+        // codeql[java/constant-loop-condition]
+        if (0 == received && !follow)
         {
             if (checkCompletion(pollers))
             {
