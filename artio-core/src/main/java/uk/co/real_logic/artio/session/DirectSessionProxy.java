@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.session;
 
+import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.EpochNanoClock;
 import uk.co.real_logic.artio.DebugLogger;
@@ -542,6 +543,32 @@ public class DirectSessionProxy implements SessionProxy
     public long sendCancelOnDisconnectTrigger(final long sessionId, final long timeInNs)
     {
         return gatewayPublication.saveCancelOnDisconnectTrigger(sessionId, timeInNs);
+    }
+
+    @Override
+    public long sendValidResendRequest(
+        final long sessionId,
+        final long connectionId,
+        final long beginSequenceNumber,
+        final long endSequenceNumber,
+        final int sequenceIndex,
+        final long correlationId,
+        final long overriddenBeginSequenceNumber,
+        final DirectBuffer bodyBuffer,
+        final int bodyOffset,
+        final int bodyLength)
+    {
+        return gatewayPublication.saveValidResendRequest(
+            sessionId,
+            connectionId,
+            beginSequenceNumber,
+            endSequenceNumber,
+            sequenceIndex,
+            correlationId,
+            overriddenBeginSequenceNumber,
+            bodyBuffer,
+            bodyOffset,
+            bodyLength);
     }
 
     @Override

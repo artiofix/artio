@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine;
 
 import io.aeron.Aeron;
+import io.aeron.CommonContext;
 import io.aeron.archive.client.AeronArchive;
 import org.agrona.BufferUtil;
 import org.agrona.CloseHelper;
@@ -1684,9 +1685,29 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
      * {@inheritDoc}
      */
     @Override
-    public EngineConfiguration maxFixPKeepaliveTimeoutInMs(final long maxFixpKeepaliveTimeoutInMs)
+    public EngineConfiguration maxFixPKeepaliveTimeoutInMs(final long maxFixPKeepaliveTimeoutInMs)
     {
-        super.maxFixPKeepaliveTimeoutInMs(maxFixpKeepaliveTimeoutInMs);
+        super.maxFixPKeepaliveTimeoutInMs(maxFixPKeepaliveTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EngineConfiguration minFixPKeepaliveTimeoutInMs(final long minFixPKeepaliveTimeoutInMs)
+    {
+        super.minFixPKeepaliveTimeoutInMs(minFixPKeepaliveTimeoutInMs);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EngineConfiguration acceptorFixPKeepaliveTimeoutInMs(final long acceptorFixPKeepaliveTimeoutInMs)
+    {
+        super.acceptorFixPKeepaliveTimeoutInMs(acceptorFixPKeepaliveTimeoutInMs);
         return this;
     }
 
@@ -1718,6 +1739,16 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
     public EngineConfiguration resendRequestController(final ResendRequestController resendRequestController)
     {
         super.resendRequestController(resendRequestController);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EngineConfiguration gatewayId(final long gatewayId)
+    {
+        super.gatewayId(gatewayId);
         return this;
     }
 
@@ -2307,6 +2338,11 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
         aeronContextClone = aeronContext().clone();
         archiveContextClone = archiveContext.clone();
 
+        if (CommonContext.shouldPrintConfigurationOnStart())
+        {
+            System.out.println(this);
+        }
+
         return this;
     }
 
@@ -2338,5 +2374,97 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
         CloseHelper.close(receivedSequenceNumberIndex);
         CloseHelper.close(sessionIdBuffer);
         CloseHelper.close(fixPBuffer);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "EngineConfiguration" +
+            "\n{" +
+            "\n    host='" + host + '\'' +
+            "\n    port=" + port +
+            "\n    replayIndexFileRecordCapacity=" + replayIndexFileRecordCapacity +
+            "\n    replayIndexSegmentRecordCapacity=" + replayIndexSegmentRecordCapacity +
+            "\n    logFileDir='" + logFileDir + '\'' +
+            "\n    loggerCacheNumSets=" + loggerCacheNumSets +
+            "\n    loggerCacheSetSize=" + loggerCacheSetSize +
+            "\n    logInboundMessages=" + logInboundMessages +
+            "\n    logOutboundMessages=" + logOutboundMessages +
+            "\n    printStartupWarnings=" + printStartupWarnings +
+            "\n    framerIdleStrategy=" + framerIdleStrategy +
+            "\n    archiverIdleStrategy=" + archiverIdleStrategy +
+            "\n    sentSequenceNumberBuffer=" + sentSequenceNumberBuffer +
+            "\n    receivedSequenceNumberBuffer=" + receivedSequenceNumberBuffer +
+            "\n    sentSequenceNumberIndex=" + sentSequenceNumberIndex +
+            "\n    receivedSequenceNumberIndex=" + receivedSequenceNumberIndex +
+            "\n    sessionIdBuffer=" + sessionIdBuffer +
+            "\n    fixPBuffer=" + fixPBuffer +
+            "\n    sessionIdGenerator=" + sessionIdGenerator +
+            "\n    gapfillOnReplayMessageTypes=" + gapfillOnReplayMessageTypes +
+            "\n    gapfillOnRetransmitILinkTemplateIds=" + gapfillOnRetransmitILinkTemplateIds +
+            "\n    archiveContext=" + archiveContext +
+            "\n    archiveContextClone=" + archiveContextClone +
+            "\n    aeronContextClone=" + aeronContextClone +
+            "\n    outboundLibraryFragmentLimit=" + outboundLibraryFragmentLimit +
+            "\n    replayFragmentLimit=" + replayFragmentLimit +
+            "\n    inboundBytesReceivedLimit=" + inboundBytesReceivedLimit +
+            "\n    receiverBufferSize=" + receiverBufferSize +
+            "\n    receiverSocketBufferSize=" + receiverSocketBufferSize +
+            "\n    senderSocketBufferSize=" + senderSocketBufferSize +
+            "\n    sequenceNumberIndexSize=" + sequenceNumberIndexSize +
+            "\n    sessionIdBufferSize=" + sessionIdBufferSize +
+            "\n    senderMaxBytesInBuffer=" + senderMaxBytesInBuffer +
+            "\n    noLogonDisconnectTimeoutInMs=" + noLogonDisconnectTimeoutInMs +
+            "\n    indexChecksumEnabled=" + indexChecksumEnabled +
+            "\n    libraryAeronChannel='" + libraryAeronChannel + '\'' +
+            "\n    channelSupplierFactory=" + channelSupplierFactory +
+            "\n    sessionPersistenceStrategy=" + sessionPersistenceStrategy +
+            "\n    slowConsumerTimeoutInMs=" + slowConsumerTimeoutInMs +
+            "\n    scheduler=" + scheduler +
+            "\n    replayHandler=" + replayHandler +
+            "\n    fixPRetransmitHandler=" + fixPRetransmitHandler +
+            "\n    outboundReplayStream=" + outboundReplayStream +
+            "\n    archiveReplayStream=" + archiveReplayStream +
+            "\n    reproductionLogStream=" + reproductionLogStream +
+            "\n    reproductionReplayStream=" + reproductionReplayStream +
+            "\n    acceptedSessionClosedResendInterval=" + acceptedSessionClosedResendInterval +
+            "\n    acceptedSessionResendRequestChunkSize=" + acceptedSessionResendRequestChunkSize +
+            "\n    acceptedSessionSendRedundantResendRequests=" + acceptedSessionSendRedundantResendRequests +
+            "\n    acceptedEnableLastMsgSeqNumProcessed=" + acceptedEnableLastMsgSeqNumProcessed +
+            "\n    initialAcceptedSessionOwner=" + initialAcceptedSessionOwner +
+            "\n    authenticationStrategy=" + authenticationStrategy +
+            "\n    fixPAuthenticationStrategy=" + fixPAuthenticationStrategy +
+            "\n    indexFileStateFlushTimeoutInMs=" + indexFileStateFlushTimeoutInMs +
+            "\n    acceptorfixDictionary=" + acceptorfixDictionary +
+            "\n    lookupDefaultAcceptorfixDictionary=" + lookupDefaultAcceptorfixDictionary +
+            "\n    acceptorFixDictionaryOverrides=" + acceptorFixDictionaryOverrides +
+            "\n    deleteLogFileDirOnStart=" + deleteLogFileDirOnStart +
+            "\n    authenticationTimeoutInMs=" + authenticationTimeoutInMs +
+            "\n    bindAtStartup=" + bindAtStartup +
+            "\n    initialSequenceIndex=" + initialSequenceIndex +
+            "\n    messageTimingHandler=" + messageTimingHandler +
+            "\n    maxConcurrentSessionReplays=" + maxConcurrentSessionReplays +
+            "\n    replayPositionBufferSize=" + replayPositionBufferSize +
+            "\n    duplicateEngineTimeoutInMs=" + duplicateEngineTimeoutInMs +
+            "\n    errorIfDuplicateEngineDetected=" + errorIfDuplicateEngineDetected +
+            "\n    inboundAdminStream=" + inboundAdminStream +
+            "\n    outboundAdminStream=" + outboundAdminStream +
+            "\n    acceptorFixPProtocol=" + acceptorFixPProtocol +
+            "\n    cancelOnDisconnectTimeoutHandler=" + cancelOnDisconnectTimeoutHandler +
+            "\n    fixPCancelOnDisconnectTimeoutHandler=" + fixPCancelOnDisconnectTimeoutHandler +
+            "\n    throttleWindowInMs=" + throttleWindowInMs +
+            "\n    throttleLimitOfMessages=" + throttleLimitOfMessages +
+            "\n    throttleBusinessRejectReason=" + throttleBusinessRejectReason +
+            "\n    timeIndexReplayFlushIntervalInNs=" + timeIndexReplayFlushIntervalInNs +
+            "\n    cancelOnDisconnectOption=" + cancelOnDisconnectOption +
+            "\n    cancelOnDisconnectTimeoutWindowInMs=" + cancelOnDisconnectTimeoutWindowInMs +
+            "\n    initialConnectionId=" + initialConnectionId +
+            "\n    framerCycleThresholdNs=" + framerCycleThresholdNs +
+            "\n    indexerCycleThresholdNs=" + indexerCycleThresholdNs +
+            "\n    reproductionConfiguration=" + reproductionConfiguration +
+            "\n    reproductionMessageHandler=" + reproductionMessageHandler +
+            "\n    writeReproductionLog=" + writeReproductionLog +
+            "\n}" +
+            "\nEngineConfiguration." + super.toString();
     }
 }

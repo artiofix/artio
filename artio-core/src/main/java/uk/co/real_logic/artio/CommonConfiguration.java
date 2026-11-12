@@ -1118,4 +1118,50 @@ public class CommonConfiguration
     {
         return gatewayId;
     }
+
+    @Override
+    public String toString()
+    {
+        return "CommonConfiguration" +
+            "\n{" +
+            "\n    threadFactory=" + threadFactory +
+            "\n    fixPAcceptedSessionMaxRetransmissionRange=" + fixPAcceptedSessionMaxRetransmissionRange +
+            "\n    reasonableTransmissionTimeInMs=" + reasonableTransmissionTimeInMs +
+            "\n    printAeronStreamIdentifiers=" + printAeronStreamIdentifiers +
+            "\n    epochNanoClock=" + epochNanoClock +
+            "\n    errorHandlerFactory=" + errorHandlerFactory +
+            "\n    monitoringAgentFactory=" + monitoringAgentFactory +
+            "\n    monitoringThreadIdleStrategy=" + monitoringThreadIdleStrategy +
+            "\n    sendingTimeWindowInMs=" + sendingTimeWindowInMs +
+            "\n    sessionIdStrategy=" + sessionIdStrategy +
+            "\n    messageValidationStrategy=" + messageValidationStrategy +
+            "\n    sessionCustomisationStrategy=" + sessionCustomisationStrategy +
+            "\n    monitoringBuffersLength=" + monitoringBuffersLength +
+            "\n    monitoringFile='" + monitoringFile + '\'' +
+            "\n    replyTimeoutInMs=" + replyTimeoutInMs +
+            "\n    aeronContext=" + aeronContext +
+            "\n    sessionBufferSize=" + sessionBufferSize +
+            "\n    inboundMaxClaimAttempts=" + inboundMaxClaimAttempts +
+            "\n    outboundMaxClaimAttempts=" + outboundMaxClaimAttempts +
+            "\n    defaultHeartbeatIntervalInS=" + defaultHeartbeatIntervalInS +
+            "\n    histogramPollPeriodInMs=" + histogramPollPeriodInMs +
+            "\n    histogramLoggingFile='" + histogramLoggingFile + '\'' +
+            "\n    histogramHandler=" + histogramHandler +
+            "\n    agentNamePrefix='" + agentNamePrefix + '\'' +
+            "\n    inboundLibraryStream=" + inboundLibraryStream +
+            "\n    outboundLibraryStream=" + outboundLibraryStream +
+            "\n    validateCompIdsOnEveryMessage=" + validateCompIdsOnEveryMessage +
+            "\n    validateTimeStrictly=" + validateTimeStrictly +
+            "\n    sessionEpochFractionFormat=" + sessionEpochFractionFormat +
+            "\n    maxFixPKeepaliveTimeoutInMs=" + maxFixPKeepaliveTimeoutInMs +
+            "\n    minFixPKeepaliveTimeoutInMs=" + minFixPKeepaliveTimeoutInMs +
+            "\n    acceptorFixPKeepaliveTimeoutInMs=" + acceptorFixPKeepaliveTimeoutInMs +
+            "\n    noEstablishFixPTimeoutInMs=" + noEstablishFixPTimeoutInMs +
+            "\n    resendRequestController=" + resendRequestController +
+            "\n    forcedHeartbeatIntervalInS=" + forcedHeartbeatIntervalInS +
+            "\n    disableHeartbeatRepliesToTestRequests=" + disableHeartbeatRepliesToTestRequests +
+            "\n    gatewayId=" + gatewayId +
+            "\n    isConcluded=" + isConcluded +
+            "\n}";
+    }
 }
