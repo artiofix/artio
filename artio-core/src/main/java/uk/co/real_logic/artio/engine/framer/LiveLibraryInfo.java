@@ -69,26 +69,31 @@ final class LiveLibraryInfo implements LibraryInfo
         }
     }
 
+    @Override
     public int libraryId()
     {
         return libraryId;
     }
 
+    @Override
     public String libraryName()
     {
         return libraryName;
     }
 
+    @Override
     public List<ConnectedSessionInfo> sessions()
     {
         return unmodifiableFixSessions;
     }
 
+    @Override
     public List<FixPConnectedSessionInfo> fixPConnections()
     {
         return unmodifiableFixPConnections;
     }
 
+    @Override
     public String toString()
     {
         return "LibraryInfo{" +
@@ -180,6 +185,7 @@ final class LiveLibraryInfo implements LibraryInfo
         return acquireAtPosition;
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -196,6 +202,7 @@ final class LiveLibraryInfo implements LibraryInfo
         return libraryId == that.libraryId;
     }
 
+    @Override
     public int hashCode()
     {
         return libraryId;

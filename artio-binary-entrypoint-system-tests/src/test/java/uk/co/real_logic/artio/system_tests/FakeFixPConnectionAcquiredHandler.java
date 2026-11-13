@@ -33,6 +33,7 @@ public class FakeFixPConnectionAcquiredHandler implements FixPConnectionAcquired
         this.connectionHandler = connectionHandler;
     }
 
+    @Override
     public FixPConnectionHandler onConnectionAcquired(final FixPConnection connection)
     {
         invoked = true;

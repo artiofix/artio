@@ -57,21 +57,25 @@ public class FixPGatewaySession extends GatewaySession implements FixPConnectedS
         this.gatewaySessions = gatewaySessions;
     }
 
+    @Override
     public String address()
     {
         return address;
     }
 
+    @Override
     int poll(final long timeInMs, final long timeInNs)
     {
         return checkNoLogonDisconnect(timeInMs);
     }
 
+    @Override
     long lastLogonTime()
     {
         return 0;
     }
 
+    @Override
     void acceptorSequenceNumbers(final int lastSentSequenceNumber, final int lastReceivedSequenceNumber)
     {
     }
@@ -130,6 +134,7 @@ public class FixPGatewaySession extends GatewaySession implements FixPConnectedS
         receiverEndPoint.authenticated();
     }
 
+    @Override
     public void onDisconnectReleasedByOwner()
     {
     }
@@ -140,10 +145,12 @@ public class FixPGatewaySession extends GatewaySession implements FixPConnectedS
         gatewaySessions.fixPContexts().updateContext(context);
     }
 
+    @Override
     public void close()
     {
     }
 
+    @Override
     public String toString()
     {
         return "FixPGatewaySession{" +
@@ -156,17 +163,20 @@ public class FixPGatewaySession extends GatewaySession implements FixPConnectedS
             '}';
     }
 
+    @Override
     public FixPKey key()
     {
         return context.key();
     }
 
+    @Override
     public boolean configureThrottle(final int throttleWindowInMs, final int throttleLimitOfMessages)
     {
         receiverEndPoint.configureThrottle(throttleWindowInMs, throttleLimitOfMessages);
         return true;
     }
 
+    @Override
     public long startEndOfDay()
     {
         if (receiverEndPoint != null)

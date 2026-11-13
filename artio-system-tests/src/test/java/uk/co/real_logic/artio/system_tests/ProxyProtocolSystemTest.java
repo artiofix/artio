@@ -34,6 +34,7 @@ public class ProxyProtocolSystemTest extends AbstractMessageBasedAcceptorSystemT
     {
         optionalAuthStrategy = new AuthenticationStrategy()
         {
+            @Override
             public void authenticateAsync(
                 final AbstractLogonDecoder logon, final AuthenticationProxy authProxy)
             {
@@ -41,6 +42,7 @@ public class ProxyProtocolSystemTest extends AbstractMessageBasedAcceptorSystemT
                 authProxy.accept();
             }
 
+            @Override
             public boolean authenticate(final AbstractLogonDecoder logon)
             {
                 throw new UnsupportedOperationException();

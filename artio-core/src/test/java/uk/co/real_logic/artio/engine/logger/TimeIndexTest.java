@@ -42,6 +42,7 @@ public class TimeIndexTest
 
     private final ErrorHandler errorHandler = spy(new ErrorHandler()
     {
+        @Override
         public void onError(final Throwable throwable)
         {
             throwable.printStackTrace();

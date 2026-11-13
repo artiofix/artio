@@ -54,6 +54,7 @@ public final class LibraryStreamInfo
         return outboundPublicationPosition;
     }
 
+    @Override
     public String toString()
     {
         return "LibraryStreamInfo{" +

@@ -162,6 +162,7 @@ public class HistogramLogReader implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         IoUtil.unmap(buffer);

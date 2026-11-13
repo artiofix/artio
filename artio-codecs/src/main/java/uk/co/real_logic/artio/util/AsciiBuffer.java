@@ -47,8 +47,10 @@ public interface AsciiBuffer extends DirectBuffer
 
     boolean isDigit(int index);
 
+    @Override
     byte getByte(int index);
 
+    @Override
     char getChar(int index);
 
     boolean getBoolean(int index);

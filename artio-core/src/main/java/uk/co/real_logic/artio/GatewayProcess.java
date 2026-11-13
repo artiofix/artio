@@ -148,6 +148,7 @@ public abstract class GatewayProcess implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         closeAll(

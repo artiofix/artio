@@ -50,6 +50,7 @@ class FollowerSessionReply extends LibraryReply<SessionWriter>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveFollowerSessionRequest(

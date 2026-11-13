@@ -26,6 +26,7 @@ class ResetReplayQueryCommand implements AdminCommand
         this.fixSessionId = fixSessionId;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         try

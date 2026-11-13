@@ -861,6 +861,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         int lastSentMsgSeqNum = 0;
         int lastSentMsgSeqNumAfterLogon = 0;
 
+        @Override
         public void run()
         {
             if (acceptingSession.state() == SessionState.DISCONNECTED)

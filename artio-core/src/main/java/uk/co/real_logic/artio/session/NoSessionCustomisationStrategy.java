@@ -23,10 +23,12 @@ import uk.co.real_logic.artio.builder.AbstractLogoutEncoder;
  */
 class NoSessionCustomisationStrategy implements SessionCustomisationStrategy
 {
+    @Override
     public void configureLogon(final AbstractLogonEncoder logon, final long sessionId)
     {
     }
 
+    @Override
     public void configureLogout(final AbstractLogoutEncoder logout, final long sessionId)
     {
     }

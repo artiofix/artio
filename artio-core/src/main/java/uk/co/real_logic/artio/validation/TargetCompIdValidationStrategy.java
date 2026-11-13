@@ -33,16 +33,19 @@ final class TargetCompIdValidationStrategy implements MessageValidationStrategy
         this.gatewayCompId = gatewayCompId.toCharArray();
     }
 
+    @Override
     public boolean validate(final SessionHeaderDecoder header)
     {
         return CodecUtil.equals(header.targetCompID(), gatewayCompId, header.targetCompIDLength());
     }
 
+    @Override
     public int invalidTagId()
     {
         return SessionConstants.TARGET_COMP_ID;
     }
 
+    @Override
     public int rejectReason()
     {
         return COMPID_PROBLEM.representation();

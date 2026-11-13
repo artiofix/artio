@@ -414,11 +414,13 @@ public class FixMessageLogger implements Agent
         return new SubscriptionPoller(aeron.addSubscription(libraryAeronChannel, streamId));
     }
 
+    @Override
     public int doWork()
     {
         return zipper.poll(Integer.MAX_VALUE);
     }
 
+    @Override
     public void onClose()
     {
         if (!closed)
@@ -437,6 +439,7 @@ public class FixMessageLogger implements Agent
         }
     }
 
+    @Override
     public String roleName()
     {
         return "FixMessageLogger";
@@ -461,21 +464,25 @@ public class FixMessageLogger implements Agent
             this.subscription = subscription;
         }
 
+        @Override
         public int poll(final FragmentAssembler fragmentAssembler, final int fragmentLimit)
         {
             return subscription.poll(fragmentAssembler, fragmentLimit);
         }
 
+        @Override
         public int streamId()
         {
             return subscription.streamId();
         }
 
+        @Override
         public void close()
         {
             subscription.close();
         }
 
+        @Override
         public boolean isComplete()
         {
             return false;

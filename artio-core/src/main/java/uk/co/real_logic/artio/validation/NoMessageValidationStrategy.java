@@ -26,16 +26,19 @@ class NoMessageValidationStrategy implements MessageValidationStrategy
     {
     }
 
+    @Override
     public boolean validate(final SessionHeaderDecoder logon)
     {
         return true;
     }
 
+    @Override
     public int invalidTagId()
     {
         return notSupported();
     }
 
+    @Override
     public int rejectReason()
     {
         return notSupported();

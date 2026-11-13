@@ -218,6 +218,7 @@ public class FixArchiveScanningAgent implements AutoCloseable
         return true;
     }
 
+    @Override
     public void close()
     {
         aeronArchive.close();
@@ -318,6 +319,7 @@ public class FixArchiveScanningAgent implements AutoCloseable
             return startPosition == NULL_POSITION ? NULL_POSITION : stopPosition - startPosition;
         }
 
+        @Override
         public String toString()
         {
             return "ArchiveLocation{" +
@@ -348,11 +350,13 @@ public class FixArchiveScanningAgent implements AutoCloseable
             this.archiveLocation = archiveLocation;
         }
 
+        @Override
         public boolean isComplete()
         {
             return stopPosition != NULL_POSITION && image == null && archiveLocation == null;
         }
 
+        @Override
         public int poll(final FragmentAssembler fragmentAssembler, final int fragmentLimit)
         {
             if (image == null)
@@ -392,6 +396,7 @@ public class FixArchiveScanningAgent implements AutoCloseable
             }
         }
 
+        @Override
         public int streamId()
         {
             return originalStreamId;
@@ -411,11 +416,13 @@ public class FixArchiveScanningAgent implements AutoCloseable
             return image;
         }
 
+        @Override
         public void close()
         {
             // don't own replay subscription so no need to close it.
         }
 
+        @Override
         public String toString()
         {
             return "RecordingPoller{" +

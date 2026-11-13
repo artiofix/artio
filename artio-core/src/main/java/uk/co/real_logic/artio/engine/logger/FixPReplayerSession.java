@@ -105,6 +105,7 @@ public class FixPReplayerSession extends ReplayerSession
         state = State.REPLAYING;
     }
 
+    @Override
     public boolean attemptReplay()
     {
         switch (state)
@@ -142,6 +143,7 @@ public class FixPReplayerSession extends ReplayerSession
     }
 
     // Callback for replayed messages
+    @Override
     public Action onFragment(
         final DirectBuffer buffer, final int offset, final int length, final Header header)
     {

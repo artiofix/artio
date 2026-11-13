@@ -187,6 +187,7 @@ class EncoderGenerator extends Generator
         }
     }
 
+    @Override
     protected void generateAggregateFile(final Aggregate aggregate, final AggregateType aggregateType)
     {
         final String className = encoderClassName(aggregate.name());
@@ -216,11 +217,13 @@ class EncoderGenerator extends Generator
             });
     }
 
+    @Override
     protected Class<?> topType(final AggregateType aggregateType)
     {
         return Encoder.class;
     }
 
+    @Override
     protected String resetGroup(final Entry entry)
     {
         final Group group = (Group)entry.element();
@@ -1218,6 +1221,7 @@ class EncoderGenerator extends Generator
         }
     }
 
+    @Override
     protected String resetAnyFields(final List<Entry> entries, final StringBuilder methods)
     {
         if (isSharedParent())
@@ -1250,6 +1254,7 @@ class EncoderGenerator extends Generator
             formatPropertyName(entry.name()));
     }
 
+    @Override
     protected String anyFieldsAppendTo(final AnyFields element)
     {
         if (isSharedParent())
@@ -1356,16 +1361,19 @@ class EncoderGenerator extends Generator
             scope));
     }
 
+    @Override
     protected String stringAppendTo(final String fieldName)
     {
         return String.format("appendBuffer(builder, %1$s, %1$sOffset, %1$sLength)", fieldName);
     }
 
+    @Override
     protected String timeAppendTo(final String fieldName)
     {
         return stringAppendTo(fieldName);
     }
 
+    @Override
     protected String dataAppendTo(final Field field, final String fieldName)
     {
         final Field associatedLengthField = field.associatedLengthField();
@@ -1374,6 +1382,7 @@ class EncoderGenerator extends Generator
         return String.format("appendData(builder, %1$s, %2$s)", fieldName, lengthName);
     }
 
+    @Override
     protected String componentAppendTo(final Component component)
     {
         // appendTo shared components in children
@@ -1418,6 +1427,7 @@ class EncoderGenerator extends Generator
         }
     }
 
+    @Override
     protected String resetLength(final String name)
     {
         return String.format(
@@ -1430,21 +1440,25 @@ class EncoderGenerator extends Generator
             formatPropertyName(name));
     }
 
+    @Override
     protected String resetRequiredFloat(final String name)
     {
         return resetByFlag(name);
     }
 
+    @Override
     protected String resetRequiredInt(final Field field)
     {
         return resetByFlag(field.name());
     }
 
+    @Override
     protected String resetRequiredLong(final Field field)
     {
         return resetByFlag(field.name());
     }
 
+    @Override
     protected boolean hasFlag(final Entry entry, final Field field)
     {
         final Type type = field.type();
@@ -1452,11 +1466,13 @@ class EncoderGenerator extends Generator
             type.isFloatBased() || type.isIntBased() || type.isCharBased();
     }
 
+    @Override
     protected String resetTemporalValue(final String name)
     {
         return resetLength(name);
     }
 
+    @Override
     protected String resetComponents(final List<Entry> entries, final StringBuilder methods)
     {
         // reset shared components in children
@@ -1481,11 +1497,13 @@ class EncoderGenerator extends Generator
             formatPropertyName(entry.name()));
     }
 
+    @Override
     protected String resetStringBasedData(final String name)
     {
         return resetLength(name);
     }
 
+    @Override
     protected String groupEntryAppendTo(final Group group, final String name)
     {
         // only append groups in the children
@@ -1711,11 +1729,13 @@ class EncoderGenerator extends Generator
         }
     }
 
+    @Override
     protected String optionalReset(final Field field, final String name)
     {
         return field.type().hasLengthField(false) ? resetLength(name) : resetByFlag(name);
     }
 
+    @Override
     protected boolean appendToChecksHasGetter(final Entry entry, final Field field)
     {
         return hasFlag(entry, field) || field.type().hasLengthField(false);

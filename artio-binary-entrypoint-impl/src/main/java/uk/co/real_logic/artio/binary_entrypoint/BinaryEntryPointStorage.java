@@ -48,12 +48,14 @@ public class BinaryEntryPointStorage extends AbstractFixPStorage
     {
     }
 
+    @Override
     public BinaryEntryPointContext newInitiatorContext(
         final FixPKey key, final int offset)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public BinaryEntryPointContext loadContext(
         final AtomicBuffer buffer, final int offset, final int fileVersion)
     {
@@ -71,6 +73,7 @@ public class BinaryEntryPointStorage extends AbstractFixPStorage
         return context;
     }
 
+    @Override
     public int saveContext(
         final InternalFixPContext fixPContext, final AtomicBuffer buffer, final int offset, final int fileVersion)
     {
@@ -87,6 +90,7 @@ public class BinaryEntryPointStorage extends AbstractFixPStorage
         return ENTRY_LENGTH;
     }
 
+    @Override
     public void updateContext(
         final InternalFixPContext fixPContext, final AtomicBuffer buffer)
     {

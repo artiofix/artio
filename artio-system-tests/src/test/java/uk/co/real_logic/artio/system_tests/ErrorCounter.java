@@ -23,6 +23,7 @@ public class ErrorCounter implements ErrorConsumer
 
     private volatile int lastObservationCount;
 
+    @Override
     public void accept(
         final int observationCount,
         final long firstObservationTimestamp,

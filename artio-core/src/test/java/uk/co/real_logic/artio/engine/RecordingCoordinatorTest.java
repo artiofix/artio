@@ -168,6 +168,7 @@ class RecordingCoordinatorTest
         final RecordingCoordinator coordinator = new RecordingCoordinator(
             aeron, archive, configuration, new IdleStrategy()
             {
+                @Override
                 public void idle(final int workCount)
                 {
                     if (workCount == 0)
@@ -176,6 +177,7 @@ class RecordingCoordinatorTest
                     }
                 }
 
+                @Override
                 public void idle()
                 {
                     // Fail on the calling test thread instead of leaving a Framer thread blocked on recovery.
@@ -183,6 +185,7 @@ class RecordingCoordinatorTest
                     Thread.yield();
                 }
 
+                @Override
                 public void reset()
                 {
                 }

@@ -58,6 +58,7 @@ public class Buyer implements LibraryConnectHandler, SessionHandler, SessionAcqu
     private Reply<Session> initiateReply;
     private Session session;
 
+    @Override
     public void onConnect(final FixLibrary library)
     {
         System.out.println("Library Connected");
@@ -65,6 +66,7 @@ public class Buyer implements LibraryConnectHandler, SessionHandler, SessionAcqu
         this.library = library;
     }
 
+    @Override
     public void onDisconnect(final FixLibrary library)
     {
         System.out.println("Library Disconnected");
@@ -157,6 +159,7 @@ public class Buyer implements LibraryConnectHandler, SessionHandler, SessionAcqu
         }
     }
 
+    @Override
     public Action onMessage(
         final DirectBuffer buffer,
         final int offset,
@@ -184,14 +187,17 @@ public class Buyer implements LibraryConnectHandler, SessionHandler, SessionAcqu
         return CONTINUE;
     }
 
+    @Override
     public void onTimeout(final int libraryId, final Session session)
     {
     }
 
+    @Override
     public void onSlowStatus(final int libraryId, final Session session, final boolean hasBecomeSlow)
     {
     }
 
+    @Override
     public Action onDisconnect(final int libraryId, final Session session, final DisconnectReason reason)
     {
         state = State.LIBRARY_CONNECTED;
@@ -199,10 +205,12 @@ public class Buyer implements LibraryConnectHandler, SessionHandler, SessionAcqu
         return CONTINUE;
     }
 
+    @Override
     public void onSessionStart(final Session session)
     {
     }
 
+    @Override
     public SessionHandler onSessionAcquired(final Session session, final SessionAcquiredInfo isSlow)
     {
         return this;

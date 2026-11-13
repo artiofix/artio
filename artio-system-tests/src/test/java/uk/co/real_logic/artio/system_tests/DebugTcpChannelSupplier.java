@@ -55,6 +55,7 @@ public class DebugTcpChannelSupplier extends DefaultTcpChannelSupplier
         this.bytesToBeWritten = bytesToBeWritten;
     }
 
+    @Override
     protected synchronized TcpChannel newTcpChannel(final SocketChannel channel) throws IOException
     {
         final TcpChannel tcpChannel = new DebugTcpChannel(channel);
@@ -80,6 +81,7 @@ public class DebugTcpChannelSupplier extends DefaultTcpChannelSupplier
         }
     }
 
+    @Override
     public synchronized int pollSelector(final long timeInMs, final NewChannelHandler handler) throws IOException
     {
         if (!connectsPaused && !pausedOperations.isEmpty())
@@ -114,6 +116,7 @@ public class DebugTcpChannelSupplier extends DefaultTcpChannelSupplier
         pausedOperations.clear();
     }
 
+    @Override
     protected void onFinishConnect(
         final InitiatedChannelHandler channelHandler, final SocketChannel channel) throws IOException
     {
@@ -137,6 +140,7 @@ public class DebugTcpChannelSupplier extends DefaultTcpChannelSupplier
         }
     }
 
+    @Override
     public synchronized void open(
         final InetSocketAddress address,
         final InitiatedChannelHandler handler)
@@ -161,6 +165,7 @@ public class DebugTcpChannelSupplier extends DefaultTcpChannelSupplier
             super(socketChannel);
         }
 
+        @Override
         public int write(final ByteBuffer src, final int seqNum, final boolean replay) throws IOException
         {
             final IntArrayList maxBytesToBeWritten = DebugTcpChannelSupplier.this.bytesToBeWritten;

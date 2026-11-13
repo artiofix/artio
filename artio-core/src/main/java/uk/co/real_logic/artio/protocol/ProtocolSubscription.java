@@ -69,6 +69,7 @@ public final class ProtocolSubscription implements ControlledFragmentHandler
         this.defaultAction = defaultAction;
     }
 
+    @Override
     public Action onFragment(
         final DirectBuffer buffer, final int start, final int length, final Header header)
     {

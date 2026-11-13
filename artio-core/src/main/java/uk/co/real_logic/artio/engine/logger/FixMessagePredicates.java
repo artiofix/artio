@@ -71,12 +71,14 @@ public final class FixMessagePredicates
             this.predicate = predicate;
         }
 
+        @Override
         public void reset()
         {
             consumer.reset();
             predicate.reset();
         }
 
+        @Override
         public void onMessage(
             final FixMessageDecoder message,
             final DirectBuffer buffer,
@@ -100,6 +102,7 @@ public final class FixMessagePredicates
             }
         }
 
+        @Override
         public String toString()
         {
             return "FilterBy{" +
@@ -145,6 +148,7 @@ public final class FixMessagePredicates
             this.beginTimestampInclusive = beginTimestampInclusive;
         }
 
+        @Override
         public boolean test(final FixMessageDecoder message)
         {
             return message.timestamp() >= beginTimestampInclusive;
@@ -155,6 +159,7 @@ public final class FixMessagePredicates
             return beginTimestampInclusive;
         }
 
+        @Override
         public String toString()
         {
             return "From{" +
@@ -185,6 +190,7 @@ public final class FixMessagePredicates
             this.endTimestampExclusive = endTimestampExclusive;
         }
 
+        @Override
         public boolean test(final FixMessageDecoder message)
         {
             return message.timestamp() < endTimestampExclusive;
@@ -332,12 +338,14 @@ public final class FixMessagePredicates
             this.sessionConsistent = sessionConsistent;
         }
 
+        @Override
         public Predicate<SessionHeaderDecoder> and(final Predicate<? super SessionHeaderDecoder> other)
         {
             if (other instanceof HeaderPredicate)
             {
                 return new CompositeHeaderPredicate(this, (HeaderPredicate)other)
                 {
+                    @Override
                     public boolean test(final SessionHeaderDecoder sessionHeaderDecoder)
                     {
                         return left.test(sessionHeaderDecoder) && right.test(sessionHeaderDecoder);
@@ -350,12 +358,14 @@ public final class FixMessagePredicates
             }
         }
 
+        @Override
         public Predicate<SessionHeaderDecoder> or(final Predicate<? super SessionHeaderDecoder> other)
         {
             if (other instanceof HeaderPredicate)
             {
                 return new CompositeHeaderPredicate(this, (HeaderPredicate)other)
                 {
+                    @Override
                     public boolean test(final SessionHeaderDecoder sessionHeaderDecoder)
                     {
                         return left.test(sessionHeaderDecoder) || right.test(sessionHeaderDecoder);
@@ -368,6 +378,7 @@ public final class FixMessagePredicates
             }
         }
 
+        @Override
         public Predicate<SessionHeaderDecoder> negate()
         {
             final HeaderPredicate delegate = this;
@@ -426,6 +437,7 @@ public final class FixMessagePredicates
             this.lengthExtractor = lengthExtractor;
         }
 
+        @Override
         public boolean test(final SessionHeaderDecoder header)
         {
             final char[] actualChars = charExtractor.apply(header);
@@ -461,6 +473,7 @@ public final class FixMessagePredicates
             asciiBuffer = new MutableAsciiBuffer();
         }
 
+        @Override
         public boolean test(final FixMessageDecoder message)
         {
             final DirectBuffer buffer = message.buffer();
@@ -489,12 +502,14 @@ public final class FixMessagePredicates
             super(fixDictionary, matches);
         }
 
+        @Override
         public void reset()
         {
             matchingIds.clear();
             rejectedIds.clear();
         }
 
+        @Override
         public boolean test(final FixMessageDecoder message)
         {
             final LongHashSet matchingIds = this.matchingIds;

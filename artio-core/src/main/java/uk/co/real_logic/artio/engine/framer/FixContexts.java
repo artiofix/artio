@@ -401,6 +401,7 @@ public class FixContexts implements SessionContexts
         return fixDictionary.getClass().getName();
     }
 
+    @Override
     public void sequenceReset(final long sessionId, final long resetTimeInNs)
     {
         final Entry<CompositeKey, SessionContext> entry = lookupById(sessionId);
@@ -528,11 +529,13 @@ public class FixContexts implements SessionContexts
         return sessionContext.sessionId();
     }
 
+    @Override
     public boolean isAuthenticated(final long sessionId)
     {
         return currentlyAuthenticatedSessionIds.contains(sessionId);
     }
 
+    @Override
     public boolean isKnownSessionId(final long sessionId)
     {
         return lookupById(sessionId) != null;

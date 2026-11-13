@@ -44,6 +44,7 @@ final class LazyFixPMessagePrinter implements FixPMessageConsumer
         this.protocolType = protocolType;
     }
 
+    @Override
     public void onMessage(
         final FixPMessageDecoder iLinkMessage, final DirectBuffer buffer, final int offset, final ArtioLogHeader header)
     {

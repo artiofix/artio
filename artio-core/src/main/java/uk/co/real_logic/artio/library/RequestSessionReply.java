@@ -43,6 +43,7 @@ class RequestSessionReply extends LibraryReply<SessionReplyStatus>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveRequestSession(
@@ -51,6 +52,7 @@ class RequestSessionReply extends LibraryReply<SessionReplyStatus>
         requiresResend = position < 0;
     }
 
+    @Override
     void onComplete(final SessionReplyStatus result)
     {
         super.onComplete(result);

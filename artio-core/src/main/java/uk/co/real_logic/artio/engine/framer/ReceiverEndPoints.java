@@ -337,6 +337,7 @@ class ReceiverEndPoints extends TransportPoller
         requiredPollingEndPoints = new ReceiverEndPoint[0];
     }
 
+    @Override
     public void close()
     {
         closeRequiredPollingEndPoints();
@@ -386,6 +387,7 @@ class ReceiverEndPoints extends TransportPoller
         }
     }
 
+    @Override
     public String toString()
     {
         return "ReceiverEndPoints{" +

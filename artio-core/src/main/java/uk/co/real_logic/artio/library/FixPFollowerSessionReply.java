@@ -40,6 +40,7 @@ class FixPFollowerSessionReply extends LibraryReply<Long>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveFollowerSessionRequest(
@@ -48,6 +49,7 @@ class FixPFollowerSessionReply extends LibraryReply<Long>
         requiresResend = position < 0;
     }
 
+    @Override
     void onError(final GatewayError errorType, final String errorMessage)
     {
         this.onError(new IllegalArgumentException(errorMessage));

@@ -36,6 +36,7 @@ class ReleaseToGatewayReply extends LibraryReply<SessionReplyStatus>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveReleaseSession(session, correlationId);
@@ -43,6 +44,7 @@ class ReleaseToGatewayReply extends LibraryReply<SessionReplyStatus>
         requiresResend = position < 0;
     }
 
+    @Override
     void onComplete(final SessionReplyStatus result)
     {
         if (result == SessionReplyStatus.OK)

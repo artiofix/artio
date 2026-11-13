@@ -160,6 +160,7 @@ class DecoderGenerator extends Generator
         this.allowEmptyTags = allowEmptyTags;
     }
 
+    @Override
     public void generate()
     {
         generateMessageDecoderInterface();
@@ -178,6 +179,7 @@ class DecoderGenerator extends Generator
             });
     }
 
+    @Override
     protected void generateAggregateFile(final Aggregate aggregate, final AggregateType type)
     {
         if (type == COMPONENT)
@@ -419,11 +421,13 @@ class DecoderGenerator extends Generator
         return className;
     }
 
+    @Override
     protected Class<?> topType(final AggregateType aggregateType)
     {
         return Decoder.class;
     }
 
+    @Override
     protected String resetGroup(final Entry entry)
     {
         final Group group = (Group)entry.element();
@@ -471,6 +475,7 @@ class DecoderGenerator extends Generator
         return formatPropertyName(iteratorClassName(group, false));
     }
 
+    @Override
     protected String resetLength(final String name)
     {
         return String.format(
@@ -482,6 +487,7 @@ class DecoderGenerator extends Generator
             formatPropertyName(name));
     }
 
+    @Override
     protected String resetRequiredFloat(final String name)
     {
         final String lengthReset = flyweightsEnabled ? "        this.%1$sLength = 0;\n" : "";
@@ -496,11 +502,13 @@ class DecoderGenerator extends Generator
             nameOfResetMethod(name));
     }
 
+    @Override
     protected String resetRequiredInt(final Field field)
     {
         return resetFieldValue(field, "MISSING_INT");
     }
 
+    @Override
     protected String resetRequiredLong(final Field field)
     {
         return resetFieldValue(field, "MISSING_LONG");
@@ -1985,6 +1993,7 @@ class DecoderGenerator extends Generator
             .collect(joining("\n", "", "\n"));
     }
 
+    @Override
     protected String componentAppendTo(final Component component)
     {
         return component
@@ -2228,11 +2237,13 @@ class DecoderGenerator extends Generator
         return String.format("                %1$sLength = valueLength;\n", fieldName);
     }
 
+    @Override
     protected String stringAppendTo(final String fieldName)
     {
         return String.format("builder.append(this.%1$s(), 0, %1$sLength())", fieldName);
     }
 
+    @Override
     protected String dataAppendTo(final Field field, final String fieldName)
     {
         final String lengthName = formatPropertyName(field.associatedLengthField().name());
@@ -2245,6 +2256,7 @@ class DecoderGenerator extends Generator
         return String.format("appendData(builder, %1$s, %2$s)", fieldName, lengthName);
     }
 
+    @Override
     protected String timeAppendTo(final String fieldName)
     {
         if (flyweightsEnabled)
@@ -2255,16 +2267,19 @@ class DecoderGenerator extends Generator
         return String.format("appendData(builder, %1$s, %1$sLength)", fieldName);
     }
 
+    @Override
     protected boolean hasFlag(final Entry entry, final Field field)
     {
         return !entry.required();
     }
 
+    @Override
     protected String resetTemporalValue(final String name)
     {
         return resetStringBasedData(name);
     }
 
+    @Override
     protected String resetComponents(final List<Entry> entries, final StringBuilder methods)
     {
         return entries
@@ -2274,6 +2289,7 @@ class DecoderGenerator extends Generator
             .collect(joining());
     }
 
+    @Override
     protected String resetStringBasedData(final String name)
     {
         return String.format(
@@ -2286,6 +2302,7 @@ class DecoderGenerator extends Generator
             formatPropertyName(name));
     }
 
+    @Override
     protected String groupEntryAppendTo(final Group group, final String name)
     {
         if (isSharedParent())
@@ -2514,21 +2531,25 @@ class DecoderGenerator extends Generator
         }
     }
 
+    @Override
     protected String optionalReset(final Field field, final String name)
     {
         return resetByFlag(name);
     }
 
+    @Override
     protected boolean appendToChecksHasGetter(final Entry entry, final Field field)
     {
         return hasFlag(entry, field);
     }
 
+    @Override
     protected String anyFieldsAppendTo(final AnyFields element)
     {
         return "";
     }
 
+    @Override
     protected String resetAnyFields(final List<Entry> entries, final StringBuilder methods)
     {
         return "";

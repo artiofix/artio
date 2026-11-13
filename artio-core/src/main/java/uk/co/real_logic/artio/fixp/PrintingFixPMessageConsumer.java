@@ -76,6 +76,7 @@ public class PrintingFixPMessageConsumer implements FixPMessageConsumer
         System.out.println(builder);
     }
 
+    @Override
     public void onMessage(
         final FixPMessageDecoder unused,
         final DirectBuffer buffer,

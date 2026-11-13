@@ -45,6 +45,7 @@ public abstract class TcpChannel implements AutoCloseable
 
     public abstract int read(ByteBuffer dst) throws IOException;
 
+    @Override
     public abstract void close();
 
     public abstract void onReplayComplete(long correlationId);

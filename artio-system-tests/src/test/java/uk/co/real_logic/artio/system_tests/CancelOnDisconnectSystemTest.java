@@ -425,6 +425,7 @@ public class CancelOnDisconnectSystemTest extends AbstractGatewayToGatewaySystem
             this.cODTimeoutWindow = cODTimeoutWindow;
         }
 
+        @Override
         public void configureLogon(final AbstractLogonEncoder abstractLogon, final long sessionId)
         {
             final LogonEncoder logon = (LogonEncoder)abstractLogon;
@@ -432,6 +433,7 @@ public class CancelOnDisconnectSystemTest extends AbstractGatewayToGatewaySystem
             logon.cODTimeoutWindow(cODTimeoutWindow);
         }
 
+        @Override
         public void configureLogout(final AbstractLogoutEncoder logout, final long sessionId)
         {
         }
@@ -442,6 +444,7 @@ public class CancelOnDisconnectSystemTest extends AbstractGatewayToGatewaySystem
         private final AtomicInteger invokeCount = new AtomicInteger(0);
         private volatile TimeoutResult result;
 
+        @Override
         public void onCancelOnDisconnectTimeout(final long sessionId, final CompositeKey fixSessionKey)
         {
             result = new TimeoutResult(sessionId, fixSessionKey, nanoClock.nanoTime());

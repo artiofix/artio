@@ -50,6 +50,7 @@ class BinaryEntryPointSequenceExtractor extends AbstractFixPSequenceExtractor
         this.sequenceNumberReader = sequenceNumberReader;
     }
 
+    @Override
     public void onMessage(
         final FixPMessageDecoder fixPMessage,
         final DirectBuffer buffer,
@@ -91,12 +92,14 @@ class BinaryEntryPointSequenceExtractor extends AbstractFixPSequenceExtractor
         onSequenceNumber(totalLength, endPosition, aeronSessionId, info, timestamp);
     }
 
+    @Override
     public void onRedactSequenceUpdate(final long sessionId, final int newSequenceNumber)
     {
         final Info info = lookupInfo(sessionId);
         info.lastSequenceNumber = newSequenceNumber;
     }
 
+    @Override
     public void onFollowerSessionRequest(
         final FollowerSessionRequestDecoder followerSessionRequest,
         final long endPosition,

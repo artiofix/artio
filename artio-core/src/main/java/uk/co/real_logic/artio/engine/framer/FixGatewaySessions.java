@@ -277,6 +277,7 @@ public class FixGatewaySessions extends GatewaySessions
             reason);
     }
 
+    @Override
     protected void setLastSequenceResetTime(final GatewaySession session)
     {
         ((FixGatewaySession)session).lastSequenceResetTime(sessionContext.lastSequenceResetTime());
@@ -375,6 +376,7 @@ public class FixGatewaySessions extends GatewaySessions
             }
         }
 
+        @Override
         public void accept(final Class<? extends FixDictionary> fixDictionaryClass)
         {
             validateState();
@@ -383,6 +385,7 @@ public class FixGatewaySessions extends GatewaySessions
             setState(AuthenticationState.AUTHENTICATED);
         }
 
+        @Override
         protected void onAuthenticated()
         {
             if (fixDictionaryClass != null && fixDictionary.getClass() != fixDictionaryClass)
@@ -453,6 +456,7 @@ public class FixGatewaySessions extends GatewaySessions
             framer.onGatewaySessionSetup(session, isOfflineReconnect);
         }
 
+        @Override
         public void reject(final Encoder encoder, final long lingerTimeoutInMs)
         {
             Objects.requireNonNull(encoder, "encoder should be provided");
@@ -469,6 +473,7 @@ public class FixGatewaySessions extends GatewaySessions
             setState(AuthenticationState.SAVING_REJECTED_LOGON_WITH_REPLY);
         }
 
+        @Override
         protected void encodeRejectMessage()
         {
             if (rejectEncodeBuffer == null)
@@ -487,6 +492,7 @@ public class FixGatewaySessions extends GatewaySessions
             rejectEncodeResult = encoder.encode(rejectAsciiBuffer, 0);
         }
 
+        @Override
         protected SendRejectResult sendReject()
         {
             final int offset = Encoder.offset(rejectEncodeResult);
@@ -514,6 +520,7 @@ public class FixGatewaySessions extends GatewaySessions
             return backPressured ? SendRejectResult.BACK_PRESSURED : SendRejectResult.INFLIGHT;
         }
 
+        @Override
         public void reject()
         {
             validateState();
@@ -521,6 +528,7 @@ public class FixGatewaySessions extends GatewaySessions
             reject(DisconnectReason.FAILED_AUTHENTICATION);
         }
 
+        @Override
         public String remoteAddress()
         {
             return remoteAddress;

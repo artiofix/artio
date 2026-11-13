@@ -33,6 +33,7 @@ final class TimerEventHandler implements DeadlineTimerWheel.TimerHandler
         this.errorHandler = errorHandler;
     }
 
+    @Override
     public boolean onTimerExpiry(final TimeUnit timeUnit, final long now, final long timerId)
     {
         final PendingAcceptorLogon pendingAcceptorLogon = timerIdToPendingAcceptorLogons.get(timerId);

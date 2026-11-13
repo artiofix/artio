@@ -101,6 +101,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         fixDictionary(fixDictionary);
     }
 
+    @Override
     public String address()
     {
         if (receiverEndPoint != null)
@@ -111,6 +112,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         return address;
     }
 
+    @Override
     public CompositeKey sessionKey()
     {
         return sessionKey;
@@ -166,18 +168,21 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         }
     }
 
+    @Override
     int poll(final long timeInMs, final long timeInNs)
     {
         final int events = session != null ? session.poll(timeInNs) : 0;
         return events + checkNoLogonDisconnect(timeInMs);
     }
 
+    @Override
     public void onLogon(final Session session)
     {
         context.updateFrom(session);
         onGatewaySessionLogon.accept(this);
     }
 
+    @Override
     public Reply<ReplayMessagesStatus> replayReceivedMessages(
         final long sessionId,
         final int replayFromSequenceNumber,
@@ -189,17 +194,20 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         return unsupported();
     }
 
+    @Override
     public void enqueueTask(final BooleanSupplier task)
     {
         unsupported();
     }
 
+    @Override
     public Reply<ThrottleConfigurationStatus> messageThrottle(
         final long sessionId, final int throttleWindowInMs, final int throttleLimitOfMessages)
     {
         return unsupported();
     }
 
+    @Override
     public long inboundMessagePosition()
     {
         return NO_REQUIRED_POSITION;
@@ -292,6 +300,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         return heartbeatIntervalInS;
     }
 
+    @Override
     void acceptorSequenceNumbers(final int retrievedSentSequenceNumber, final int retrievedReceivedSequenceNumber)
     {
         if (session != null)
@@ -312,6 +321,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         return (lastSequenceNumber == UNK_SESSION) ? 0 : lastSequenceNumber;
     }
 
+    @Override
     public String toString()
     {
         return "GatewaySession{" +
@@ -320,16 +330,19 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
             '}';
     }
 
+    @Override
     public long bytesInBuffer()
     {
         return senderEndPoint.bytesInBuffer();
     }
 
+    @Override
     void close()
     {
         CloseHelper.close(session);
     }
 
+    @Override
     public int sequenceIndex()
     {
         return context.sequenceIndex();
@@ -437,6 +450,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         }
     }
 
+    @Override
     long lastLogonTime()
     {
         return lastLogonTime;
@@ -467,6 +481,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         return proxy.lastSentPosition();
     }
 
+    @Override
     public void onDisconnectReleasedByOwner()
     {
         if (session != null)
@@ -496,6 +511,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         return true;
     }
 
+    @Override
     public boolean configureThrottle(final int throttleWindowInMs, final int throttleLimitOfMessages)
     {
         final boolean ok = senderEndPoint.configureThrottle(throttleWindowInMs, throttleLimitOfMessages);
@@ -511,6 +527,7 @@ class FixGatewaySession extends GatewaySession implements ConnectedSessionInfo, 
         context.onSequenceReset(resetTimeInNs);
     }
 
+    @Override
     public long startEndOfDay()
     {
         final InternalSession session = this.session;

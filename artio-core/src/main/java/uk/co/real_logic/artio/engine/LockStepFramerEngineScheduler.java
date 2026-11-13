@@ -32,6 +32,7 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
     private AgentInvoker framerInvoker;
     private RecordingCoordinator recordingCoordinator;
 
+    @Override
     public void launch(
         final EngineConfiguration configuration,
         final ErrorHandler errorHandler,
@@ -82,6 +83,7 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
         }
     }
 
+    @Override
     public void close()
     {
         EngineScheduler.awaitRunnerStart(archivingRunner);
@@ -90,11 +92,13 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
         Exceptions.closeAll(framerInvoker, recordingCoordinator, archivingRunner, monitoringRunner);
     }
 
+    @Override
     public int pollFramer()
     {
         return 0;
     }
 
+    @Override
     public void configure(final Aeron.Context aeronContext)
     {
     }

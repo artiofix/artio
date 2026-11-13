@@ -161,6 +161,7 @@ final class NioSelectedKeySet extends AbstractSet<SelectionKey>
     /**
      * Null out the keys and set size to 0.
      */
+    @Override
     public void clear()
     {
         Arrays.fill(keys, null);

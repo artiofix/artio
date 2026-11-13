@@ -194,6 +194,7 @@ class SessionSubscriber implements AutoCloseable, FixSessionOwner
         return action;
     }
 
+    @Override
     public void onLogon(final Session session)
     {
         try
@@ -226,6 +227,7 @@ class SessionSubscriber implements AutoCloseable, FixSessionOwner
         }
     }
 
+    @Override
     public Reply<ReplayMessagesStatus> replayReceivedMessages(
         final long sessionId,
         final int replayFromSequenceNumber,
@@ -244,6 +246,7 @@ class SessionSubscriber implements AutoCloseable, FixSessionOwner
             replayToSequenceIndex);
     }
 
+    @Override
     public Reply<ThrottleConfigurationStatus> messageThrottle(
         final long sessionId, final int throttleWindowInMs, final int throttleLimitOfMessages)
     {
@@ -255,11 +258,13 @@ class SessionSubscriber implements AutoCloseable, FixSessionOwner
             throttleLimitOfMessages);
     }
 
+    @Override
     public long inboundMessagePosition()
     {
         return lastReceivedPosition;
     }
 
+    @Override
     public void enqueueTask(final BooleanSupplier task)
     {
         libraryPoller.enqueueTask(task);
@@ -276,6 +281,7 @@ class SessionSubscriber implements AutoCloseable, FixSessionOwner
         handler.onSlowStatus(libraryId, session, hasBecomeSlow);
     }
 
+    @Override
     public void close()
     {
         session.requestDisconnect();

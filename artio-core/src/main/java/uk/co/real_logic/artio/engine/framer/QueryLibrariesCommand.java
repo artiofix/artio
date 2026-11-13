@@ -25,6 +25,7 @@ final class QueryLibrariesCommand implements Reply<List<LibraryInfo>>, AdminComm
     private volatile State state = State.EXECUTING;
     private List<LibraryInfo> result;
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onQueryLibraries(this);
@@ -36,16 +37,19 @@ final class QueryLibrariesCommand implements Reply<List<LibraryInfo>>, AdminComm
         state = State.COMPLETED;
     }
 
+    @Override
     public Exception error()
     {
         return null;
     }
 
+    @Override
     public List<LibraryInfo> resultIfPresent()
     {
         return result;
     }
 
+    @Override
     public State state()
     {
         return state;

@@ -236,6 +236,7 @@ public class FixLibrary extends GatewayProcess
     /**
      * Close the Library. This will also remove all files associated with the library.
      */
+    @Override
     public void close()
     {
         if (isPolling)
@@ -531,6 +532,7 @@ public class FixLibrary extends GatewayProcess
         return poller.iLink3Sessions();
     }
 
+    @Override
     protected boolean shouldRethrowExceptionInErrorHandler()
     {
         return RETHROW_EXCEPTION.get();

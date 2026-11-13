@@ -47,6 +47,7 @@ class WriteMetaDataReply extends LibraryReply<MetaDataStatus>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveWriteMetaData(

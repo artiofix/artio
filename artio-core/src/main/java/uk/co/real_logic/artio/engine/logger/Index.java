@@ -32,6 +32,7 @@ public interface Index extends FragmentHandler, AutoCloseable
         return getClass().getSimpleName();
     }
 
+    @Override
     void close();
 
     /**

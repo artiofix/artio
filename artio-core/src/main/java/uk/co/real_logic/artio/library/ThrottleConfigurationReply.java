@@ -43,6 +43,7 @@ class ThrottleConfigurationReply extends LibraryReply<ThrottleConfigurationStatu
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveThrottleConfiguration(

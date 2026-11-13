@@ -167,6 +167,7 @@ class GatewayPublicationTest
     {
         private final List<CapturedMessage> capturedMessages = new ArrayList<>();
 
+        @Override
         public ControlledFragmentHandler.Action onMessage(
             final DirectBuffer buffer,
             final int offset,
@@ -194,6 +195,7 @@ class GatewayPublicationTest
             return ControlledFragmentHandler.Action.CONTINUE;
         }
 
+        @Override
         public ControlledFragmentHandler.Action onDisconnect(
             final int libraryId,
             final long connectionId,
@@ -202,6 +204,7 @@ class GatewayPublicationTest
             throw new IllegalStateException();
         }
 
+        @Override
         public ControlledFragmentHandler.Action onFixPMessage(
             final long connectionId,
             final DirectBuffer buffer,

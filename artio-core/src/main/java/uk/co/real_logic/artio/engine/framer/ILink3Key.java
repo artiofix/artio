@@ -33,6 +33,7 @@ public final class ILink3Key implements FixPKey
         this.accessKeyId = accessKeyId;
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -57,6 +58,7 @@ public final class ILink3Key implements FixPKey
         return Objects.equals(accessKeyId(), iLink3Key.accessKeyId());
     }
 
+    @Override
     public int hashCode()
     {
         int result = port();
@@ -80,11 +82,13 @@ public final class ILink3Key implements FixPKey
         return accessKeyId;
     }
 
+    @Override
     public FixPProtocolType protocolType()
     {
         return FixPProtocolType.ILINK_3;
     }
 
+    @Override
     public long sessionIdIfExists()
     {
         return UNK_SESSION;

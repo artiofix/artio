@@ -21,26 +21,31 @@ import uk.co.real_logic.artio.fixp.AbstractFixPOffsets;
 public class BinaryEntryPointOffsets extends AbstractFixPOffsets
 {
 
+    @Override
     public int seqNumOffset(final int templateId)
     {
         return 0;
     }
 
+    @Override
     public int seqNum(final int templateId, final DirectBuffer buffer, final int messageOffset)
     {
         return 0;
     }
 
+    @Override
     public int possRetransOffset(final int templateId)
     {
         return 0;
     }
 
+    @Override
     public int possRetrans(final int templateId, final DirectBuffer buffer, final int messageOffset)
     {
         return 0;
     }
 
+    @Override
     public int sendingTimeEpochOffset(final int templateId)
     {
         return 0;

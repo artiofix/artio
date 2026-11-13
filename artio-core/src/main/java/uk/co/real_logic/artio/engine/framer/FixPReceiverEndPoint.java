@@ -99,17 +99,20 @@ abstract class FixPReceiverEndPoint extends ReceiverEndPoint
         fixPMessage.sessionId(sessionId);
     }
 
+    @Override
     void removeEndpointFromFramer()
     {
         trackDisconnect();
         framer.onDisconnect(libraryId, connectionId, null);
     }
 
+    @Override
     void cleanupDisconnectState(final DisconnectReason reason)
     {
         // Not needed in iLink implementation
     }
 
+    @Override
     boolean retryFrameMessages()
     {
         return frameMessages();
@@ -134,6 +137,7 @@ abstract class FixPReceiverEndPoint extends ReceiverEndPoint
         return dataRead;
     }
 
+    @Override
     int poll()
     {
         if (pendingAcceptorLogon != null)
@@ -291,6 +295,7 @@ abstract class FixPReceiverEndPoint extends ReceiverEndPoint
         ByteBufferUtil.position(byteBuffer, usedBufferData);
     }
 
+    @Override
     void closeResources()
     {
         trackDisconnect();
@@ -310,6 +315,7 @@ abstract class FixPReceiverEndPoint extends ReceiverEndPoint
         this.fixPGatewaySession = fixPGatewaySession;
     }
 
+    @Override
     boolean sendRejectedPendingLogon()
     {
         return true;

@@ -54,24 +54,28 @@ public class BinaryEntryPointParser extends AbstractFixPParser
         this.handler = handler;
     }
 
+    @Override
     public int templateId(final DirectBuffer buffer, final int offset)
     {
         header.wrap(buffer, offset);
         return header.templateId();
     }
 
+    @Override
     public int blockLength(final DirectBuffer buffer, final int offset)
     {
         header.wrap(buffer, offset);
         return header.blockLength();
     }
 
+    @Override
     public int version(final DirectBuffer buffer, final int offset)
     {
         header.wrap(buffer, offset);
         return header.version();
     }
 
+    @Override
     public Action onMessage(final DirectBuffer buffer, final int start)
     {
         int offset = start + SOFH_LENGTH;
@@ -207,6 +211,7 @@ public class BinaryEntryPointParser extends AbstractFixPParser
             negotiate.onbehalfFirm());
     }
 
+    @Override
     public BinaryEntryPointContext lookupContext(
         final DirectBuffer messageBuffer,
         final int messageOffset,
@@ -254,6 +259,7 @@ public class BinaryEntryPointParser extends AbstractFixPParser
         throw new IllegalArgumentException("Template id: " + templateId + " isn't a negotiate or establish");
     }
 
+    @Override
     public long sessionId(final DirectBuffer buffer, final int start)
     {
         int offset = start + SOFH_LENGTH;
@@ -279,11 +285,13 @@ public class BinaryEntryPointParser extends AbstractFixPParser
         throw new IllegalArgumentException("Template id: " + templateId + " isn't a negotiate or establish");
     }
 
+    @Override
     public int retransmissionTemplateId()
     {
         return RetransmissionDecoder.TEMPLATE_ID;
     }
 
+    @Override
     public boolean isRetransmittedMessage(final DirectBuffer buffer, final int offset)
     {
         return templateId(buffer, offset) >= LOWEST_APP_TEMPLATE_ID;

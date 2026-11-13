@@ -41,6 +41,7 @@ public interface ILinkMessageConsumer extends FixPMessageConsumer
      */
     void onBusinessMessage(FixPMessageDecoder iLinkMessage, DirectBuffer buffer, int offset, ArtioLogHeader header);
 
+    @Override
     default void onMessage(
         final FixPMessageDecoder fixPMessage,
         final DirectBuffer buffer,

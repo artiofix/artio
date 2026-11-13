@@ -55,6 +55,7 @@ public final class CharArrayWrapper
         hashcode = CodecUtil.hashCode(values, offset, length);
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -72,11 +73,13 @@ public final class CharArrayWrapper
         return this.length == that.length && CodecUtil.equals(values, that.values, offset, that.offset, this.length);
     }
 
+    @Override
     public String toString()
     {
         return new String(values, offset, length);
     }
 
+    @Override
     public int hashCode()
     {
         return hashcode;

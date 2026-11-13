@@ -33,6 +33,7 @@ public final class TransferToPingPong extends AbstractPingPong
         new TransferToPingPong().benchmark();
     }
 
+    @Override
     protected void ping(final SocketChannel channel, final long time) throws IOException
     {
         writeChannel(channel, PING_BUFFER, null, time);
@@ -40,6 +41,7 @@ public final class TransferToPingPong extends AbstractPingPong
         readChannel(channel, PING_BUFFER);
     }
 
+    @Override
     protected void pong(final SocketChannel channel) throws IOException
     {
         final long time = readChannel(channel, PONG_BUFFER);

@@ -23,21 +23,25 @@ final class EngineStreamInfoRequestCommand implements AdminCommand, Reply<Engine
 
     private EngineStreamInfo engineStreamInfo;
 
+    @Override
     public Throwable error()
     {
         return null;
     }
 
+    @Override
     public EngineStreamInfo resultIfPresent()
     {
         return engineStreamInfo;
     }
 
+    @Override
     public State state()
     {
         return state;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onEngineStreamInfoRequest(this);

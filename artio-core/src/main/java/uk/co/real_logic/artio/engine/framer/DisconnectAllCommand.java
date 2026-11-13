@@ -28,6 +28,7 @@ final class DisconnectAllCommand implements AdminCommand, Reply<Void>
     {
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onStartClose(this);
@@ -44,16 +45,19 @@ final class DisconnectAllCommand implements AdminCommand, Reply<Void>
         state = State.COMPLETED;
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public Void resultIfPresent()
     {
         return null;
     }
 
+    @Override
     public State state()
     {
         return state;

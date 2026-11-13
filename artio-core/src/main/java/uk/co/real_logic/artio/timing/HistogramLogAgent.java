@@ -57,6 +57,7 @@ public class HistogramLogAgent implements Agent
         histogramHandler.onEndTimerIdentification();
     }
 
+    @Override
     public int doWork()
     {
         final long currentTimeInMs = milliClock.time();
@@ -86,11 +87,13 @@ public class HistogramLogAgent implements Agent
         histogramHandler.onEndTimerUpdate();
     }
 
+    @Override
     public String roleName()
     {
         return agentNamePrefix + "HistogramLogger";
     }
 
+    @Override
     public void onClose()
     {
         CloseHelper.close(histogramHandler);

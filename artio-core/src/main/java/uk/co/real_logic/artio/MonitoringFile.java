@@ -68,6 +68,7 @@ public final class MonitoringFile implements AutoCloseable
         return errorBuffer;
     }
 
+    @Override
     public void close()
     {
         IoUtil.unmap(mappedByteBuffer);

@@ -138,6 +138,7 @@ public final class ArtioAdmin implements AutoCloseable
     /**
      * Close the Admin API instance, releasing underlying resources.
      */
+    @Override
     public void close()
     {
         lock.lock();

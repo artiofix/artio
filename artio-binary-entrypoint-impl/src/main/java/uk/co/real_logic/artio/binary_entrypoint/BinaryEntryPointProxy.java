@@ -97,6 +97,7 @@ public class BinaryEntryPointProxy extends AbstractFixPProxy
         this.clock = clock;
     }
 
+    @Override
     public long sendSequence(final long sessionId, final long nextSentSeqNo)
     {
         final SequenceEncoder sequence = this.sequence;
@@ -429,6 +430,7 @@ public class BinaryEntryPointProxy extends AbstractFixPProxy
         return position;
     }
 
+    @Override
     public long claimMessage(
         final int messageLength,
         final MessageEncoderFlyweight message,
@@ -443,6 +445,7 @@ public class BinaryEntryPointProxy extends AbstractFixPProxy
             BINARY_ENTRYPOINT_TYPE);
     }
 
+    @Override
     protected int applyHeader(
         final MessageEncoderFlyweight message, final MutableDirectBuffer buffer, final int offset)
     {
@@ -456,6 +459,7 @@ public class BinaryEntryPointProxy extends AbstractFixPProxy
         return offset + beMessageHeader.encodedLength();
     }
 
+    @Override
     public ByteBuffer encodeReject(
         final FixPContext fixPContext, final FixPFirstMessageResponse rejectReason, final Enum<?> rejectCode)
     {
@@ -553,6 +557,7 @@ public class BinaryEntryPointProxy extends AbstractFixPProxy
         return byteBuffer;
     }
 
+    @Override
     public byte[] encodeFirstMessage(final FixPContext fixPContext)
     {
         final BinaryEntryPointContext context = (BinaryEntryPointContext)fixPContext;

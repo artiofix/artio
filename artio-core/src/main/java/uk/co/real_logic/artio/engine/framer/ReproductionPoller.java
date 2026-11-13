@@ -88,6 +88,7 @@ class ReproductionPoller implements Continuation
         state = State.COMPLETE;
     }
 
+    @Override
     public long attempt()
     {
         switch (state)

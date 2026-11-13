@@ -461,6 +461,7 @@ public final class TestFixConnection implements AutoCloseable
         return readMessage(new HeartbeatDecoder());
     }
 
+    @Override
     public void close()
     {
         CloseHelper.close(socket);

@@ -62,16 +62,19 @@ abstract class LibraryReply<T> implements Reply<T>
         correlationId = libraryPoller.register(this);
     }
 
+    @Override
     public Throwable error()
     {
         return error;
     }
 
+    @Override
     public T resultIfPresent()
     {
         return result;
     }
 
+    @Override
     public State state()
     {
         return state;

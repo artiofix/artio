@@ -37,6 +37,7 @@ class ReproductionLog
         return connectionIdToEvents.get(connectionId);
     }
 
+    @Override
     public String toString()
     {
         return "ReproductionLog{" +
@@ -73,6 +74,7 @@ class ConnectionBackPressureEvent
         return written;
     }
 
+    @Override
     public String toString()
     {
         return "ConnectionBackPressureEvent{" +

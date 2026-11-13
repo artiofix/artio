@@ -237,6 +237,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         return dataRead;
     }
 
+    @Override
     int poll()
     {
         if (isPaused || hasDisconnected())
@@ -307,6 +308,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         return 1;
     }
 
+    @Override
     boolean sendRejectedPendingLogon()
     {
         final int pendingAcceptorLogonMsgLength = this.pendingAcceptorLogonMsgLength;
@@ -389,6 +391,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         }
     }
 
+    @Override
     boolean retryFrameMessages()
     {
         return frameMessages(lastReadTimestampInNs);
@@ -758,6 +761,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         return offset;
     }
 
+    @Override
     boolean requiresAuthentication()
     {
         return sessionId == UNKNOWN;
@@ -1147,6 +1151,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         pendingSequenceIndex = sequenceIndex;
     }
 
+    @Override
     void closeResources()
     {
         try
@@ -1160,11 +1165,13 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         }
     }
 
+    @Override
     void removeEndpointFromFramer()
     {
         framer.onDisconnect(libraryId, connectionId, null);
     }
 
+    @Override
     void cleanupDisconnectState(final DisconnectReason reason)
     {
         final Map.Entry<CompositeKey, SessionContext> entry = fixContexts.lookupById(sessionId);
@@ -1205,6 +1212,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         return address;
     }
 
+    @Override
     public String toString()
     {
         return "ReceiverEndPoint: " + connectionId;

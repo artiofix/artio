@@ -80,6 +80,7 @@ public class ErrorPrinter implements MonitoringAgent
         this.clock = clock;
     }
 
+    @Override
     public int doWork()
     {
         int work = 0;
@@ -120,11 +121,13 @@ public class ErrorPrinter implements MonitoringAgent
         return work;
     }
 
+    @Override
     public String roleName()
     {
         return agentNamePrefix + "Error Printer";
     }
 
+    @Override
     public void archiverStopped()
     {
         // This isn't completely thread-safe, but the only result of the race is that

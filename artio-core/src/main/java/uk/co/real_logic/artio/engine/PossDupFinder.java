@@ -36,6 +36,7 @@ class PossDupFinder implements OtfMessageAcceptor
     private int origSendingTimeLength;
     private int checkSumOffset;
 
+    @Override
     public MessageControl onNext()
     {
         possDupOffset = NO_ENTRY;
@@ -50,6 +51,7 @@ class PossDupFinder implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onField(final int tag, final AsciiBuffer buffer, final int offset, final int length)
     {
         switch (tag)
@@ -82,26 +84,31 @@ class PossDupFinder implements OtfMessageAcceptor
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onGroupHeader(final int tag, final int numInGroup)
     {
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onGroupBegin(final int tag, final int numInGroup, final int index)
     {
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onGroupEnd(final int tag, final int numInGroup, final int index)
     {
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public MessageControl onComplete()
     {
         return MessageControl.CONTINUE;
     }
 
+    @Override
     public boolean onError(
         final ValidationError error,
         final long messageType,

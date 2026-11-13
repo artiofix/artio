@@ -60,6 +60,7 @@ class ExplicitFixPSenderEndPoint extends FixPSenderEndPoint
         this.messageTimingHandler = messageTimingHandler;
     }
 
+    @Override
     public Action onMessage(final DirectBuffer directBuffer, final int offset, final boolean retransmit)
     {
         try
@@ -97,11 +98,13 @@ class ExplicitFixPSenderEndPoint extends FixPSenderEndPoint
         return CONTINUE;
     }
 
+    @Override
     boolean reattempt()
     {
         return true;
     }
 
+    @Override
     public void onValidResendRequest(final long correlationId)
     {
     }

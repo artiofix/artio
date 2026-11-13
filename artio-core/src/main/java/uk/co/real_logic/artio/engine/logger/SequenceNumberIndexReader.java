@@ -172,6 +172,7 @@ public class SequenceNumberIndexReader implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         CloseHelper.close(metaDataFile);

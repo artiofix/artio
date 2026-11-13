@@ -32,6 +32,7 @@ public class DefaultLibraryScheduler implements LibraryScheduler
 {
     private AgentRunner monitoringRunner;
 
+    @Override
     public void launch(
         final LibraryConfiguration configuration,
         final ErrorHandler errorHandler,
@@ -56,6 +57,7 @@ public class DefaultLibraryScheduler implements LibraryScheduler
             null,
             new CompositeAgent(agents)
             {
+                @Override
                 public void onStart()
                 {
                     FixLibrary.setClientConductorThread();
@@ -65,11 +67,13 @@ public class DefaultLibraryScheduler implements LibraryScheduler
         startOnThread(monitoringRunner, configuration.threadFactory());
     }
 
+    @Override
     public void configure(final Aeron.Context aeronContext)
     {
         aeronContext.useConductorAgentInvoker(true);
     }
 
+    @Override
     public void close(final int libraryId)
     {
         EngineScheduler.awaitRunnerStart(monitoringRunner);

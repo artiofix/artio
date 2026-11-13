@@ -118,6 +118,7 @@ public class MappedFile implements AutoCloseable
         this.buffer = remappedFile.buffer;
     }
 
+    @Override
     public void close()
     {
         CloseChecker.onClose(file.getAbsolutePath(), this);
@@ -145,6 +146,7 @@ public class MappedFile implements AutoCloseable
         }
     }
 
+    @Override
     public String toString()
     {
         return "MappedFile{" +

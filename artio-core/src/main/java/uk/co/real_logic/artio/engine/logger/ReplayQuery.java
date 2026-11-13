@@ -189,6 +189,7 @@ public class ReplayQuery implements AutoCloseable
         return fixSessionToIndex.computeIfAbsent(sessionId, newSessionQuery);
     }
 
+    @Override
     public void close()
     {
         fixSessionToIndex.clear();
@@ -513,6 +514,7 @@ public class ReplayQuery implements AutoCloseable
             return startPositionQuery.recordingIdToStartPosition();
         }
 
+        @Override
         public void close()
         {
             IoUtil.unmap(headerBuffer.byteBuffer());

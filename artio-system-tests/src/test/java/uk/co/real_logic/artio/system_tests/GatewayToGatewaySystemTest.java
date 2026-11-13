@@ -600,6 +600,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
+    @Override
     @Test
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void sessionsCanReconnect()

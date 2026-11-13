@@ -135,6 +135,7 @@ public class FixMessage extends Int2ObjectHashMap<String>
         return getInt(Constants.CANCEL_ON_DISCONNECT_TYPE);
     }
 
+    @Override
     public FixMessage clone()
     {
         final FixMessage theClone = new FixMessage();
@@ -155,6 +156,7 @@ public class FixMessage extends Int2ObjectHashMap<String>
         put(Constants.SENDER_COMP_ID, oldTargetCompId);
     }
 
+    @Override
     public String toString()
     {
         return "FixMessage{sequenceIndex=" + sequenceIndex +

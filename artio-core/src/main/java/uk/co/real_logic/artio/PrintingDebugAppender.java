@@ -65,6 +65,7 @@ public class PrintingDebugAppender extends AbstractDebugAppender
             buffer = new char[threadName.length + DEFAULT_BUFFER_SIZE];
         }
 
+        @Override
         public void log(final LogTag tag, final StringBuilder stringBuilder)
         {
             final int messageLength = stringBuilder.length();
@@ -102,6 +103,7 @@ public class PrintingDebugAppender extends AbstractDebugAppender
         }
     }
 
+    @Override
     public ThreadLocalAppender makeLocalAppender()
     {
         return new PrintingThreadLocalAppender();

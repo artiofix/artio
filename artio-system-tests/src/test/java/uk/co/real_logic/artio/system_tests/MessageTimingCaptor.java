@@ -36,6 +36,7 @@ public class MessageTimingCaptor implements MessageTimingHandler
     private final List<DirectBuffer> metadata = new ArrayList<>();
     private final LongArrayList sequenceNumbers = new LongArrayList();
 
+    @Override
     public synchronized void onMessage(
         final long sequenceNumber,
         final long connectionId,

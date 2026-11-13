@@ -160,6 +160,7 @@ class IndexedPositionWriter implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         updateChecksums();

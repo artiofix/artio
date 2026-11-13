@@ -77,16 +77,19 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         super(address, length);
     }
 
+    @Override
     public int getNatural(final int startInclusive, final int endExclusive)
     {
         return super.parseNaturalIntAscii(startInclusive, endExclusive - startInclusive);
     }
 
+    @Override
     public long getNaturalLong(final int startInclusive, final int endExclusive)
     {
         return super.parseNaturalLongAscii(startInclusive, endExclusive - startInclusive);
     }
 
+    @Override
     @SuppressWarnings("FinalParameters")
     public int getInt(int startInclusive, final int endExclusive)
     {
@@ -99,12 +102,14 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         return super.parseIntAscii(startInclusive, length);
     }
 
+    @Override
     public int getDigit(final int index)
     {
         final byte value = getByte(index);
         return getDigit(index, value);
     }
 
+    @Override
     public boolean isDigit(final int index)
     {
         final byte value = getByte(index);
@@ -121,16 +126,19 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         return value - 0x30;
     }
 
+    @Override
     public char getChar(final int index)
     {
         return (char)getByte(index);
     }
 
+    @Override
     public boolean getBoolean(final int index)
     {
         return YES == getByte(index);
     }
 
+    @Override
     public byte[] getBytes(final byte[] oldBuffer, final int offset, final int length)
     {
         final byte[] resultBuffer = oldBuffer.length < length ? new byte[length] : oldBuffer;
@@ -138,6 +146,7 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         return resultBuffer;
     }
 
+    @Override
     public char[] getChars(final char[] oldBuffer, final int offset, final int length)
     {
         final char[] resultBuffer = oldBuffer.length < length ? new char[length] : oldBuffer;
@@ -155,6 +164,7 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
      * @param length the length in bytes to convert to a String
      * @return a String
      */
+    @Override
     public String getAscii(final int offset, final int length)
     {
         final byte[] buff = new byte[length];
@@ -162,11 +172,13 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         return new String(buff, 0, length, US_ASCII);
     }
 
+    @Override
     public long getMessageType(final int offset, final int length)
     {
         return MessageTypeEncoding.packMessageType(byteArray(), addressOffset(), offset, length);
     }
 
+    @Override
     @SuppressWarnings("FinalParameters")
     public DecimalFloat getFloat(
         final DecimalFloat number,
@@ -185,31 +197,37 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
           decimalFloatOverflowHandler);
     }
 
+    @Override
     public int getLocalMktDate(final int offset, final int length)
     {
         return LocalMktDateDecoder.decode(this, offset, length);
     }
 
+    @Override
     public long getUtcTimestamp(final int offset, final int length)
     {
         return UtcTimestampDecoder.decode(this, offset, length, true);
     }
 
+    @Override
     public long getUtcTimeOnly(final int offset, final int length)
     {
         return UtcTimeOnlyDecoder.decode(this, offset, length, true);
     }
 
+    @Override
     public int getUtcDateOnly(final int offset)
     {
         return UtcDateOnlyDecoder.decode(this, offset);
     }
 
+    @Override
     public int scanBack(final int startInclusive, final int endExclusive, final char terminatingCharacter)
     {
         return scanBack(startInclusive, endExclusive, (byte)terminatingCharacter);
     }
 
+    @Override
     public int scanBack(final int startInclusive, final int endExclusive, final byte terminator)
     {
         for (int index = startInclusive; index > endExclusive; index--)
@@ -224,11 +242,13 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         return UNKNOWN_INDEX;
     }
 
+    @Override
     public int scan(final int startInclusive, final int endExclusive, final char terminatingCharacter)
     {
         return scan(startInclusive, endExclusive, (byte)terminatingCharacter);
     }
 
+    @Override
     public int scan(final int startInclusive, final int endExclusive, final byte terminator)
     {
         int indexValue = UNKNOWN_INDEX;
@@ -245,6 +265,7 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
         return indexValue;
     }
 
+    @Override
     public int computeChecksum(final int startInclusive, final int endExclusive)
     {
         int total = 0;

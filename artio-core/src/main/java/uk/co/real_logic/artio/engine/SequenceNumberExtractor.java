@@ -88,16 +88,19 @@ public class SequenceNumberExtractor
 
     private final OtfMessageAcceptor extractor = new OtfMessageAcceptor()
     {
+        @Override
         public MessageControl onNext()
         {
             return CONTINUE;
         }
 
+        @Override
         public MessageControl onComplete()
         {
             return CONTINUE;
         }
 
+        @Override
         public MessageControl onField(
             final int tag, final AsciiBuffer buffer, final int offset, final int length)
         {
@@ -122,21 +125,25 @@ public class SequenceNumberExtractor
             return CONTINUE;
         }
 
+        @Override
         public MessageControl onGroupHeader(final int tag, final int numInGroup)
         {
             return CONTINUE;
         }
 
+        @Override
         public MessageControl onGroupBegin(final int tag, final int numInGroup, final int index)
         {
             return CONTINUE;
         }
 
+        @Override
         public MessageControl onGroupEnd(final int tag, final int numInGroup, final int index)
         {
             return CONTINUE;
         }
 
+        @Override
         public boolean onError(
             final ValidationError error,
             final long messageType,

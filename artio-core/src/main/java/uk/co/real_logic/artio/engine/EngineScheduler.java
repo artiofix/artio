@@ -48,6 +48,7 @@ public interface EngineScheduler extends AutoCloseable
     /**
      * Invoked by the FIX Engine to stop the threads. Should only return once they are completed stopped.
      */
+    @Override
     void close();
 
     int pollFramer();

@@ -81,6 +81,7 @@ public class NoLoggingGatewayToGatewaySystemTest extends AbstractGatewayToGatewa
         assertSequenceIndicesAre(0);
     }
 
+    @Override
     @Test
     @Timeout(TEST_TIMEOUT_IN_MS)
     public void sessionsCanReconnect()

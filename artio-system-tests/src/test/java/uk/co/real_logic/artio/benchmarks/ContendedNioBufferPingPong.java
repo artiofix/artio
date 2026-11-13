@@ -33,11 +33,13 @@ public final class ContendedNioBufferPingPong extends AbstractContendedPingPong
         new ContendedNioBufferPingPong().benchmark();
     }
 
+    @Override
     protected void sendPing(final SocketChannel channel, final long time) throws IOException
     {
         writeByteBuffer(channel, SEND_PING_BUFFER, time);
     }
 
+    @Override
     protected long readResponse(final SocketChannel channel) throws IOException
     {
         return readByteBuffer(channel, READ_RESPONSE_BUFFER);

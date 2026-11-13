@@ -77,6 +77,7 @@ class RetryManager implements AutoCloseable
         return CollectionUtil.removeIf(continuations, predicate);
     }
 
+    @Override
     public void close()
     {
         continuations.forEach(Continuation::close);

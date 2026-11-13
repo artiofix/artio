@@ -64,6 +64,7 @@ public class Indexer implements Agent, ControlledFragmentHandler
         this.archiveReplayStream = archiveReplayStream;
     }
 
+    @Override
     public int doWork()
     {
         return pollIndexes();
@@ -153,6 +154,7 @@ public class Indexer implements Agent, ControlledFragmentHandler
         idleStrategy.idle(totalWork);
     }
 
+    @Override
     public Action onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
     {
         final int streamId = header.streamId();
@@ -174,11 +176,13 @@ public class Indexer implements Agent, ControlledFragmentHandler
         return CONTINUE;
     }
 
+    @Override
     public void onClose()
     {
         Exceptions.closeAll(indices);
     }
 
+    @Override
     public String roleName()
     {
         return agentNamePrefix + "Indexer";

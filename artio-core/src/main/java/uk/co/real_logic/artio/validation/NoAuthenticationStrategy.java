@@ -23,6 +23,7 @@ final class NoAuthenticationStrategy implements AuthenticationStrategy
     {
     }
 
+    @Override
     public boolean authenticate(final AbstractLogonDecoder logon)
     {
         return true;

@@ -85,36 +85,43 @@ public abstract class InternalFixPConnection implements FixPConnection
     // Public API
     // -----------------------------------------------
 
+    @Override
     public long connectionId()
     {
         return connectionId;
     }
 
+    @Override
     public long nextSentSeqNo()
     {
         return nextSentSeqNo;
     }
 
+    @Override
     public void nextSentSeqNo(final long nextSentSeqNo)
     {
         this.nextSentSeqNo = nextSentSeqNo;
     }
 
+    @Override
     public long nextRecvSeqNo()
     {
         return nextRecvSeqNo;
     }
 
+    @Override
     public void nextRecvSeqNo(final long nextRecvSeqNo)
     {
         this.nextRecvSeqNo = nextRecvSeqNo;
     }
 
+    @Override
     public long requestDisconnect(final DisconnectReason reason)
     {
         return outboundPublication.saveRequestDisconnect(libraryId, connectionId, reason);
     }
 
+    @Override
     public boolean canSendMessage()
     {
         final State state = this.state;
@@ -122,17 +129,20 @@ public abstract class InternalFixPConnection implements FixPConnection
             state == UNBOUND;
     }
 
+    @Override
     public State state()
     {
         return state;
     }
 
+    @Override
     public long tryClaim(
         final MessageEncoderFlyweight message)
     {
         return tryClaim(message, 0);
     }
 
+    @Override
     public long tryClaim(
         final MessageEncoderFlyweight message, final int variableLength)
     {
@@ -151,6 +161,7 @@ public abstract class InternalFixPConnection implements FixPConnection
         return position;
     }
 
+    @Override
     public void commit()
     {
         proxy.commit();
@@ -158,6 +169,7 @@ public abstract class InternalFixPConnection implements FixPConnection
         onAttemptedToSendMessage();
     }
 
+    @Override
     public void abort()
     {
         proxy.abort();
@@ -165,6 +177,7 @@ public abstract class InternalFixPConnection implements FixPConnection
         nextSentSeqNo--;
     }
 
+    @Override
     public boolean isConnected()
     {
         final State state = this.state;
@@ -203,11 +216,13 @@ public abstract class InternalFixPConnection implements FixPConnection
         }
     }
 
+    @Override
     public long counterpartyKeepAliveIntervalInMs()
     {
         return counterpartyKeepAliveIntervalInMs;
     }
 
+    @Override
     public long ourKeepAliveIntervalInMs()
     {
         return ourKeepAliveIntervalInMs;

@@ -138,6 +138,7 @@ public class ArchiveScannerBenchmark
             this.logProgress = logProgress;
         }
 
+        @Override
         public void onMessage(
             final FixMessageDecoder message,
             final DirectBuffer buffer,

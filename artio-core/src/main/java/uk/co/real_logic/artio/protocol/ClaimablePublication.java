@@ -116,6 +116,7 @@ public class ClaimablePublication implements AutoCloseable
         return initialPosition;
     }
 
+    @Override
     public void close()
     {
         dataPublication.close();

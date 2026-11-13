@@ -81,6 +81,7 @@ class TimeIndexWriter implements AutoCloseable
         return work;
     }
 
+    @Override
     public void close()
     {
         recordingIdToWriter.values().forEach(RecordingWriter::close);

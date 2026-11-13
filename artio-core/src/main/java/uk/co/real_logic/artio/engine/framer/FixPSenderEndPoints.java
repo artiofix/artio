@@ -80,6 +80,7 @@ public class FixPSenderEndPoints implements AutoCloseable
         return CONTINUE;
     }
 
+    @Override
     public String toString()
     {
         return "ILink3SenderEndPoints{" +
@@ -101,6 +102,7 @@ public class FixPSenderEndPoints implements AutoCloseable
         }
     }
 
+    @Override
     public void close()
     {
         connectionIdToSenderEndpoint

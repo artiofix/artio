@@ -33,6 +33,7 @@ final class ResetSessionIdsCommand implements AdminCommand, Reply<Void>
         this.backupLocation = backupLocation;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onResetSessionIds(backupLocation, this);
@@ -49,16 +50,19 @@ final class ResetSessionIdsCommand implements AdminCommand, Reply<Void>
         state = State.COMPLETED;
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public Void resultIfPresent()
     {
         return null;
     }
 
+    @Override
     public State state()
     {
         return state;

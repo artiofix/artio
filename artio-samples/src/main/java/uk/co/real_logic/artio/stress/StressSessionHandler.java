@@ -37,6 +37,7 @@ public class StressSessionHandler implements SessionHandler
     {
     }
 
+    @Override
     public ControlledFragmentHandler.Action onMessage(
         final DirectBuffer buffer,
         final int offset,
@@ -58,14 +59,17 @@ public class StressSessionHandler implements SessionHandler
         return CONTINUE;
     }
 
+    @Override
     public void onTimeout(final int libraryId, final Session session)
     {
     }
 
+    @Override
     public void onSlowStatus(final int libraryId, final Session session, final boolean hasBecomeSlow)
     {
     }
 
+    @Override
     public ControlledFragmentHandler.Action onDisconnect(
         final int libraryId, final Session session, final DisconnectReason reason)
     {
@@ -77,6 +81,7 @@ public class StressSessionHandler implements SessionHandler
         return CONTINUE;
     }
 
+    @Override
     public void onSessionStart(final Session session)
     {
     }

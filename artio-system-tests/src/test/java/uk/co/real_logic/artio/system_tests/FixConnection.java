@@ -572,6 +572,7 @@ public final class FixConnection implements AutoCloseable
         return readMessage(new TestRequestDecoder());
     }
 
+    @Override
     public void close()
     {
         CloseHelper.close(socket);

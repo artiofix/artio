@@ -35,6 +35,7 @@ import static uk.co.real_logic.artio.session.Session.UNKNOWN_TIME;
 public class InitiatorSessionTest extends AbstractSessionTest
 {
 
+    @Override
     protected Session newSession()
     {
         final InternalSession session = new InternalSession(HEARTBEAT_INTERVAL_IN_S,
@@ -178,6 +179,7 @@ public class InitiatorSessionTest extends AbstractSessionTest
             null, MISSING_INT);
     }
 
+    @Override
     protected void readyForLogon()
     {
         session().state(SENT_LOGON);

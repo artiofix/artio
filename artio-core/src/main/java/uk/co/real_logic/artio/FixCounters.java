@@ -286,6 +286,7 @@ public class FixCounters implements AutoCloseable
         return counter;
     }
 
+    @Override
     public void close()
     {
         Exceptions.closeAll(counters);

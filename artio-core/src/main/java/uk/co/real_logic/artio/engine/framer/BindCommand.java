@@ -24,6 +24,7 @@ class BindCommand implements AdminCommand, Reply<Void>
     // thread-safe publication by writes to state after, and reads of state before its read.
     private Exception error;
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onBind(this);
@@ -40,22 +41,26 @@ class BindCommand implements AdminCommand, Reply<Void>
         state = State.ERRORED;
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public Void resultIfPresent()
     {
         return null;
     }
 
+    @Override
     public State state()
     {
         return state;
     }
 
 
+    @Override
     public String toString()
     {
         return "BindCommand{" +

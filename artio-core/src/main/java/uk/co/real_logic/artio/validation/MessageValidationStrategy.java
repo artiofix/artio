@@ -78,6 +78,7 @@ public interface MessageValidationStrategy
             private int invalidTagId;
             private int rejectReason;
 
+            @Override
             public boolean validate(final SessionHeaderDecoder header)
             {
                 final boolean leftValid = left.validate(header);
@@ -104,11 +105,13 @@ public interface MessageValidationStrategy
                 return false;
             }
 
+            @Override
             public int invalidTagId()
             {
                 return invalidTagId;
             }
 
+            @Override
             public int rejectReason()
             {
                 return rejectReason;

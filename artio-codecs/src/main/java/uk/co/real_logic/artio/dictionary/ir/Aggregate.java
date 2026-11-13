@@ -110,6 +110,7 @@ public abstract class Aggregate
         return this;
     }
 
+    @Override
     public String toString()
     {
         return getClass().getSimpleName() + "{" +

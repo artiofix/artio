@@ -47,21 +47,25 @@ class LookupSessionIdCommand implements AdminCommand, Reply<Long>
         this.remoteLocationId = remoteLocationId;
     }
 
+    @Override
     public void execute(final Framer framer)
     {
         framer.onLookupSessionId(this);
     }
 
+    @Override
     public Exception error()
     {
         return error;
     }
 
+    @Override
     public Long resultIfPresent()
     {
         return sessionId;
     }
 
+    @Override
     public State state()
     {
         return state;

@@ -123,6 +123,7 @@ public class DuplicateEngineChecker implements Agent
         }
     }
 
+    @Override
     public int doWork()
     {
         final long currentTimeInMs = System.currentTimeMillis();
@@ -135,6 +136,7 @@ public class DuplicateEngineChecker implements Agent
         return 0;
     }
 
+    @Override
     public String roleName()
     {
         return "DuplicateEngineChecker";

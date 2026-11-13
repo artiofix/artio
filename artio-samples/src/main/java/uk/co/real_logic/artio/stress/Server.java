@@ -91,16 +91,19 @@ public class Server implements Agent
         return new AgentRunner(idleStrategy, errorHandler, null, new Server());
     }
 
+    @Override
     public int doWork()
     {
         return fixLibrary.poll(1);
     }
 
+    @Override
     public String roleName()
     {
         return "stress server";
     }
 
+    @Override
     public void onClose()
     {
         fixLibrary.close();

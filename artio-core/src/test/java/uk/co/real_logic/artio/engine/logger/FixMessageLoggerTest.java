@@ -55,6 +55,7 @@ public class FixMessageLoggerTest extends AbstractFixMessageLoggerTest
         setup(null);
     }
 
+    @Override
     long onMessage(final GatewayPublication publication, final long timestamp)
     {
         return onMessage(publication, timestamp, (int)timestamp);

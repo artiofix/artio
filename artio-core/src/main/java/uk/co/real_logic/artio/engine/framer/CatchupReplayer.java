@@ -80,6 +80,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     {
         REPLAY_MESSAGES
         {
+            @Override
             long sendOk(
                 final GatewayPublication publication,
                 final int libraryId,
@@ -90,6 +91,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
                     libraryId, correlationId, ReplayMessagesStatus.OK);
             }
 
+            @Override
             long sendMissing(
                 final GatewayPublication publication,
                 final int libraryId,
@@ -102,6 +104,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         },
         REQUEST_SESSION
         {
+            @Override
             long sendOk(
                 final GatewayPublication publication,
                 final int libraryId,
@@ -116,6 +119,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
                 return position;
             }
 
+            @Override
             long sendMissing(
                 final GatewayPublication publication,
                 final int libraryId,
@@ -255,6 +259,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
             .libraryId(libraryId);
     }
 
+    @Override
     public Action onFragment(
         final DirectBuffer srcBuffer,
         final int srcOffset,
@@ -423,6 +428,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         return action;
     }
 
+    @Override
     @SuppressWarnings("MethodLength")
     public long attempt()
     {
@@ -610,6 +616,7 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
         return position;
     }
 
+    @Override
     public void close()
     {
         CloseHelper.quietClose(replayOperation);

@@ -19,10 +19,12 @@ public final class NoOpReplayQueryListener implements ReplayQueryListener
 {
     public static final NoOpReplayQueryListener INSTANCE = new NoOpReplayQueryListener();
 
+    @Override
     public void onEndChangeRead()
     {
     }
 
+    @Override
     public void onLapped()
     {
     }

@@ -2367,6 +2367,7 @@ public final class EngineConfiguration extends CommonConfiguration implements Au
             (streamId == inboundLibraryStream() && logInboundMessages());
     }
 
+    @Override
     public void close()
     {
         CloseHelper.close(sentSequenceNumberIndex);

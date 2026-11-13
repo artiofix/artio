@@ -77,6 +77,7 @@ public final class Field implements Element
         this.type = type;
     }
 
+    @Override
     public String name()
     {
         return name;
@@ -119,6 +120,7 @@ public final class Field implements Element
         this.hasSharedSometimesEnumClash = hasSharedSometimesEnumClash;
     }
 
+    @Override
     public String toString()
     {
         return "Field{" +
@@ -329,6 +331,7 @@ public final class Field implements Element
             return description;
         }
 
+        @Override
         public boolean equals(final Object o)
         {
             if (o == null || getClass() != o.getClass())
@@ -341,6 +344,7 @@ public final class Field implements Element
                 Objects.equals(description, value.description);
         }
 
+        @Override
         public int hashCode()
         {
             int result = representation.hashCode();
@@ -358,6 +362,7 @@ public final class Field implements Element
             this.alternativeNames = alternativeNames;
         }
 
+        @Override
         public String toString()
         {
             return "Value{" +

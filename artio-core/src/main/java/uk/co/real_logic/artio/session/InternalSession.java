@@ -110,21 +110,25 @@ public class InternalSession extends Session implements AutoCloseable
             formatters);
     }
 
+    @Override
     public int poll(final long timeInNs)
     {
         return super.poll(timeInNs);
     }
 
+    @Override
     public void disable()
     {
         super.disable();
     }
 
+    @Override
     public void libraryConnected(final boolean libraryConnected)
     {
         super.libraryConnected(libraryConnected);
     }
 
+    @Override
     public void sessionProcessHandler(final FixSessionOwner fixSessionOwner)
     {
         super.sessionProcessHandler(fixSessionOwner);
@@ -136,56 +140,67 @@ public class InternalSession extends Session implements AutoCloseable
         address(parsed.host(), parsed.port());
     }
 
+    @Override
     public void address(final String host, final int port)
     {
         super.address(host, port);
     }
 
+    @Override
     public void username(final String username)
     {
         super.username(username);
     }
 
+    @Override
     public void password(final String password)
     {
         super.password(password);
     }
 
+    @Override
     public void lastLogonTimeInNs(final long logonTimeInNs)
     {
         super.lastLogonTimeInNs(logonTimeInNs);
     }
 
+    @Override
     public void awaitingResend(final boolean awaitingResend)
     {
         super.awaitingResend(awaitingResend);
     }
 
+    @Override
     public void closedResendInterval(final boolean closedResendInterval)
     {
         super.closedResendInterval(closedResendInterval);
     }
 
+    @Override
     public void resendRequestChunkSize(final int resendRequestChunkSize)
     {
         super.resendRequestChunkSize(resendRequestChunkSize);
     }
 
+    @Override
     public void sendRedundantResendRequests(final boolean sendRedundantResendRequests)
     {
         super.sendRedundantResendRequests(sendRedundantResendRequests);
     }
 
+    @Override
     public void updateLastMessageProcessed()
     {
         super.updateLastMessageProcessed();
     }
 
+    @Override
     public void initialLastReceivedMsgSeqNum(final int lastReceivedMsgSeqNum)
     {
         super.initialLastReceivedMsgSeqNum(lastReceivedMsgSeqNum);
     }
 
+    @Override
     public ControlledFragmentHandler.Action onInvalidMessage(
         final int refSeqNum,
         final int refTagId,
@@ -196,51 +211,61 @@ public class InternalSession extends Session implements AutoCloseable
         return super.onInvalidMessage(refSeqNum, refTagId, refMsgType, refMsgTypeLength, rejectReason, position);
     }
 
+    @Override
     public void lastResentMsgSeqNo(final int lastResentMsgSeqNo)
     {
         super.lastResentMsgSeqNo(lastResentMsgSeqNo);
     }
 
+    @Override
     public void lastResendChunkMsgSeqNum(final int lastResendChunkMsgSeqNum)
     {
         super.lastResendChunkMsgSeqNum(lastResendChunkMsgSeqNum);
     }
 
+    @Override
     public void lastSequenceResetTimeInNs(final long lastSequenceResetTimeInNs)
     {
         super.lastSequenceResetTimeInNs(lastSequenceResetTimeInNs);
     }
 
+    @Override
     public void endOfResendRequestRange(final int endOfResendRequestRange)
     {
         super.endOfResendRequestRange(endOfResendRequestRange);
     }
 
+    @Override
     public void awaitingHeartbeat(final boolean awaitingHeartbeat)
     {
         super.awaitingHeartbeat(awaitingHeartbeat);
     }
 
+    @Override
     public int lastResendChunkMsgSeqNum()
     {
         return super.lastResendChunkMsgSeqNum();
     }
 
+    @Override
     public int endOfResendRequestRange()
     {
         return super.endOfResendRequestRange();
     }
 
+    @Override
     public int lastResentMsgSeqNo()
     {
         return super.lastResentMsgSeqNo();
     }
 
+    @Override
     public void fixDictionary(final FixDictionary fixDictionary)
     {
         super.fixDictionary(fixDictionary);
     }
 
+    @Override
     public void setupSession(
         final long sessionId,
         final CompositeKey sessionKey,
@@ -264,6 +289,7 @@ public class InternalSession extends Session implements AutoCloseable
         writer.close();
     }
 
+    @Override
     public void close()
     {
         super.close();
@@ -292,26 +318,31 @@ public class InternalSession extends Session implements AutoCloseable
         this.connectionType = connectionType;
     }
 
+    @Override
     public void lastReceivedMsgSeqNumOnly(final int value)
     {
         super.lastReceivedMsgSeqNumOnly(value);
     }
 
+    @Override
     public OnMessageInfo messageInfo()
     {
         return super.messageInfo();
     }
 
+    @Override
     public boolean areCountersClosed()
     {
         return super.areCountersClosed();
     }
 
+    @Override
     public void cancelOnDisconnectOption(final CancelOnDisconnectOption cancelOnDisconnectOption)
     {
         super.cancelOnDisconnectOption(cancelOnDisconnectOption);
     }
 
+    @Override
     public void cancelOnDisconnectTimeoutWindowInNs(final long cancelOnDisconnectTimeoutWindowInNs)
     {
         super.cancelOnDisconnectTimeoutWindowInNs(cancelOnDisconnectTimeoutWindowInNs);
@@ -352,31 +383,37 @@ public class InternalSession extends Session implements AutoCloseable
         return false;
     }
 
+    @Override
     public void isSlowConsumer(final boolean hasBecomeSlow)
     {
         super.isSlowConsumer(hasBecomeSlow);
     }
 
+    @Override
     public long logoutAndDisconnect(final DisconnectReason reason)
     {
         return super.logoutAndDisconnect(reason);
     }
 
+    @Override
     public long requestDisconnect(final DisconnectReason reason)
     {
         return super.requestDisconnect(reason);
     }
 
+    @Override
     public void initiatorResetSeqNum(final boolean initiatorResetSeqNum)
     {
         super.initiatorResetSeqNum(initiatorResetSeqNum);
     }
 
+    @Override
     public void onReplayComplete(final long correlationId)
     {
         super.onReplayComplete(correlationId);
     }
 
+    @Override
     public void onSessionWriterLogout()
     {
         super.onSessionWriterLogout();
@@ -387,6 +424,7 @@ public class InternalSession extends Session implements AutoCloseable
         return connectionType;
     }
 
+    @Override
     public void disconnectOnFirstMessageNotLogon(final boolean disconnectOnFirstMessageNotLogon)
     {
         super.disconnectOnFirstMessageNotLogon(disconnectOnFirstMessageNotLogon);

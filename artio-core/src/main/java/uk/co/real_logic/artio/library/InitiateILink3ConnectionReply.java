@@ -38,6 +38,7 @@ class InitiateILink3ConnectionReply extends LibraryReply<ILink3Connection>
         }
     }
 
+    @Override
     protected void sendMessage()
     {
         final long position = libraryPoller.saveInitiateILink(correlationId, configuration);
@@ -45,6 +46,7 @@ class InitiateILink3ConnectionReply extends LibraryReply<ILink3Connection>
         requiresResend = position < 0;
     }
 
+    @Override
     void onComplete(final ILink3Connection result)
     {
         libraryPoller.deregister(correlationId);
@@ -56,6 +58,7 @@ class InitiateILink3ConnectionReply extends LibraryReply<ILink3Connection>
         onTcpConnected = true;
     }
 
+    @Override
     protected boolean onTimeout()
     {
         // In the iLink3 case - the reply timeout should only be for the connection itself.
@@ -72,6 +75,7 @@ class InitiateILink3ConnectionReply extends LibraryReply<ILink3Connection>
         return true;
     }
 
+    @Override
     void onError(final GatewayError errorType, final String errorMessage)
     {
         onError(new FixGatewayException(String.format("%s: %s", errorType, errorMessage)));

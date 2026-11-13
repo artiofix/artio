@@ -26,6 +26,7 @@ public class FakeFixSessionCodecsFactory extends FixSessionCodecsFactory
         super(new SystemEpochNanoClock(), EpochFractionFormat.NANOSECONDS);
     }
 
+    @Override
     FixReplayerCodecs get(final long sessionId)
     {
         return new FixReplayerCodecs(FixDictionary.findDefault(), timestampEncoder, new SystemEpochNanoClock());
