@@ -427,6 +427,7 @@ class FixSenderEndPoint extends SenderEndPoint
         return replay ? replayBuffer : normalBuffer;
     }
 
+    @SuppressWarnings("methodLength")
     private boolean processReattemptBuffer(final boolean replay)
     {
         final ReattemptState reattemptState = reattemptState(replay);
@@ -481,13 +482,6 @@ class FixSenderEndPoint extends SenderEndPoint
                 }
                 else if (enqueueType == ENQ_REPLAY_COMPLETE)
                 {
-                    if (offset + ENQ_REPLAY_COMPLETE_LEN > reattemptBufferUsage)
-                    {
-                        throw new IllegalStateException(
-                            "Incomplete replay complete entry, usage = " + reattemptState.usage +
-                            ", offset = " + offset + ", replay = " + replay);
-                    }
-
                     final int idOffset = offset + SIZE_OF_INT;
                     final long correlationId = buffer.getLong(idOffset);
                     this.reattemptBytesWritten = NO_REATTEMPT;
@@ -515,13 +509,6 @@ class FixSenderEndPoint extends SenderEndPoint
                 }
                 else if (enqueueType == ENQ_START_REPLAY)
                 {
-                    if (offset + ENQ_START_REPLAY_LEN > reattemptBufferUsage)
-                    {
-                        throw new IllegalStateException(
-                            "Incomplete start replay entry, usage = " + reattemptState.usage +
-                            ", offset = " + offset + ", replay = " + replay);
-                    }
-
                     // A start marker can sit behind retrying data. Refresh the active correlation id before replay
                     // messages after this marker are sent.
                     final long correlationId = buffer.getLong(offset + SIZE_OF_INT);

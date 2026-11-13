@@ -9,6 +9,7 @@ If you are using `SessionProxy` please see `DirectSessionProxy#sendValidResendRe
 
 === Changelog
 
+* Prevent FixSenderEndPoint from livelocking on ReplayComplete followed by StartReplay. (https://github.com/artiofix/artio/pull/574[#574])
 * Allow replying to a resend request to pass through an external system. Addresses https://github.com/artiofix/artio/issues/503[#503].
 * Print configuration on startup for FixEngine, FixLibrary, ArtioAdmin, and FixMessageLogger
 * Upgrade to https://github.com/aeron-io/aeron/releases/tag/1.54.2[Aeron 1.54.2].
