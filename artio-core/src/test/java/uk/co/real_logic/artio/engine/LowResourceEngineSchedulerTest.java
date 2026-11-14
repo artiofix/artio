@@ -18,6 +18,8 @@ package uk.co.real_logic.artio.engine;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.BusySpinIdleStrategy;
+import org.agrona.concurrent.CountedErrorHandler;
+import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ public class LowResourceEngineSchedulerTest
     private final EngineConfiguration configuration = mock(EngineConfiguration.class);
     private final Agent conductorAgent = mock(Agent.class);
     private final ErrorHandler mockErrorHandler = mock(ErrorHandler.class);
+    private final AtomicCounter errorCounter = mock(AtomicCounter.class);
+    private final CountedErrorHandler countedErrorHandler = mock(CountedErrorHandler.class);
     private final RecordingCoordinator recordingCoordinator = mock(RecordingCoordinator.class);
 
     @Test
@@ -47,6 +51,8 @@ public class LowResourceEngineSchedulerTest
             scheduler.launch(
                 configuration,
                 mockErrorHandler,
+                errorCounter,
+                countedErrorHandler,
                 framer,
                 archivingAgent,
                 monitoringAgent,

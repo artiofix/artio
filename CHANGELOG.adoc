@@ -4,11 +4,18 @@
 
 === New & Noteworthy
 
-* **Breaking:** `SessionProxy#sendValidResendRequest` has been introduced to allow replying to a resend request to pass through an external system.
+** Introduce versioned error counters for Artio's FixEngine and FixLibrary. This is an example of the new counters for the fix engine and fix library (respectively)
+* 67:                          0 - Artio Errors: libraryId=0 gatewayId=0 version=0.188.0-SNAPSHOT commit=3ddfb0a0b5+guilty
+* 143:                         0 - Artio Errors: libraryId=1091167778 gatewayId=0 version=0.188.0-SNAPSHOT commit=3ddfb0a0b5+guilty
+
+** *Breaking:** Added errorCounter and counterErrorHandler parameters to `LibraryScheduler#launch` and `EngineScheduler#launch` to make use of new error counters.
+
+** **Breaking:** `SessionProxy#sendValidResendRequest` has been introduced to allow replying to a resend request to pass through an external system.
 If you are using `SessionProxy` please see `DirectSessionProxy#sendValidResendRequest` to retain existing behavior.
 
 === Changelog
 
+* Introduce versioned error counters for Artio's FixEngine and FixLibrary.
 * Prevent FixSenderEndPoint from livelocking on ReplayComplete followed by StartReplay. (https://github.com/artiofix/artio/pull/574[#574])
 * Allow replying to a resend request to pass through an external system. Addresses https://github.com/artiofix/artio/issues/503[#503].
 * Print configuration on startup for FixEngine, FixLibrary, ArtioAdmin, and FixMessageLogger

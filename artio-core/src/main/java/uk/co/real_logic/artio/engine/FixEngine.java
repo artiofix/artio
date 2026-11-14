@@ -20,6 +20,8 @@ import io.aeron.ExclusivePublication;
 import io.aeron.Image;
 import io.aeron.Subscription;
 import io.aeron.archive.client.AeronArchive;
+import io.aeron.version.Version;
+import io.aeron.version.Versioned;
 import org.agrona.collections.Long2LongHashMap;
 import org.agrona.concurrent.AgentInvoker;
 import org.agrona.concurrent.status.ReadablePosition;
@@ -46,6 +48,7 @@ import static uk.co.real_logic.artio.dictionary.generation.Exceptions.suppressin
  *
  * @see uk.co.real_logic.artio.library.FixLibrary
  */
+@Versioned
 public final class FixEngine extends GatewayProcess
 {
     private final Object closeMutex = new Object();
@@ -305,12 +308,12 @@ public final class FixEngine extends GatewayProcess
                     aeronArchive,
                     configuration,
                     configuration.archiverIdleStrategy(),
-                    errorHandler);
+                    countedErrorHandler);
 
                 final ExclusivePublication replayPublication = replayPublication();
                 engineContext = new EngineContext(
                     configuration,
-                    errorHandler,
+                    countedErrorHandler,
                     replayPublication,
                     fixCounters,
                     aeron,
@@ -353,7 +356,7 @@ public final class FixEngine extends GatewayProcess
             configuration,
             fixCounters,
             engineContext,
-            errorHandler,
+            countedErrorHandler,
             replayImage("replay", replaySessionId),
             timers,
             aeron.conductorAgentInvoker(),
@@ -402,6 +405,8 @@ public final class FixEngine extends GatewayProcess
         scheduler.launch(
             configuration,
             errorHandler,
+            fixCounters.errorCounter(),
+            countedErrorHandler,
             framerContext.framer(),
             engineContext.indexingAgent(),
             monitoringCompositeAgent,
@@ -506,6 +511,12 @@ public final class FixEngine extends GatewayProcess
     public EngineConfiguration configuration()
     {
         return configuration;
+    }
+
+    @Override
+    protected Version version()
+    {
+        return new FixEngineVersion();
     }
 
     // Exceptions here are always on internal FixEngine threads and should not cause those threads to terminate.
