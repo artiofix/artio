@@ -114,7 +114,6 @@ class GeneratorDictionaryConfiguration
                     }
 
                     // Closed by CodecGenerator
-                    // codeql[java/input-resource-leak]
                     streams[i] = fileOpener.open(xmlFile);
                 }
             }
