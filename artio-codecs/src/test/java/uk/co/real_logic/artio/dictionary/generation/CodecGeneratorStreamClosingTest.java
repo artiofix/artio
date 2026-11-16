@@ -15,9 +15,12 @@
  */
 package uk.co.real_logic.artio.dictionary.generation;
 
+import org.agrona.generation.StringWriterOutputManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.xml.sax.SAXParseException;
+import uk.co.real_logic.artio.dictionary.ExampleDictionary;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,6 +36,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CodecGeneratorStreamClosingTest
 {
     private static final String MALFORMED_XML = "<malformed major=";
+    private static final String MISSING_FILE_NAME = "missing.xml";
+    private static final String SHARED_DICTIONARY_NAME = "test_dict";
 
     @TempDir
     File tempDir;
@@ -66,7 +73,7 @@ class CodecGeneratorStreamClosingTest
         Files.write(malformed.toPath(), MALFORMED_XML.getBytes(StandardCharsets.US_ASCII));
         malformedFile = malformed.getPath();
 
-        missingFile = new File(tempDir, "missing.xml").getPath();
+        missingFile = new File(tempDir, MISSING_FILE_NAME).getPath();
         // No Files.write() because we want this to be intentionally missing
     }
 
@@ -75,7 +82,9 @@ class CodecGeneratorStreamClosingTest
     {
         final CodecConfiguration config = newConfig().fileNames(existingFile, missingFile);
 
-        assertThrows(IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(thrown, MISSING_FILE_NAME);
 
         assertAllOpenedStreamsClosed();
     }
@@ -84,9 +93,14 @@ class CodecGeneratorStreamClosingTest
     void shouldCloseOpenedFilesWhenALaterSharedDictionaryFileIsMissing()
     {
         final CodecConfiguration config = newConfig();
-        config.sharedCodecsEnabled().withDictionary("dict", existingFile, missingFile);
+        config.sharedCodecsEnabled().withDictionary(SHARED_DICTIONARY_NAME, existingFile, missingFile);
 
-        assertThrows(IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        // Shared generation wraps the error with the dictionary name.
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(thrown, SHARED_DICTIONARY_NAME);
+        assertNotNull(thrown.getCause(), "expected the error to be wrapped");
+        assertMentions(thrown.getCause(), MISSING_FILE_NAME);
 
         assertAllOpenedStreamsClosed();
     }
@@ -95,9 +109,12 @@ class CodecGeneratorStreamClosingTest
     void shouldCloseUnparsedFilesWhenASharedDictionaryFileFailsToParse()
     {
         final CodecConfiguration config = newConfig();
-        config.sharedCodecsEnabled().withDictionary("dict", malformedFile, existingFile);
+        config.sharedCodecsEnabled().withDictionary(SHARED_DICTIONARY_NAME, malformedFile, existingFile);
 
-        assertThrows(IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(thrown, SHARED_DICTIONARY_NAME);
+        assertInstanceOf(SAXParseException.class, thrown.getCause());
 
         assertAllOpenedStreamsClosed();
     }
@@ -107,7 +124,8 @@ class CodecGeneratorStreamClosingTest
     {
         final CodecConfiguration config = newConfig().fileNames(malformedFile, existingFile);
 
-        assertThrows(Exception.class, () -> CodecGenerator.generate(config));
+        // Unlike shared generation, the parse error isn't wrapped.
+        assertThrows(SAXParseException.class, () -> CodecGenerator.generate(config));
 
         assertAllOpenedStreamsClosed();
     }
@@ -117,15 +135,43 @@ class CodecGeneratorStreamClosingTest
     {
         final TrackingInputStream unparsed = new TrackingInputStream(new ByteArrayInputStream(new byte[0]));
         final CodecConfiguration config = newConfig();
-        config.sharedCodecsEnabled().withDictionary("dict", malformedStream(), unparsed);
+        config.sharedCodecsEnabled().withDictionary(SHARED_DICTIONARY_NAME, malformedStream(), unparsed);
 
-        assertThrows(IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(thrown, SHARED_DICTIONARY_NAME);
+        assertInstanceOf(SAXParseException.class, thrown.getCause());
 
         assertTrue(unparsed.closed, "unparsed stream should be closed");
     }
 
     @Test
-    void shouldOpenEachFileOnceAndReturnTheSameStreamsOnLaterCalls() throws Exception
+    void shouldCloseAllFilesAfterGeneratingADictionary() throws Exception
+    {
+        final CodecConfiguration config = newConfig().fileNames(dictionaryFile("example_dictionary.xml"));
+
+        CodecGenerator.generate(config);
+
+        assertAllOpenedStreamsClosed();
+    }
+
+    @Test
+    void shouldCloseAllFilesAfterGeneratingSharedDictionaries() throws Exception
+    {
+        // The same dictionaries the shared codec tests use, since not every dictionary can be shared.
+        final CodecConfiguration config = newConfig();
+        config.sharedCodecsEnabled()
+            .withDictionary("dict1", dictionaryFile("shared.dictionary.1.xml"))
+            .withDictionary("dict2", dictionaryFile("shared_dictionary_2.xml"));
+
+        CodecGenerator.generate(config);
+
+        assertEquals(2, openedStreams.size());
+        assertAllOpenedStreamsClosed();
+    }
+
+    @Test
+    void shouldOpenOneStreamPerFileInOrder() throws Exception
     {
         final File secondFile = new File(tempDir, "second.xml");
         Files.write(secondFile.toPath(), "<fix/>".getBytes(StandardCharsets.US_ASCII));
@@ -139,10 +185,6 @@ class CodecGeneratorStreamClosingTest
         assertSame(openedStreams.get(0), streams[0]);
         assertSame(openedStreams.get(1), streams[1]);
 
-        // The streams are kept in the fileStreams field, so a later call returns them without opening the files again.
-        assertSame(streams, dictionary.toStreams(this::openTracked));
-        assertEquals(2, openedStreams.size());
-
         // Closing them is the caller's job (CodecGenerator), not toStreams'.
         assertFalse(openedStreams.get(0).closed);
         assertFalse(openedStreams.get(1).closed);
@@ -150,21 +192,18 @@ class CodecGeneratorStreamClosingTest
     }
 
     @Test
-    void shouldNotKeepPartiallyOpenedStreamsWhenAFileIsMissing()
+    void shouldReportTheMissingFileAgainWhenGenerationIsRetried()
     {
-        final GeneratorDictionaryConfiguration dictionary = new GeneratorDictionaryConfiguration(
-            "dict", null, new String[]{ existingFile, missingFile }, false);
+        final CodecConfiguration config = newConfig().fileNames(existingFile, missingFile);
 
-        final String missingFileMessage = "xmlFile does not exist: " + new File(missingFile).getAbsolutePath();
+        final IllegalArgumentException firstAttempt = assertThrows(
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(firstAttempt, MISSING_FILE_NAME);
 
-        final IllegalArgumentException firstCall = assertThrows(
-            IllegalArgumentException.class, () -> dictionary.toStreams(this::openTracked));
-        assertEquals(missingFileMessage, firstCall.getMessage());
-
+        // Retrying with the same configuration should check the files again, not reuse a partly opened set.
         final IllegalArgumentException retry = assertThrows(
-            IllegalArgumentException.class, () -> dictionary.toStreams(this::openTracked),
-            "a retry should open the files again rather than return the partially filled array");
-        assertEquals(missingFileMessage, retry.getMessage());
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(retry, MISSING_FILE_NAME);
     }
 
     @Test
@@ -175,9 +214,7 @@ class CodecGeneratorStreamClosingTest
 
         final IllegalArgumentException thrown = assertThrows(
             IllegalArgumentException.class, () -> dictionary.toStreams(this::openTracked));
-        assertEquals(
-            String.format("xmlFile [%s] isn't a file, are the arguments the correct way around?", tempDir),
-            thrown.getMessage());
+        assertMentions(thrown, tempDir.getPath());
 
         assertAllOpenedStreamsClosed();
     }
@@ -226,7 +263,7 @@ class CodecGeneratorStreamClosingTest
             IllegalArgumentException.class, () -> dictionary.toStreams(opener));
 
         // The missing file is still the reported error, and the close failure is attached to it.
-        assertEquals("xmlFile does not exist: " + new File(missingFile).getAbsolutePath(), thrown.getMessage());
+        assertMentions(thrown, MISSING_FILE_NAME);
         assertEquals(1, thrown.getSuppressed().length);
         assertSame(closeFailure, thrown.getSuppressed()[0]);
 
@@ -237,7 +274,32 @@ class CodecGeneratorStreamClosingTest
     {
         return new CodecConfiguration()
             .outputPath(outputPath)
+            // Keeps generated code in memory rather than writing it to outputPath.
+            .outputManagerFactory((ignoredPath, parentPackage) ->
+            {
+                final StringWriterOutputManager outputManager = new StringWriterOutputManager();
+                outputManager.setPackageName(parentPackage);
+                return outputManager;
+            })
             .fileOpener(this::openTracked);
+    }
+
+    // Copies a test dictionary out of the resources, so it can be passed to the generator as a file name.
+    private String dictionaryFile(final String resourceName) throws IOException
+    {
+        final File file = new File(tempDir, resourceName);
+        try (InputStream in = ExampleDictionary.class.getResourceAsStream(resourceName))
+        {
+            Files.copy(in, file.toPath());
+        }
+        return file.getPath();
+    }
+
+    // Checks the error points at the right file or dictionary, without depending on the exact wording.
+    private static void assertMentions(final Throwable error, final String expected)
+    {
+        final String message = String.valueOf(error.getMessage());
+        assertTrue(message.contains(expected), () -> "expected the error to mention " + expected + ": " + message);
     }
 
     private TrackingInputStream openTracked(final File file) throws FileNotFoundException
@@ -252,7 +314,7 @@ class CodecGeneratorStreamClosingTest
         assertFalse(openedStreams.isEmpty(), "expected the generator to open at least one file");
         for (final TrackingInputStream stream : openedStreams)
         {
-            assertTrue(stream.closed, "stream left open after a failed generation");
+            assertTrue(stream.closed, "stream left open after generation");
         }
     }
 
