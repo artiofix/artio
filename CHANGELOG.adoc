@@ -2,6 +2,8 @@
 
 == Unreleased
 
+== 0.188.0 (2026-11-16)
+
 === New & Noteworthy
 
 ** Introduce versioned error counters for Artio's FixEngine and FixLibrary. This is an example of the new counters for the fix engine and fix library (respectively)
