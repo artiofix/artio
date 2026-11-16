@@ -66,15 +66,15 @@ class CodecGeneratorStreamClosingTest
 
         final File existing = new File(tempDir, "existing.xml");
         // Never parsed in any test, so its content doesn't matter
-        Files.write(existing.toPath(), "<random/>".getBytes(StandardCharsets.US_ASCII));
+        Files.writeString(existing.toPath(), "<random/>", StandardCharsets.US_ASCII);
         existingFile = existing.getPath();
 
         final File malformed = new File(tempDir, "malformed.xml");
-        Files.write(malformed.toPath(), MALFORMED_XML.getBytes(StandardCharsets.US_ASCII));
+        Files.writeString(malformed.toPath(), MALFORMED_XML, StandardCharsets.US_ASCII);
         malformedFile = malformed.getPath();
 
         missingFile = new File(tempDir, MISSING_FILE_NAME).getPath();
-        // No Files.write() because we want this to be intentionally missing
+        // No Files.writeString() because we want this to be intentionally missing
     }
 
     @Test
@@ -174,7 +174,7 @@ class CodecGeneratorStreamClosingTest
     void shouldOpenOneStreamPerFileInOrder() throws Exception
     {
         final File secondFile = new File(tempDir, "second.xml");
-        Files.write(secondFile.toPath(), "<fix/>".getBytes(StandardCharsets.US_ASCII));
+        Files.writeString(secondFile.toPath(), "<fix/>", StandardCharsets.US_ASCII);
         final GeneratorDictionaryConfiguration dictionary = new GeneratorDictionaryConfiguration(
             "dict", null, new String[]{ existingFile, secondFile.getPath() }, false);
 
@@ -224,7 +224,7 @@ class CodecGeneratorStreamClosingTest
     {
         // Exists and is a file, so it passes the checks, but opening it fails, e.g. because of its permissions
         final File unreadable = new File(tempDir, "unreadable.xml");
-        Files.write(unreadable.toPath(), "<random/>".getBytes(StandardCharsets.US_ASCII));
+        Files.writeString(unreadable.toPath(), "<random/>", StandardCharsets.US_ASCII);
         final GeneratorDictionaryConfiguration dictionary = new GeneratorDictionaryConfiguration(
             "dict", null, new String[]{ existingFile, unreadable.getPath() }, false);
 
@@ -290,6 +290,7 @@ class CodecGeneratorStreamClosingTest
         final File file = new File(tempDir, resourceName);
         try (InputStream in = ExampleDictionary.class.getResourceAsStream(resourceName))
         {
+            assertNotNull(in, "missing test resource: " + resourceName);
             Files.copy(in, file.toPath());
         }
         return file.getPath();
