@@ -63,22 +63,15 @@ public final class CodecGenerator
         for (final GeneratorDictionaryConfiguration dictionaryConfig : sharedCodecs.dictionaries())
         {
             final String name = normalise(dictionaryConfig.dictionaryName());
-            InputStream[] fileStreams = null;
             try
             {
-                final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
-                fileStreams = dictionaryConfig.toStreams(configuration.fileOpener());
-                final Dictionary dictionary = parseStreams(parser, fileStreams);
+                final Dictionary dictionary = parseDictionary(configuration, dictionaryConfig);
                 dictionary.name(name);
                 inputDictionaries.add(dictionary);
             }
             catch (final Exception e)
             {
                 throw new IllegalArgumentException("Unable to parse: " + name, e);
-            }
-            finally
-            {
-                Exceptions.closeAll(fileStreams);
             }
         }
 
@@ -103,13 +96,19 @@ public final class CodecGenerator
         final String outputPath,
         final String codecRejectUnknownEnumValueEnabled) throws Exception
     {
-        final GeneratorDictionaryConfiguration nonSharedDictionary = configuration.nonSharedDictionary();
-        final DictionaryParser parser = new DictionaryParser(nonSharedDictionary.allowDuplicateFields());
-        final InputStream[] fileStreams = nonSharedDictionary.toStreams(configuration.fileOpener());
+        final Dictionary dictionary = parseDictionary(configuration, configuration.nonSharedDictionary());
+        generateDictionary(configuration, outputPath, codecRejectUnknownEnumValueEnabled, dictionary);
+    }
+
+    private static Dictionary parseDictionary(
+        final CodecConfiguration configuration,
+        final GeneratorDictionaryConfiguration dictionaryConfig) throws Exception
+    {
+        final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
+        final InputStream[] fileStreams = dictionaryConfig.toStreams(configuration.fileOpener());
         try
         {
-            final Dictionary dictionary = parseStreams(parser, fileStreams);
-            generateDictionary(configuration, outputPath, codecRejectUnknownEnumValueEnabled, dictionary);
+            return parseStreams(parser, fileStreams);
         }
         finally
         {
