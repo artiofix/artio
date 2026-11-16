@@ -16,12 +16,20 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 class GeneratorDictionaryConfiguration
 {
+    /**
+     * Opens a dictionary file. Lets tests see which streams were opened and whether they were closed.
+     */
+    @FunctionalInterface
+    interface FileOpener
+    {
+        InputStream open(File file) throws FileNotFoundException;
+    }
+
     private boolean allowDuplicateFields;
     private String dictionaryName;
     private InputStream[] fileStreams;
@@ -74,7 +82,7 @@ class GeneratorDictionaryConfiguration
         this.allowDuplicateFields = allowDuplicateFields;
     }
 
-    InputStream[] toStreams() throws FileNotFoundException
+    InputStream[] toStreams(final FileOpener fileOpener) throws FileNotFoundException
     {
         // Create input streams from names if not provided.
         if (fileStreams == null)
@@ -104,7 +112,7 @@ class GeneratorDictionaryConfiguration
 
                 // Closed by CodecGenerator
                 // codeql[java/input-resource-leak]
-                fileStreams[i] = new FileInputStream(xmlFile);
+                fileStreams[i] = fileOpener.open(xmlFile);
             }
         }
 

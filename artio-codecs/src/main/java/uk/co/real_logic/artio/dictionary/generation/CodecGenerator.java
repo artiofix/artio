@@ -66,7 +66,8 @@ public final class CodecGenerator
             try
             {
                 final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
-                final Dictionary dictionary = parseStreams(parser, dictionaryConfig.toStreams());
+                final Dictionary dictionary = parseStreams(
+                    parser, dictionaryConfig.toStreams(configuration.fileOpener()));
                 dictionary.name(name);
                 inputDictionaries.add(dictionary);
             }
@@ -99,7 +100,7 @@ public final class CodecGenerator
     {
         final GeneratorDictionaryConfiguration nonSharedDictionary = configuration.nonSharedDictionary();
         final DictionaryParser parser = new DictionaryParser(nonSharedDictionary.allowDuplicateFields());
-        final InputStream[] fileStreams = nonSharedDictionary.toStreams();
+        final InputStream[] fileStreams = nonSharedDictionary.toStreams(configuration.fileOpener());
         try
         {
             final Dictionary dictionary = parseStreams(parser, fileStreams);
