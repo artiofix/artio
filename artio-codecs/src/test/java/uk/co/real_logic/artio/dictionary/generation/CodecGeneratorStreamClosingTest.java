@@ -167,6 +167,72 @@ class CodecGeneratorStreamClosingTest
         assertEquals(missingFileMessage, retry.getMessage());
     }
 
+    @Test
+    void shouldCloseOpenedFilesWhenALaterPathIsADirectory()
+    {
+        final GeneratorDictionaryConfiguration dictionary = new GeneratorDictionaryConfiguration(
+            "dict", null, new String[]{ existingFile, tempDir.getPath() }, false);
+
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> dictionary.toStreams(this::openTracked));
+        assertEquals(
+            String.format("xmlFile [%s] isn't a file, are the arguments the correct way around?", tempDir),
+            thrown.getMessage());
+
+        assertAllOpenedStreamsClosed();
+    }
+
+    @Test
+    void shouldCloseOpenedFilesWhenALaterFileCannotBeOpened() throws Exception
+    {
+        // Exists and is a file, so it passes the checks, but opening it fails, e.g. because of its permissions
+        final File unreadable = new File(tempDir, "unreadable.xml");
+        Files.write(unreadable.toPath(), "<random/>".getBytes(StandardCharsets.US_ASCII));
+        final GeneratorDictionaryConfiguration dictionary = new GeneratorDictionaryConfiguration(
+            "dict", null, new String[]{ existingFile, unreadable.getPath() }, false);
+
+        final FileNotFoundException cannotOpen = new FileNotFoundException("Permission denied");
+        final GeneratorDictionaryConfiguration.FileOpener opener = (file) ->
+        {
+            if (file.equals(unreadable))
+            {
+                throw cannotOpen;
+            }
+            return openTracked(file);
+        };
+
+        final FileNotFoundException thrown = assertThrows(
+            FileNotFoundException.class, () -> dictionary.toStreams(opener));
+        assertSame(cannotOpen, thrown);
+
+        assertAllOpenedStreamsClosed();
+    }
+
+    @Test
+    void shouldKeepTheOriginalErrorWhenClosingAnOpenedFileFails()
+    {
+        final GeneratorDictionaryConfiguration dictionary = new GeneratorDictionaryConfiguration(
+            "dict", null, new String[]{ existingFile, missingFile }, false);
+
+        final IOException closeFailure = new IOException("close failed");
+        final GeneratorDictionaryConfiguration.FileOpener opener = (file) ->
+        {
+            final TrackingInputStream stream = openTracked(file);
+            stream.closeFailure = closeFailure;
+            return stream;
+        };
+
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> dictionary.toStreams(opener));
+
+        // The missing file is still the reported error, and the close failure is attached to it.
+        assertEquals("xmlFile does not exist: " + new File(missingFile).getAbsolutePath(), thrown.getMessage());
+        assertEquals(1, thrown.getSuppressed().length);
+        assertSame(closeFailure, thrown.getSuppressed()[0]);
+
+        assertAllOpenedStreamsClosed();
+    }
+
     private CodecConfiguration newConfig()
     {
         return new CodecConfiguration()
@@ -174,7 +240,7 @@ class CodecGeneratorStreamClosingTest
             .fileOpener(this::openTracked);
     }
 
-    private InputStream openTracked(final File file) throws FileNotFoundException
+    private TrackingInputStream openTracked(final File file) throws FileNotFoundException
     {
         final TrackingInputStream stream = new TrackingInputStream(new FileInputStream(file));
         openedStreams.add(stream);
@@ -198,6 +264,7 @@ class CodecGeneratorStreamClosingTest
     private static final class TrackingInputStream extends FilterInputStream
     {
         boolean closed;
+        IOException closeFailure;
 
         TrackingInputStream(final InputStream in)
         {
@@ -209,6 +276,10 @@ class CodecGeneratorStreamClosingTest
         {
             closed = true;
             super.close();
+            if (closeFailure != null)
+            {
+                throw closeFailure;
+            }
         }
     }
 }

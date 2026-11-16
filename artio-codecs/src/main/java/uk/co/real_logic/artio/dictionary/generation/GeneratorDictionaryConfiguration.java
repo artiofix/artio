@@ -94,26 +94,41 @@ class GeneratorDictionaryConfiguration
             }
 
             final int n = fileNames.length;
-            fileStreams = new InputStream[n];
-            for (int i = 0; i < n; i++)
+            // Only stored in the field once every file is open, so a failure doesn't leave a partly filled array.
+            final InputStream[] streams = new InputStream[n];
+            try
             {
-                final File xmlFile = new File(fileNames[i]);
-                if (!xmlFile.exists())
+                for (int i = 0; i < n; i++)
                 {
-                    throw new IllegalArgumentException("xmlFile does not exist: " + xmlFile.getAbsolutePath());
-                }
+                    final File xmlFile = new File(fileNames[i]);
+                    if (!xmlFile.exists())
+                    {
+                        throw new IllegalArgumentException("xmlFile does not exist: " + xmlFile.getAbsolutePath());
+                    }
 
-                if (!xmlFile.isFile())
-                {
-                    throw new IllegalArgumentException(String.format(
-                        "xmlFile [%s] isn't a file, are the arguments the correct way around?",
-                        xmlFile));
-                }
+                    if (!xmlFile.isFile())
+                    {
+                        throw new IllegalArgumentException(String.format(
+                            "xmlFile [%s] isn't a file, are the arguments the correct way around?",
+                            xmlFile));
+                    }
 
-                // Closed by CodecGenerator
-                // codeql[java/input-resource-leak]
-                fileStreams[i] = fileOpener.open(xmlFile);
+                    // Closed by CodecGenerator
+                    // codeql[java/input-resource-leak]
+                    streams[i] = fileOpener.open(xmlFile);
+                }
             }
+            catch (final FileNotFoundException | RuntimeException ex)
+            {
+                // The caller never gets these streams, so close the ones already opened here.
+                for (final InputStream stream : streams)
+                {
+                    Exceptions.suppressingClose(stream, ex);
+                }
+                throw ex;
+            }
+
+            fileStreams = streams;
         }
 
         return fileStreams;
