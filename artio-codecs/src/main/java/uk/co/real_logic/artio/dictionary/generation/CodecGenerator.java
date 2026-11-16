@@ -63,17 +63,22 @@ public final class CodecGenerator
         for (final GeneratorDictionaryConfiguration dictionaryConfig : sharedCodecs.dictionaries())
         {
             final String name = normalise(dictionaryConfig.dictionaryName());
+            InputStream[] fileStreams = null;
             try
             {
                 final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
-                final Dictionary dictionary = parseStreams(
-                    parser, dictionaryConfig.toStreams(configuration.fileOpener()));
+                fileStreams = dictionaryConfig.toStreams(configuration.fileOpener());
+                final Dictionary dictionary = parseStreams(parser, fileStreams);
                 dictionary.name(name);
                 inputDictionaries.add(dictionary);
             }
             catch (final Exception e)
             {
                 throw new IllegalArgumentException("Unable to parse: " + name, e);
+            }
+            finally
+            {
+                Exceptions.closeAll(fileStreams);
             }
         }
 
