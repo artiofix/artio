@@ -3751,7 +3751,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         {
             if (!hasDisconnected)
             {
-                hasDisconnected = gatewaySession.connectionId() == NO_CONNECTION_ID;
+                hasDisconnected = gatewaySession.hasDisconnected();
 
                 // Only do this the first time we notice a disconnect
                 if (hasDisconnected)

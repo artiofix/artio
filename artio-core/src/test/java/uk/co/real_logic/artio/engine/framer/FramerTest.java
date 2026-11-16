@@ -80,6 +80,7 @@ import static uk.co.real_logic.artio.library.FixLibrary.NO_MESSAGE_REPLAY;
 import static uk.co.real_logic.artio.library.SessionConfiguration.*;
 import static uk.co.real_logic.artio.messages.ConnectionType.INITIATOR;
 import static uk.co.real_logic.artio.messages.DisconnectReason.APPLICATION_DISCONNECT;
+import static uk.co.real_logic.artio.messages.DisconnectReason.REMOTE_DISCONNECT;
 import static uk.co.real_logic.artio.messages.GatewayError.*;
 import static uk.co.real_logic.artio.messages.SequenceNumberType.TRANSIENT;
 import static uk.co.real_logic.artio.messages.SessionReplyStatus.OK;
@@ -465,6 +466,30 @@ public class FramerTest
         framer.doWork();
 
         notifyLibraryOfConnection(times(1));
+    }
+
+    @Test
+    public void shouldNotHandoverInitiatedConnectionDisconnectedWhilstWaitingForIndexer() throws Exception
+    {
+        setupHeader();
+
+        sentIndexedToPosition(0);
+
+        initiateConnection();
+
+        framer.doWork();
+        framer.doWork();
+
+        when(mockReceiverEndPoint.hasDisconnected()).thenReturn(true);
+        assertEquals(CONTINUE, framer.onDisconnect(LIBRARY_ID, connectionId.get(), REMOTE_DISCONNECT));
+
+        sentIndexedToPosition(POSITION + 1);
+
+        framer.doWork();
+        framer.doWork();
+
+        notifyLibraryOfConnection(never());
+        verifyErrorPublished(UNABLE_TO_CONNECT);
     }
 
     private void setupHeader()
