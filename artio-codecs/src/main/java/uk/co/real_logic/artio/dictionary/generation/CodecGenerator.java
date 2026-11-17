@@ -106,14 +106,23 @@ public final class CodecGenerator
     {
         final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
         final InputStream[] fileStreams = dictionaryConfig.toStreams(configuration.fileOpener());
+        final Dictionary dictionary;
         try
         {
-            return parseStreams(parser, fileStreams);
+            dictionary = parseStreams(parser, fileStreams);
         }
-        finally
+        catch (final Exception ex)
         {
-            Exceptions.closeAll(fileStreams);
+            // Attach any close failures to the parse error, rather than letting them replace it.
+            for (final InputStream fileStream : fileStreams)
+            {
+                Exceptions.suppressingClose(fileStream, ex);
+            }
+            throw ex;
         }
+
+        Exceptions.closeAll(fileStreams);
+        return dictionary;
     }
 
     private static Dictionary parseStreams(final DictionaryParser parser, final InputStream[] fileStreams)

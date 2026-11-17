@@ -146,6 +146,42 @@ class CodecGeneratorStreamClosingTest
     }
 
     @Test
+    void shouldKeepTheParseErrorWhenClosingAnUnparsedStreamFails()
+    {
+        final IOException closeFailure = new IOException("close failed");
+        final TrackingInputStream unparsed = new TrackingInputStream(new ByteArrayInputStream(new byte[0]));
+        unparsed.closeFailure = closeFailure;
+        final CodecConfiguration config = newConfig().fileStreams(malformedStream(), unparsed);
+
+        // The parse error is still the one reported, with the close failure attached to it.
+        final SAXParseException thrown = assertThrows(
+            SAXParseException.class, () -> CodecGenerator.generate(config));
+        assertEquals(1, thrown.getSuppressed().length);
+        assertSame(closeFailure, thrown.getSuppressed()[0]);
+
+        assertTrue(unparsed.closed, "unparsed stream should be closed");
+    }
+
+    @Test
+    void shouldKeepTheParseErrorWhenClosingAnUnparsedSharedStreamFails()
+    {
+        final IOException closeFailure = new IOException("close failed");
+        final TrackingInputStream unparsed = new TrackingInputStream(new ByteArrayInputStream(new byte[0]));
+        unparsed.closeFailure = closeFailure;
+        final CodecConfiguration config = newConfig();
+        config.sharedCodecsEnabled().withDictionary(SHARED_DICTIONARY_NAME, malformedStream(), unparsed);
+
+        final IllegalArgumentException thrown = assertThrows(
+            IllegalArgumentException.class, () -> CodecGenerator.generate(config));
+        assertMentions(thrown, SHARED_DICTIONARY_NAME);
+        final SAXParseException cause = assertInstanceOf(SAXParseException.class, thrown.getCause());
+        assertEquals(1, cause.getSuppressed().length);
+        assertSame(closeFailure, cause.getSuppressed()[0]);
+
+        assertTrue(unparsed.closed, "unparsed stream should be closed");
+    }
+
+    @Test
     void shouldCloseAllFilesAfterGeneratingADictionary() throws Exception
     {
         final CodecConfiguration config = newConfig().fileNames(dictionaryFile("example_dictionary.xml"));
