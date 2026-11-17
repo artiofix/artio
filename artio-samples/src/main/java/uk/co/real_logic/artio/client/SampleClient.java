@@ -93,7 +93,7 @@ public final class SampleClient
                 final SleepingIdleStrategy idleStrategy = new SleepingIdleStrategy(100);
 
                 final LibraryConfiguration libraryConfiguration = new LibraryConfiguration()
-                    .sessionAcquireHandler((session, acquiredInfo) -> onConnect(session))
+                    .sessionAcquireHandler((session, acquiredInfo) -> TEST_REQ_ID_FINDER)
                     .libraryAeronChannels(singletonList(aeronChannel));
 
                 libraryConfiguration.aeronContext()
@@ -142,11 +142,6 @@ public final class SampleClient
         }
 
         System.exit(0);
-    }
-
-    private static SessionHandler onConnect(final Session session)
-    {
-        return TEST_REQ_ID_FINDER;
     }
 
     private static final String AERON_DIR_NAME = "client-aeron";

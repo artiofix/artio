@@ -81,7 +81,7 @@ public class Server implements Agent
             .agentNamePrefix("server-");
 
         fixLibrary = blockingConnect(libraryConfiguration
-            .sessionAcquireHandler((session, acquiredInfo) -> new StressSessionHandler(session))
+            .sessionAcquireHandler((session, acquiredInfo) -> new StressSessionHandler())
             .sessionExistsHandler(new AcquiringSessionExistsHandler(true))
             .libraryAeronChannels(singletonList(aeronChannel)));
     }
