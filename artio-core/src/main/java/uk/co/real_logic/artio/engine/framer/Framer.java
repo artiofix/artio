@@ -3905,7 +3905,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         public Action onStartReplay(
             final long session, final long connection, final long correlationId, final long position)
         {
-            fixSenderEndPoints.onStartReplay(connection, correlationId, slow);
+            fixSenderEndPoints.onStartReplay(connection, correlationId);
 
             return CONTINUE;
         }

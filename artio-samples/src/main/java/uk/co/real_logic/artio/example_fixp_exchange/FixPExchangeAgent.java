@@ -64,7 +64,7 @@ public class FixPExchangeAgent implements Agent
     private FixPConnectionHandler onAcquire(final BinaryEntryPointConnection connection)
     {
         System.out.println(connection.key() + " logged in" + " with sessionId=" + connection.sessionId());
-        return new FixPExchangeSessionHandler(connection);
+        return new FixPExchangeSessionHandler();
     }
 
     @Override
