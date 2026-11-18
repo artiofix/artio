@@ -53,17 +53,34 @@ public class UtcTimestampDecoderValidCasesTest
     private MutableAsciiBuffer buffer;
     private String timestamp;
 
-    public static Stream<Arguments> data()
+    public static Stream<String> timestamps()
     {
         return Stream.of(
-            of("20150225-17:51:32.000", true),
-            of("20150225-17:51:32.123", true),
-            of("20600225-17:51:32.123", true),
-            of("19700101-00:00:00.000", true),
-            of("00010101-00:00:00.000", false),
-            of("00010101-00:00:00.001", false),
-            of("99991231-23:59:59.999", false)
+            "20150225-17:51:32.000",
+            "20150225-17:51:32.123",
+            "20600225-17:51:32.123",
+            "19700101-00:00:00.000",
+            "00010101-00:00:00.000",
+            "00010101-00:00:00.001",
+            "99991231-23:59:59.999"
         );
+    }
+
+    public static Stream<String> nanosecondTimestamps()
+    {
+        return timestamps().filter(UtcTimestampDecoderValidCasesTest::fitsInEpochNanos);
+    }
+
+    // Epoch nanoseconds in a long only cover roughly 1677 to 2262, so e.g. years 0001 and 9999 can't be encoded.
+    public static boolean fitsInEpochNanos(final String timestamp)
+    {
+        final long epochMillis = toEpochMillis(timestamp);
+        return epochMillis <= Long.MAX_VALUE / NANOS_IN_MILLIS && epochMillis >= Long.MIN_VALUE / NANOS_IN_MILLIS;
+    }
+
+    public static Stream<Arguments> data()
+    {
+        return timestamps().map(timestamp -> of(timestamp, fitsInEpochNanos(timestamp)));
     }
 
     private void encodeBuffer(final String timestamp, final boolean validNanoSecondTestCase)
