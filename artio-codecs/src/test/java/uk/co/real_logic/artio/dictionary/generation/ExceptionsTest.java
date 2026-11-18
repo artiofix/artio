@@ -85,4 +85,23 @@ public class ExceptionsTest
         assertTrue(closed[0], "should keep closing after an earlier close fails");
         assertArrayEquals(new Throwable[]{ firstFailure, secondFailure }, original.getSuppressed());
     }
+
+    @Test
+    public void shouldIgnoreCloseThrowingTheOriginalThrowable()
+    {
+        // e.g. a stream that remembers its first failure and throws it again on close
+        final IOException original = new IOException("original");
+        final boolean[] closed = new boolean[1];
+
+        Exceptions.suppressingCloseAll(
+            original,
+            () ->
+            {
+                throw original;
+            },
+            () -> closed[0] = true);
+
+        assertTrue(closed[0], "should keep closing after a close throws the original throwable");
+        assertEquals(0, original.getSuppressed().length);
+    }
 }

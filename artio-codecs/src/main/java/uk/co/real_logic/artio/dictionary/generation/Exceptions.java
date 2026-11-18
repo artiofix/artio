@@ -74,7 +74,11 @@ public final class Exceptions
             }
             catch (final Exception ex)
             {
-                originalThrowable.addSuppressed(ex);
+                // Adding a throwable to itself throws, which would hide the original failure
+                if (ex != originalThrowable)
+                {
+                    originalThrowable.addSuppressed(ex);
+                }
             }
         }
     }
