@@ -16,7 +16,6 @@
 package uk.co.real_logic.artio.fields;
 
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
@@ -31,7 +30,6 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.params.provider.Arguments.of;
 import static uk.co.real_logic.artio.fields.CalendricalUtil.*;
 import static uk.co.real_logic.artio.fields.UtcTimestampDecoder.*;
 
@@ -76,11 +74,6 @@ public class UtcTimestampDecoderValidCasesTest
     {
         final long epochMillis = toEpochMillis(timestamp);
         return epochMillis <= Long.MAX_VALUE / NANOS_IN_MILLIS && epochMillis >= Long.MIN_VALUE / NANOS_IN_MILLIS;
-    }
-
-    public static Stream<Arguments> data()
-    {
-        return timestamps().map(timestamp -> of(timestamp, fitsInEpochNanos(timestamp)));
     }
 
     private void encodeBuffer(final String timestamp)
