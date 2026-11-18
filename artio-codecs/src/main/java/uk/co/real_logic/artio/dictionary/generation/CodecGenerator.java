@@ -111,14 +111,10 @@ public final class CodecGenerator
         {
             dictionary = parseStreams(parser, fileStreams);
         }
-        catch (final Exception ex)
+        catch (final Throwable t)
         {
-            // Attach any close failures to the parse error, rather than letting them replace it.
-            for (final InputStream fileStream : fileStreams)
-            {
-                Exceptions.suppressingClose(fileStream, ex);
-            }
-            throw ex;
+            Exceptions.suppressingCloseAll(t, fileStreams);
+            throw t;
         }
 
         Exceptions.closeAll(fileStreams);

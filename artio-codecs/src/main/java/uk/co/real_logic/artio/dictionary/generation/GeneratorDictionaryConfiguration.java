@@ -120,10 +120,7 @@ class GeneratorDictionaryConfiguration
             catch (final FileNotFoundException | RuntimeException ex)
             {
                 // The caller never gets these streams, so close the ones already opened here.
-                for (final InputStream stream : streams)
-                {
-                    Exceptions.suppressingClose(stream, ex);
-                }
+                Exceptions.suppressingCloseAll(ex, streams);
                 throw ex;
             }
 

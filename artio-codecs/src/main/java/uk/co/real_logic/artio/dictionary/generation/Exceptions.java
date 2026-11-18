@@ -61,6 +61,11 @@ public final class Exceptions
 
     public static void suppressingClose(final AutoCloseable closeable, final Exception originalException)
     {
+        suppressingClose(closeable, (Throwable)originalException);
+    }
+
+    public static void suppressingClose(final AutoCloseable closeable, final Throwable originalThrowable)
+    {
         if (closeable != null)
         {
             try
@@ -69,7 +74,18 @@ public final class Exceptions
             }
             catch (final Exception ex)
             {
-                originalException.addSuppressed(ex);
+                originalThrowable.addSuppressed(ex);
+            }
+        }
+    }
+
+    public static void suppressingCloseAll(final Throwable originalThrowable, final AutoCloseable... closeables)
+    {
+        if (closeables != null)
+        {
+            for (final AutoCloseable closeable : closeables)
+            {
+                suppressingClose(closeable, originalThrowable);
             }
         }
     }

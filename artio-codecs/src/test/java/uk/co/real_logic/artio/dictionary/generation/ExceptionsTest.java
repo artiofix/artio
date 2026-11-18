@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.SocketException;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.dictionary.generation.Exceptions.isJustDisconnect;
@@ -33,5 +35,54 @@ public class ExceptionsTest
         assertTrue(isJustDisconnect(new SocketException("Connection reset"))); // Java >= 13
         assertFalse(isJustDisconnect(new IOException()));
         assertFalse(isJustDisconnect(new IOException("Error")));
+    }
+
+    @Test
+    public void shouldAttachCloseFailureToAnError()
+    {
+        final AssertionError original = new AssertionError("original");
+        final IOException closeFailure = new IOException("close failed");
+
+        Exceptions.suppressingClose(() ->
+        {
+            throw closeFailure;
+        }, original);
+
+        assertArrayEquals(new Throwable[]{ closeFailure }, original.getSuppressed());
+    }
+
+    @Test
+    public void shouldIgnoreNullWhenSuppressingClose()
+    {
+        final AssertionError original = new AssertionError("original");
+
+        Exceptions.suppressingClose(null, original);
+
+        assertEquals(0, original.getSuppressed().length);
+    }
+
+    @Test
+    public void shouldCloseEveryCloseableAndSkipNullsWhenSuppressingCloseAll()
+    {
+        final AssertionError original = new AssertionError("original");
+        final IOException firstFailure = new IOException("first close failed");
+        final IOException secondFailure = new IOException("second close failed");
+        final boolean[] closed = new boolean[1];
+
+        Exceptions.suppressingCloseAll(
+            original,
+            () ->
+            {
+                throw firstFailure;
+            },
+            null,
+            () -> closed[0] = true,
+            () ->
+            {
+                throw secondFailure;
+            });
+
+        assertTrue(closed[0], "should keep closing after an earlier close fails");
+        assertArrayEquals(new Throwable[]{ firstFailure, secondFailure }, original.getSuppressed());
     }
 }

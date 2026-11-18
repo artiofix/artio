@@ -163,6 +163,33 @@ class CodecGeneratorStreamClosingTest
     }
 
     @Test
+    void shouldCloseUnparsedStreamsWhenParsingThrowsAnError()
+    {
+        // An Error rather than an Exception, e.g. an AssertionError from a stream a test passes in.
+        final AssertionError readError = new AssertionError("read failed");
+        final InputStream failingStream = new InputStream()
+        {
+            @Override
+            public int read()
+            {
+                throw readError;
+            }
+        };
+        final IOException closeFailure = new IOException("close failed");
+        final TrackingInputStream unparsed = new TrackingInputStream(new ByteArrayInputStream(new byte[0]));
+        unparsed.closeFailure = closeFailure;
+        final CodecConfiguration config = newConfig().fileStreams(failingStream, unparsed);
+
+        // The Error is still the one reported, with the close failure attached to it.
+        final AssertionError thrown = assertThrows(AssertionError.class, () -> CodecGenerator.generate(config));
+        assertSame(readError, thrown);
+        assertEquals(1, thrown.getSuppressed().length);
+        assertSame(closeFailure, thrown.getSuppressed()[0]);
+
+        assertTrue(unparsed.closed, "unparsed stream should be closed");
+    }
+
+    @Test
     void shouldKeepTheParseErrorWhenClosingAnUnparsedSharedStreamFails()
     {
         final IOException closeFailure = new IOException("close failed");
