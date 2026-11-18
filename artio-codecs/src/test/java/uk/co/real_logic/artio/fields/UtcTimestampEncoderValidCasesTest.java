@@ -47,7 +47,12 @@ public class UtcTimestampEncoderValidCasesTest
         return UtcTimestampDecoderValidCasesTest.data();
     }
 
-    public void prepareExpected(final String timestamp, final boolean validNanoSecondTestCase)
+    public static Stream<String> timestamps()
+    {
+        return UtcTimestampDecoderValidCasesTest.timestamps();
+    }
+
+    public void prepareExpected(final String timestamp)
     {
         epochMillis = toEpochMillis(timestamp);
         expectedLength = UtcTimestampEncoder.LENGTH_WITH_MILLISECONDS;
@@ -61,34 +66,34 @@ public class UtcTimestampEncoderValidCasesTest
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void canStaticEncodeTimestampWithOffset(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void canStaticEncodeTimestampWithOffset(final String timestamp)
     {
-        prepareExpected(timestamp, validNanoSecondTestCase);
+        prepareExpected(timestamp);
         assertInstanceEncodesTimestampMillisWithOffset(epochMillis, expectedTimestamp, expectedLength);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void canInstanceEncodeTimestamp(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void canInstanceEncodeTimestamp(final String timestamp)
     {
-        prepareExpected(timestamp, validNanoSecondTestCase);
+        prepareExpected(timestamp);
         assertInstanceEncodesTimestampMillis(epochMillis, expectedTimestamp, expectedLength);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void canStaticEncodeTimestampWithOffsetMicros(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void canStaticEncodeTimestampWithOffsetMicros(final String timestamp)
     {
-        prepareExpected(timestamp, validNanoSecondTestCase);
+        prepareExpected(timestamp);
         assertInstanceEncodesTimestampMicrosWithOffset(epochMicros, expectedTimestampMicros, expectedLengthMicros);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void canInstanceEncodeTimestampMicros(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void canInstanceEncodeTimestampMicros(final String timestamp)
     {
-        prepareExpected(timestamp, validNanoSecondTestCase);
+        prepareExpected(timestamp);
         assertInstanceEncodesTimestampMicros(epochMicros, expectedTimestampMicros, expectedLengthMicros);
     }
 
@@ -96,7 +101,7 @@ public class UtcTimestampEncoderValidCasesTest
     @MethodSource(value = "data")
     public void canStaticEncodeTimestampWithOffsetNanos(final String timestamp, final boolean validNanoSecondTestCase)
     {
-        prepareExpected(timestamp, validNanoSecondTestCase);
+        prepareExpected(timestamp);
         if (validNanoSecondTestCase)
         {
             assertInstanceEncodesTimestampNanosWithOffset(epochNanos, expectedTimestampNanos, expectedLengthNanos);
@@ -107,7 +112,7 @@ public class UtcTimestampEncoderValidCasesTest
     @MethodSource(value = "data")
     public void canInstanceEncodeTimestampNanos(final String timestamp, final boolean validNanoSecondTestCase)
     {
-        prepareExpected(timestamp, validNanoSecondTestCase);
+        prepareExpected(timestamp);
         if (validNanoSecondTestCase)
         {
             assertInstanceEncodesTimestampNanos(epochNanos, expectedTimestampNanos, expectedLengthNanos);
