@@ -159,33 +159,27 @@ public class UtcTimestampDecoderValidCasesTest
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampNanos(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "nanosecondTimestamps")
+    public void shouldParseTimestampNanos(final String timestamp)
     {
         encodeBuffer(timestamp);
-        if (validNanoSecondTestCase)
-        {
-            // If they've got the suffix field, then test microseconds, add 1 to the value
-            expectedEpochNanos++;
-            putNanos();
+        // If they've got the suffix field, then test microseconds, add 1 to the value
+        expectedEpochNanos++;
+        putNanos();
 
-            assertDecodesNanos(LENGTH_WITH_NANOSECONDS);
-        }
+        assertDecodesNanos(LENGTH_WITH_NANOSECONDS);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampNanosShort(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "nanosecondTimestamps")
+    public void shouldParseTimestampNanosShort(final String timestamp)
     {
         encodeBuffer(timestamp);
-        if (validNanoSecondTestCase)
-        {
-            expectedEpochNanos += NANOS_IN_MICROS;
+        expectedEpochNanos += NANOS_IN_MICROS;
 
-            putMicros();
+        putMicros();
 
-            assertDecodesNanos(LENGTH_WITH_MICROSECONDS);
-        }
+        assertDecodesNanos(LENGTH_WITH_MICROSECONDS);
     }
 
     private void assertDecodesNanos(final int length)
