@@ -427,6 +427,7 @@ class FixSenderEndPoint extends SenderEndPoint
         return replay ? replayBuffer : normalBuffer;
     }
 
+    @SuppressWarnings("methodLength")
     private boolean processReattemptBuffer(final boolean replay)
     {
         final ReattemptState reattemptState = reattemptState(replay);
@@ -490,7 +491,15 @@ class FixSenderEndPoint extends SenderEndPoint
 
                     // peek the next message to see if we need to continue replaying
                     // If not then we end the replay, otherwise we keep replaying
-                    if (buffer.getInt(endOfReplayEntry) != ENQ_START_REPLAY)
+                    final boolean nextReplayQueued = endOfReplayEntry + ENQ_START_REPLAY_LEN <= reattemptBufferUsage &&
+                        buffer.getInt(endOfReplayEntry) == ENQ_START_REPLAY;
+                    channel.onReplayComplete(correlationId);
+
+                    if (nextReplayQueued)
+                    {
+                        offset = endOfReplayEntry;
+                    }
+                    else
                     {
                         replaying(false, correlationId);
                         reattemptState.shuffleWritten(endOfReplayEntry);
@@ -500,7 +509,10 @@ class FixSenderEndPoint extends SenderEndPoint
                 }
                 else if (enqueueType == ENQ_START_REPLAY)
                 {
-                    // We just ensure that we're still replaying and skip these messages
+                    // A start marker can sit behind retrying data. Refresh the active correlation id before replay
+                    // messages after this marker are sent.
+                    final long correlationId = buffer.getLong(offset + SIZE_OF_INT);
+                    replaying(true, correlationId);
                     offset += ENQ_START_REPLAY_LEN;
                 }
                 else
@@ -564,12 +576,13 @@ class FixSenderEndPoint extends SenderEndPoint
                 final boolean other = !replaying;
                 final ReattemptState reattemptState = reattemptState(other);
                 final int usage = reattemptState.usage;
+                final boolean normalMessagesBlockedByReplay = replaying && this.replaying;
                 if (usage == 0)
                 {
                     requiresRetry(false);
                     sendSlowStatus(false);
                 }
-                else
+                else if (!normalMessagesBlockedByReplay)
                 {
                     this.replaying(!replaying, replayCorrelationId);
                     bytesInBuffer.setOrdered(usage);

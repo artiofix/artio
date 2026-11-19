@@ -351,8 +351,7 @@ class InternalBinaryEntryPointConnection
         final long sessionId,
         final long sessionVerID,
         final long timestampInNanos,
-        final long enteringFirm,
-        final long onbehalfFirm)
+        final long enteringFirm)
     {
         final State state = state();
         if (state == UNBOUND)

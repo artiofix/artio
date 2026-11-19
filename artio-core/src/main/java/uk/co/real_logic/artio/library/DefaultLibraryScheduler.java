@@ -21,6 +21,7 @@ import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.CompositeAgent;
+import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.engine.EngineScheduler;
 
 import java.util.ArrayList;
@@ -36,6 +37,8 @@ public class DefaultLibraryScheduler implements LibraryScheduler
     public void launch(
         final LibraryConfiguration configuration,
         final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final ErrorHandler countedErrorHandler,
         final Agent monitoringAgent,
         final Agent conductorAgent)
     {
@@ -54,7 +57,7 @@ public class DefaultLibraryScheduler implements LibraryScheduler
         monitoringRunner = new AgentRunner(
             configuration.monitoringThreadIdleStrategy(),
             errorHandler,
-            null,
+            errorCounter,
             new CompositeAgent(agents)
             {
                 @Override

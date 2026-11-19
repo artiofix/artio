@@ -21,6 +21,7 @@ import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.CompositeAgent;
+import org.agrona.concurrent.status.AtomicCounter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +38,7 @@ import static org.agrona.concurrent.AgentRunner.startOnThread;
 public class LowResourceEngineScheduler implements EngineScheduler
 {
     private AgentRunner runner;
-    private ErrorHandler errorHandler;
+    private ErrorHandler countedErrorHandler;
     private Agent framer;
     private RecordingCoordinator recordingCoordinator;
 
@@ -49,13 +50,15 @@ public class LowResourceEngineScheduler implements EngineScheduler
     public void launch(
         final EngineConfiguration configuration,
         final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final ErrorHandler countedErrorHandler,
         final Agent framer,
         final Agent indexingAgent,
         final Agent monitoringAgent,
         final Agent conductorAgent,
         final RecordingCoordinator recordingCoordinator)
     {
-        this.errorHandler = errorHandler;
+        this.countedErrorHandler = countedErrorHandler;
         this.framer = framer;
         this.recordingCoordinator = recordingCoordinator;
 
@@ -73,7 +76,7 @@ public class LowResourceEngineScheduler implements EngineScheduler
         runner = new AgentRunner(
             configuration.framerIdleStrategy(),
             errorHandler,
-            null,
+            errorCounter,
             new CompositeAgent(agents));
         startOnThread(runner, configuration.threadFactory());
     }
@@ -97,9 +100,9 @@ public class LowResourceEngineScheduler implements EngineScheduler
             }
             catch (final Throwable e)
             {
-                if (errorHandler != null)
+                if (countedErrorHandler != null)
                 {
-                    errorHandler.onError(e);
+                    countedErrorHandler.onError(e);
                 }
                 else
                 {

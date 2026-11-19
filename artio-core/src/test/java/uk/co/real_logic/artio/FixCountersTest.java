@@ -22,6 +22,7 @@ import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import uk.co.real_logic.artio.engine.FixEngineVersion;
 
 import static org.agrona.BitUtil.SIZE_OF_INT;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
@@ -46,7 +47,7 @@ class FixCountersTest
     {
         when(aeron.addCounter(anyInt(), any(), anyInt(), anyInt(), any(), anyInt(), anyInt()))
             .thenReturn(counter);
-        fixCounters = new FixCounters(aeron, false, LIBRARY_ID, GATEWAY_ID);
+        fixCounters = new FixCounters(aeron, false, LIBRARY_ID, GATEWAY_ID, new FixEngineVersion());
         clearInvocations(aeron);
     }
 

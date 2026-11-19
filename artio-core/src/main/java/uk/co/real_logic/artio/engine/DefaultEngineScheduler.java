@@ -19,6 +19,7 @@ import io.aeron.Aeron;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
+import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
 
 import java.util.concurrent.ThreadFactory;
@@ -39,6 +40,8 @@ public class DefaultEngineScheduler implements EngineScheduler
     public void launch(
         final EngineConfiguration configuration,
         final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final ErrorHandler countedErrorHandler,
         final Agent framer,
         final Agent indexingAgent,
         final Agent monitoringAgent,
@@ -52,9 +55,9 @@ public class DefaultEngineScheduler implements EngineScheduler
         }
 
         framerRunner = new AgentRunner(
-            configuration.framerIdleStrategy(), errorHandler, null, framer);
+            configuration.framerIdleStrategy(), errorHandler, errorCounter, framer);
         archivingRunner = new AgentRunner(
-            configuration.archiverIdleStrategy(), errorHandler, null, indexingAgent);
+            configuration.archiverIdleStrategy(), errorHandler, errorCounter, indexingAgent);
 
         final ThreadFactory threadFactory = configuration.threadFactory();
         startOnThread(framerRunner, threadFactory);
@@ -65,7 +68,7 @@ public class DefaultEngineScheduler implements EngineScheduler
             monitoringRunner = new AgentRunner(
                 configuration.monitoringThreadIdleStrategy(),
                 errorHandler,
-                null,
+                errorCounter,
                 monitoringAgent);
             startOnThread(monitoringRunner, configuration.threadFactory());
         }

@@ -196,8 +196,7 @@ class FixSenderEndPoints implements AutoCloseable
         }
     }
 
-    public void onStartReplay(
-        final long connection, final long correlationId, final boolean slow)
+    public void onStartReplay(final long connection, final long correlationId)
     {
         final FixSenderEndPoint fixSenderEndPoint = connectionIdToSenderEndpoint.get(connection);
         if (fixSenderEndPoint != null)

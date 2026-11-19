@@ -84,6 +84,7 @@ def getConfigProperty(final String projectPropertyName, final String envVarName)
     return value ? value : null
 }
 
+def gitCommitHash = uk.co.real_logic.artio.build.GithubUtil.currentGitHash("${projectDir}")
 def isReleaseVersion = !version.endsWith('-SNAPSHOT')
 def iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
 def sonatypeCentralPortalReleasesRepoUrl = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
@@ -747,6 +748,8 @@ project(':artio-core') {
         api project(':artio-codecs')
         api libs.aeron.client
         api libs.aeron.archive
+        implementation libs.aeron.annotations
+        annotationProcessor libs.aeron.annotations
         api libs.hdrHistogram // FIXME: Api?
 
         testImplementation project(path: ':artio-codecs', configuration: 'tests')
@@ -766,6 +769,13 @@ project(':artio-core') {
                 pom(projectPom)
             }
         }
+    }
+
+    tasks.named('compileJava', JavaCompile) {
+        options.compilerArgs.addAll([
+            "-Aio.aeron.version=${version}",
+            "-Aio.aeron.gitsha=${gitCommitHash}",
+        ])
     }
 
     signing {

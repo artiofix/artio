@@ -16,9 +16,11 @@
 package uk.co.real_logic.artio;
 
 import io.aeron.Aeron;
+import io.aeron.AeronCounters;
 import io.aeron.Counter;
 import io.aeron.driver.DutyCycleTracker;
 import io.aeron.driver.status.DutyCycleStallTracker;
+import io.aeron.version.Version;
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.IntHashSet;
@@ -61,7 +63,8 @@ public class FixCounters implements AutoCloseable
         INDEXER_MAX_CYCLE_TIME_TYPE_ID(10_014),
         INDEXER_CYCLE_TIME_THRESHOLD_EXCEEDED_TYPE_ID(10_015),
         LIBRARY_MAX_CYCLE_TIME_TYPE_ID(10_016),
-        LIBRARY_CYCLE_TIME_THRESHOLD_EXCEEDED_TYPE_ID(10_017);
+        LIBRARY_CYCLE_TIME_THRESHOLD_EXCEEDED_TYPE_ID(10_017),
+        ERRORS(10_018);
 
         final int id;
 
@@ -77,6 +80,7 @@ public class FixCounters implements AutoCloseable
     }
 
     private final List<Counter> counters = new CopyOnWriteArrayList<>();
+    private final AtomicCounter errorCounter;
     private final AtomicCounter failedInboundPublications;
     private final AtomicCounter failedOutboundPublications;
     private final AtomicCounter failedReplayPublications;
@@ -108,7 +112,8 @@ public class FixCounters implements AutoCloseable
         return counterIds;
     }
 
-    FixCounters(final Aeron aeron, final boolean isEngine, final int libraryId, final long gatewayId)
+    FixCounters(
+        final Aeron aeron, final boolean isEngine, final int libraryId, final long gatewayId, final Version version)
     {
         this.aeron = aeron;
         this.libraryId = libraryId;
@@ -133,6 +138,8 @@ public class FixCounters implements AutoCloseable
         {
             currentReplayCount = null;
         }
+
+        errorCounter = newVersionedCounter(ERRORS.id(), "Artio Errors:", version);
     }
 
     public AtomicCounter failedInboundPublications()
@@ -210,6 +217,11 @@ public class FixCounters implements AutoCloseable
         );
     }
 
+    public AtomicCounter errorCounter()
+    {
+        return errorCounter;
+    }
+
     public AtomicCounter messagesRead(final long connectionId, final String address)
     {
         return newCounter(FixCountersId.MESSAGES_READ_TYPE_ID.id(),
@@ -265,6 +277,26 @@ public class FixCounters implements AutoCloseable
         }
 
         return sb.toString();
+    }
+
+    private AtomicCounter newVersionedCounter(final int typeId, final String label, final Version version)
+    {
+        final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
+        int index = 0;
+        buffer.putInt(index, libraryId);
+        index += SIZE_OF_INT;
+        buffer.putLong(index, gatewayId);
+        index += SIZE_OF_LONG;
+        final int keyLength = index;
+
+        index += buffer.putStringWithoutLengthAscii(index, label);
+        index += appendLibraryIdLabel(buffer, index);
+        index += appendGatewayIdLabel(buffer, index);
+        index += AeronCounters.appendVersionInfo(buffer, index, version.toString(), version.gitSha());
+
+        final Counter counter = aeron.addCounter(typeId, buffer, 0, keyLength, buffer, keyLength, index - keyLength);
+        counters.add(counter);
+        return counter;
     }
 
     private AtomicCounter newCounter(final int typeId, final String label)
