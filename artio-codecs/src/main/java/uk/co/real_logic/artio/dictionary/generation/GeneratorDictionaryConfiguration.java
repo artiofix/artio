@@ -16,12 +16,20 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 class GeneratorDictionaryConfiguration
 {
+    /**
+     * Opens a dictionary file. Lets tests see which streams were opened and whether they were closed.
+     */
+    @FunctionalInterface
+    interface FileOpener
+    {
+        InputStream open(File file) throws FileNotFoundException;
+    }
+
     private boolean allowDuplicateFields;
     private String dictionaryName;
     private InputStream[] fileStreams;
@@ -74,7 +82,7 @@ class GeneratorDictionaryConfiguration
         this.allowDuplicateFields = allowDuplicateFields;
     }
 
-    InputStream[] toStreams() throws FileNotFoundException
+    InputStream[] toStreams(final FileOpener fileOpener) throws FileNotFoundException
     {
         // Create input streams from names if not provided.
         if (fileStreams == null)
@@ -86,26 +94,37 @@ class GeneratorDictionaryConfiguration
             }
 
             final int n = fileNames.length;
-            fileStreams = new InputStream[n];
-            for (int i = 0; i < n; i++)
+            // Only stored in the field once every file is open, so a failure doesn't leave a partly filled array.
+            final InputStream[] streams = new InputStream[n];
+            try
             {
-                final File xmlFile = new File(fileNames[i]);
-                if (!xmlFile.exists())
+                for (int i = 0; i < n; i++)
                 {
-                    throw new IllegalArgumentException("xmlFile does not exist: " + xmlFile.getAbsolutePath());
-                }
+                    final File xmlFile = new File(fileNames[i]);
+                    if (!xmlFile.exists())
+                    {
+                        throw new IllegalArgumentException("xmlFile does not exist: " + xmlFile.getAbsolutePath());
+                    }
 
-                if (!xmlFile.isFile())
-                {
-                    throw new IllegalArgumentException(String.format(
-                        "xmlFile [%s] isn't a file, are the arguments the correct way around?",
-                        xmlFile));
-                }
+                    if (!xmlFile.isFile())
+                    {
+                        throw new IllegalArgumentException(String.format(
+                            "xmlFile [%s] isn't a file, are the arguments the correct way around?",
+                            xmlFile));
+                    }
 
-                // Closed by CodecGenerator
-                // codeql[java/input-resource-leak]
-                fileStreams[i] = new FileInputStream(xmlFile);
+                    // Closed by CodecGenerator
+                    streams[i] = fileOpener.open(xmlFile);
+                }
             }
+            catch (final FileNotFoundException | RuntimeException ex)
+            {
+                // The caller never gets these streams, so close the ones already opened here.
+                Exceptions.suppressingCloseAll(ex, streams);
+                throw ex;
+            }
+
+            fileStreams = streams;
         }
 
         return fileStreams;

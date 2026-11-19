@@ -65,8 +65,7 @@ public final class CodecGenerator
             final String name = normalise(dictionaryConfig.dictionaryName());
             try
             {
-                final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
-                final Dictionary dictionary = parseStreams(parser, dictionaryConfig.toStreams());
+                final Dictionary dictionary = parseDictionary(configuration, dictionaryConfig);
                 dictionary.name(name);
                 inputDictionaries.add(dictionary);
             }
@@ -97,18 +96,29 @@ public final class CodecGenerator
         final String outputPath,
         final String codecRejectUnknownEnumValueEnabled) throws Exception
     {
-        final GeneratorDictionaryConfiguration nonSharedDictionary = configuration.nonSharedDictionary();
-        final DictionaryParser parser = new DictionaryParser(nonSharedDictionary.allowDuplicateFields());
-        final InputStream[] fileStreams = nonSharedDictionary.toStreams();
+        final Dictionary dictionary = parseDictionary(configuration, configuration.nonSharedDictionary());
+        generateDictionary(configuration, outputPath, codecRejectUnknownEnumValueEnabled, dictionary);
+    }
+
+    private static Dictionary parseDictionary(
+        final CodecConfiguration configuration,
+        final GeneratorDictionaryConfiguration dictionaryConfig) throws Exception
+    {
+        final DictionaryParser parser = new DictionaryParser(dictionaryConfig.allowDuplicateFields());
+        final InputStream[] fileStreams = dictionaryConfig.toStreams(configuration.fileOpener());
+        final Dictionary dictionary;
         try
         {
-            final Dictionary dictionary = parseStreams(parser, fileStreams);
-            generateDictionary(configuration, outputPath, codecRejectUnknownEnumValueEnabled, dictionary);
+            dictionary = parseStreams(parser, fileStreams);
         }
-        finally
+        catch (final Throwable t)
         {
-            Exceptions.closeAll(fileStreams);
+            Exceptions.suppressingCloseAll(t, fileStreams);
+            throw t;
         }
+
+        Exceptions.closeAll(fileStreams);
+        return dictionary;
     }
 
     private static Dictionary parseStreams(final DictionaryParser parser, final InputStream[] fileStreams)
