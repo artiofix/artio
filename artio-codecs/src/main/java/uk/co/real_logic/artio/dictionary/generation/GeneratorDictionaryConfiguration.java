@@ -103,7 +103,8 @@ class GeneratorDictionaryConfiguration
                 }
 
                 // Closed by CodecGenerator
-                fileStreams[i] = new FileInputStream(xmlFile); // lgtm [java/input-resource-leak]
+                // codeql[java/input-resource-leak]
+                fileStreams[i] = new FileInputStream(xmlFile);
             }
         }
 

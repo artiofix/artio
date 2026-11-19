@@ -40,7 +40,8 @@ public final class ReplayIndexDescriptor
     static
     {
         // Safety check against making the ReplayIndexRecord big without modifying this
-        if (RECORD_LENGTH < ReplayIndexRecordDecoder.BLOCK_LENGTH) // lgtm [java/constant-comparison]
+        // codeql[java/constant-comparison]
+        if (RECORD_LENGTH < ReplayIndexRecordDecoder.BLOCK_LENGTH)
         {
             throw new IllegalStateException("Invalid record length");
         }
