@@ -40,11 +40,11 @@ public final class ReplayProtocolSubscription implements ControlledFragmentHandl
     public Action onFragment(
         final DirectBuffer buffer, final int offset, final int length, final Header header)
     {
-        return onFragment(buffer, offset, length, header.position());
+        return onFragment(buffer, offset, header.position());
     }
 
     @SuppressWarnings("FinalParameters")
-    private Action onFragment(final DirectBuffer buffer, int offset, int length, final long position)
+    private Action onFragment(final DirectBuffer buffer, int offset, final long position)
     {
         messageHeader.wrap(buffer, offset);
 

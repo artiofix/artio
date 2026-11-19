@@ -17,11 +17,13 @@ package uk.co.real_logic.artio;
 
 import io.aeron.Aeron;
 import io.aeron.archive.client.AeronArchive;
+import io.aeron.version.Version;
 import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentInvoker;
 import org.agrona.concurrent.CompositeAgent;
+import org.agrona.concurrent.CountedErrorHandler;
 import org.agrona.concurrent.SystemEpochClock;
 import uk.co.real_logic.artio.engine.FixEngine;
 import uk.co.real_logic.artio.timing.HistogramLogAgent;
@@ -46,6 +48,7 @@ public abstract class GatewayProcess implements AutoCloseable
     protected MonitoringFile monitoringFile;
     protected FixCounters fixCounters;
     protected ErrorHandler errorHandler;
+    protected ErrorHandler countedErrorHandler;
     protected Aeron aeron;
     protected MonitoringAgent monitoringAgent;
     protected Agent monitoringCompositeAgent;
@@ -57,6 +60,8 @@ public abstract class GatewayProcess implements AutoCloseable
         initMonitoring(configuration);
         initAeron(configuration, libraryId);
     }
+
+    protected abstract Version version();
 
     protected abstract boolean shouldRethrowExceptionInErrorHandler();
 
@@ -85,7 +90,8 @@ public abstract class GatewayProcess implements AutoCloseable
         gatewayId = configuration.gatewayId();
 
         CloseChecker.onOpen(context.aeronDirectoryName(), aeron);
-        fixCounters = new FixCounters(aeron, this instanceof FixEngine, libraryId, gatewayId);
+        fixCounters = new FixCounters(aeron, this instanceof FixEngine, libraryId, gatewayId, version());
+        countedErrorHandler = new CountedErrorHandler(errorHandler, fixCounters.errorCounter());
     }
 
     protected Aeron.Context configureAeronContext(final CommonConfiguration configuration)
@@ -121,7 +127,7 @@ public abstract class GatewayProcess implements AutoCloseable
                 timers,
                 configuration.histogramLoggingFile(),
                 configuration.histogramPollPeriodInMs(),
-                errorHandler,
+                countedErrorHandler,
                 new SystemEpochClock(),
                 configuration.histogramHandler(),
                 configuration.agentNamePrefix()));

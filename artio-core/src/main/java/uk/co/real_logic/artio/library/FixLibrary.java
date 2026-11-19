@@ -15,6 +15,8 @@
  */
 package uk.co.real_logic.artio.library;
 
+import io.aeron.version.Version;
+import io.aeron.version.Versioned;
 import org.agrona.DirectBuffer;
 import org.agrona.IoUtil;
 import org.agrona.concurrent.EpochClock;
@@ -51,6 +53,7 @@ import static uk.co.real_logic.artio.dictionary.generation.Exceptions.closeAll;
  *
  * @see uk.co.real_logic.artio.engine.FixEngine
  */
+@Versioned
 public class FixLibrary extends GatewayProcess
 {
     public static final int NO_MESSAGE_REPLAY = -1;
@@ -89,7 +92,7 @@ public class FixLibrary extends GatewayProcess
             final EpochClock epochClock = configuration.isReproductionEnabled() ?
                 configuration.reproductionConfiguration().clock().toMillis() : new SystemEpochClock();
             poller = new LibraryPoller(
-                configuration, timers, fixCounters, transport, this, epochClock, errorHandler);
+                configuration, timers, fixCounters, transport, this, epochClock, countedErrorHandler);
         }
         catch (final Exception e)
         {
@@ -122,7 +125,13 @@ public class FixLibrary extends GatewayProcess
     private FixLibrary connect()
     {
         poller.startConnecting();
-        scheduler.launch(configuration, errorHandler, monitoringCompositeAgent, conductorAgent());
+        scheduler.launch(
+            configuration,
+            errorHandler,
+            fixCounters.errorCounter(),
+            countedErrorHandler,
+            monitoringCompositeAgent,
+            conductorAgent());
         poller.onStart();
         return this;
     }
@@ -530,6 +539,12 @@ public class FixLibrary extends GatewayProcess
     public List<ILink3Connection> fixPConnections()
     {
         return poller.iLink3Sessions();
+    }
+
+    @Override
+    protected Version version()
+    {
+        return new FixLibraryVersion();
     }
 
     @Override

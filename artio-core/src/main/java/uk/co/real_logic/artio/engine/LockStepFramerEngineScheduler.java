@@ -21,6 +21,7 @@ import org.agrona.LangUtil;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentInvoker;
 import org.agrona.concurrent.AgentRunner;
+import org.agrona.concurrent.status.AtomicCounter;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
 
 import static org.agrona.concurrent.AgentRunner.startOnThread;
@@ -36,6 +37,8 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
     public void launch(
         final EngineConfiguration configuration,
         final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final ErrorHandler countedErrorHandler,
         final Agent framer,
         final Agent indexingAgent,
         final Agent monitoringAgent,
@@ -43,7 +46,7 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
         final RecordingCoordinator recordingCoordinator)
     {
         this.recordingCoordinator = recordingCoordinator;
-        framerInvoker = new AgentInvoker(errorHandler, null, framer);
+        framerInvoker = new AgentInvoker(errorHandler, errorCounter, framer);
         framerInvoker.start();
 
         if (archivingRunner != null)
@@ -54,7 +57,7 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
         archivingRunner = new AgentRunner(
             configuration.archiverIdleStrategy(),
             errorHandler,
-            null,
+            errorCounter,
             indexingAgent);
 
         startOnThread(archivingRunner, configuration.threadFactory());
@@ -64,7 +67,7 @@ public class LockStepFramerEngineScheduler implements EngineScheduler
             monitoringRunner = new AgentRunner(
                 configuration.monitoringThreadIdleStrategy(),
                 errorHandler,
-                null,
+                errorCounter,
                 monitoringAgent);
             startOnThread(monitoringRunner, configuration.threadFactory());
         }

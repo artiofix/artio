@@ -22,6 +22,7 @@ import org.agrona.collections.Int2ObjectHashMap;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.DynamicCompositeAgent;
+import org.agrona.concurrent.status.AtomicCounter;
 
 import static org.agrona.concurrent.DynamicCompositeAgent.Status.ACTIVE;
 
@@ -41,6 +42,8 @@ public class DynamicLibraryScheduler implements LibraryScheduler
     public synchronized void launch(
         final LibraryConfiguration configuration,
         final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final ErrorHandler countedErrorHandler,
         final Agent monitoringAgent,
         final Agent conductorAgent)
     {
@@ -62,7 +65,7 @@ public class DynamicLibraryScheduler implements LibraryScheduler
         }
 
         final int libraryId = configuration.libraryId();
-        final Agent combinedAgent = new CombinedAgent(libraryId, monitoringAgent, conductorAgent, errorHandler);
+        final Agent combinedAgent = new CombinedAgent(libraryId, monitoringAgent, conductorAgent, countedErrorHandler);
 
         libraryIdToDelegateAgent.put(libraryId, combinedAgent);
 

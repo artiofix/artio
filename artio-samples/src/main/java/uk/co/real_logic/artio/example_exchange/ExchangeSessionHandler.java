@@ -60,10 +60,6 @@ public class ExchangeSessionHandler implements SessionHandler
     private final ExecutionReportEncoder executionReport = new ExecutionReportEncoder();
     private final MutableAsciiBuffer asciiBuffer = new MutableAsciiBuffer();
 
-    ExchangeSessionHandler(final Session session)
-    {
-    }
-
     @Override
     public Action onMessage(
         final DirectBuffer buffer,

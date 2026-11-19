@@ -130,14 +130,14 @@ public final class LibraryProtocolSubscription implements ControlledFragmentHand
                 return onThrottleNotification(buffer, offset, blockLength, version, header.position());
 
             case ThrottleConfigurationReplyDecoder.TEMPLATE_ID:
-                return onThrottleConfigurationReply(buffer, offset, blockLength, version, header.position());
+                return onThrottleConfigurationReply(buffer, offset, blockLength, version);
         }
 
         return CONTINUE;
     }
 
     private Action onThrottleConfigurationReply(
-        final DirectBuffer buffer, final int offset, final int blockLength, final int version, final long position)
+        final DirectBuffer buffer, final int offset, final int blockLength, final int version)
     {
         final ThrottleConfigurationReplyDecoder throttleConfigurationReply = this.throttleConfigurationReply;
         throttleConfigurationReply.wrap(buffer, offset, blockLength, version);

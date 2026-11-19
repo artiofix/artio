@@ -19,7 +19,6 @@ import b3.entrypoint.fixp.sbe.Boolean;
 import b3.entrypoint.fixp.sbe.*;
 import io.aeron.logbuffer.ControlledFragmentHandler.Action;
 import org.agrona.DirectBuffer;
-import uk.co.real_logic.artio.binary_entrypoint.BinaryEntryPointConnection;
 import uk.co.real_logic.artio.fixp.FixPConnection;
 import uk.co.real_logic.artio.fixp.FixPConnectionHandler;
 import uk.co.real_logic.artio.fixp.FixPMessageHeader;
@@ -35,10 +34,6 @@ public class FixPExchangeSessionHandler implements FixPConnectionHandler
     private final ExecutionReport_NewEncoder executionReport = new ExecutionReport_NewEncoder();
 
     private long orderId = ExecutionReport_NewEncoder.orderIDMinValue();
-
-    FixPExchangeSessionHandler(final BinaryEntryPointConnection connection)
-    {
-    }
 
     @Override
     public Action onBusinessMessage(

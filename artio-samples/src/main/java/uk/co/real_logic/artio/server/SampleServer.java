@@ -128,7 +128,7 @@ public final class SampleServer
         // Simple server just handles a single connection on a single thread
         // You choose how to manage threads for your application.
 
-        return new SampleSessionHandler(session);
+        return new SampleSessionHandler();
     }
 
     private static final String CONTROL_REQUEST_CHANNEL = "aeron:udp?endpoint=localhost:8010";

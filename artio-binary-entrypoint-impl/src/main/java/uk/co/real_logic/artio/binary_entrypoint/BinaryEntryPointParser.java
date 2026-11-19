@@ -207,8 +207,7 @@ public class BinaryEntryPointParser extends AbstractFixPParser
             negotiate.sessionID(),
             negotiate.sessionVerID(),
             negotiate.timestamp().time(),
-            negotiate.enteringFirm(),
-            negotiate.onbehalfFirm());
+            negotiate.enteringFirm());
     }
 
     @Override

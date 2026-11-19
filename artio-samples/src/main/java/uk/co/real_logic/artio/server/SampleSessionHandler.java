@@ -34,10 +34,6 @@ public class SampleSessionHandler implements SessionHandler
     private final AsciiBuffer string = new MutableAsciiBuffer();
     private final Printer printer = new PrinterImpl();
 
-    public SampleSessionHandler(final Session session)
-    {
-    }
-
     @Override
     public Action onMessage(
         final DirectBuffer buffer,

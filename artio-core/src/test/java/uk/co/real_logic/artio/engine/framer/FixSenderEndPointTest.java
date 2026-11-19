@@ -24,17 +24,20 @@ import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.mockito.verification.VerificationMode;
 import uk.co.real_logic.artio.engine.MessageTimingHandler;
 import uk.co.real_logic.artio.engine.SenderSequenceNumber;
 import uk.co.real_logic.artio.messages.MessageHeaderDecoder;
+import uk.co.real_logic.artio.messages.ReplayCompleteDecoder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static io.aeron.Publication.BACK_PRESSURED;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -315,6 +318,158 @@ public class FixSenderEndPointTest
         verifyNoMoreErrors();
     }
 
+    @Test
+    @Timeout(1)
+    public void shouldContinueRetryingWhenReplayCompleteIsFollowedByQueuedStartReplay()
+    {
+        startValidReplay();
+
+        channelWillWrite(0);
+        onReplayMessage(0, 1);
+        onReplayComplete();
+        byteBufferWrittenTwice();
+
+        endPoint.onStartReplay(REPLAY_CORRELATION_ID_2);
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        assertReplaying();
+        assertDoesNotRequireReattempting();
+        assertBytesInBuffer(0);
+
+        verifyNoMoreErrors();
+    }
+
+    @Test
+    public void shouldNotSendQueuedNormalMessagesAfterQueuedStartReplayUntilReplayCompletes()
+    {
+        startValidReplay();
+
+        channelWillWrite(0);
+        onReplayMessage(0, 1);
+        onReplayComplete();
+        byteBufferWrittenTwice();
+
+        onOutboundMessage(0);
+        byteBufferWritten();
+        endPoint.onStartReplay(REPLAY_CORRELATION_ID_2);
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        assertReplaying();
+        assertRequiresReattempting();
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferNotWritten();
+
+        assertReplaying();
+        assertRequiresReattempting();
+
+        endPoint.onReplayComplete(REPLAY_CORRELATION_ID_2);
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        assertNotReplaying();
+        assertDoesNotRequireReattempting();
+        assertBytesInBuffer(0);
+
+        verifyNoMoreErrors();
+    }
+
+    @Test
+    public void shouldStopReplayingWhenReplayCompleteIsNotFollowedByQueuedStartReplay()
+    {
+        startValidReplay();
+
+        channelWillWrite(0);
+        onReplayMessage(0, 1);
+        onReplayComplete();
+        byteBufferWrittenTwice();
+
+        onReplayComplete();
+        byteBufferWritten();
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        assertNotReplaying();
+        assertDoesNotRequireReattempting();
+        assertBytesInBuffer(0);
+
+        verifyNoMoreErrors();
+    }
+
+    @Test
+    public void shouldRetryQueuedLastReplayMessageWhenReplayCompletePublicationIsBackPressured()
+    {
+        doReturn(BACK_PRESSURED)
+            .doReturn(BACK_PRESSURED)
+            .doAnswer(invocation ->
+            {
+                final BufferClaim claim = invocation.getArgument(1);
+                final int length = invocation.getArgument(0);
+                claim.wrap(inboundBuffer, 0, length + DataHeaderFlyweight.HEADER_LENGTH);
+                return 1L;
+            })
+            .when(inboundPublication).tryClaim(anyInt(), any());
+
+        startValidReplay();
+
+        onReplayMessage(0, 1);
+        byteBufferNotWritten();
+        assertBytesInBuffer(BODY_LENGTH + ENQ_MESSAGE_BLOCK_LEN);
+
+        poll();
+        byteBufferNotWritten();
+        assertReattemptBytesWritten(0);
+        assertBytesInBuffer(BODY_LENGTH + ENQ_MESSAGE_BLOCK_LEN);
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        assertReplaying();
+        assertDoesNotRequireReattempting();
+        assertBytesInBuffer(0);
+
+        verifyNoMoreErrors();
+    }
+
+    @Test
+    public void shouldUseQueuedStartReplayCorrelationId()
+    {
+        becomeSlowConsumer();
+
+        endPoint.onValidResendRequest(REPLAY_CORRELATION_ID_2);
+        endPoint.onStartReplay(REPLAY_CORRELATION_ID_2);
+        onReplayMessage(0, 1);
+        endPoint.onReplayComplete(REPLAY_CORRELATION_ID_2);
+        byteBufferWritten();
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        channelWillWrite(BODY_LENGTH);
+        poll();
+        byteBufferWritten();
+
+        assertReplayCompleteCorrelationId(REPLAY_CORRELATION_ID_2);
+        assertNotReplaying();
+        assertDoesNotRequireReattempting();
+        assertBytesInBuffer(0);
+
+        verifyNoMoreErrors();
+    }
+
     private void assertReplaying()
     {
         assertTrue(endPoint.isReplaying(), "not isReplaying");
@@ -374,7 +529,12 @@ public class FixSenderEndPointTest
 
     private void onReplayMessage(final long timeInMs)
     {
-        assertEquals(CONTINUE, endPoint.onReplayMessage(buffer, MSG_OFFSET, BODY_LENGTH, timeInMs, 0));
+        onReplayMessage(timeInMs, 0);
+    }
+
+    private void onReplayMessage(final long timeInMs, final int sequenceNumber)
+    {
+        assertEquals(CONTINUE, endPoint.onReplayMessage(buffer, MSG_OFFSET, BODY_LENGTH, timeInMs, sequenceNumber));
     }
 
     private void verifySlowConsumerDisconnect(final VerificationMode times)
@@ -408,6 +568,20 @@ public class FixSenderEndPointTest
             assertRequiresReattempting();
         }
         assertEquals(bytes, bytesInBuffer.get());
+    }
+
+    private void assertReplayCompleteCorrelationId(final long expectedCorrelationId)
+    {
+        final MessageHeaderDecoder messageHeader = new MessageHeaderDecoder();
+        final ReplayCompleteDecoder replayComplete = new ReplayCompleteDecoder();
+        int offset = DataHeaderFlyweight.HEADER_LENGTH;
+
+        messageHeader.wrap(inboundBuffer, offset);
+        assertEquals(ReplayCompleteDecoder.TEMPLATE_ID, messageHeader.templateId());
+        offset += MessageHeaderDecoder.ENCODED_LENGTH;
+
+        replayComplete.wrap(inboundBuffer, offset, messageHeader.blockLength(), messageHeader.version());
+        assertEquals(expectedCorrelationId, replayComplete.correlationId());
     }
 
     private void assertRequiresReattempting()

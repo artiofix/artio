@@ -60,7 +60,7 @@ public class ExchangeAgent implements Agent
     private SessionHandler onAcquire(final Session session)
     {
         System.out.println(session.compositeKey() + " logged in");
-        return new ExchangeSessionHandler(session);
+        return new ExchangeSessionHandler();
     }
 
     @Override

@@ -19,6 +19,7 @@ import io.aeron.Aeron;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
+import org.agrona.concurrent.status.AtomicCounter;
 
 /**
  * Interface for determining how an Engine's Agents are allocated to threads.
@@ -30,6 +31,8 @@ public interface EngineScheduler extends AutoCloseable
      * Should only return once they are started.
      * @param configuration the engine's configuration object.
      * @param errorHandler the ErrorHandler used by the engine.
+     * @param errorCounter the AtomicCounter used by the engine to count errors.
+     * @param countedErrorHandler the CountedErrorHandler used by the engine.
      * @param framer the framer agent to schedule.
      * @param indexingAgent the archiver agent to schedule.
      * @param monitoringAgent the monitoring agent to schedule.
@@ -39,6 +42,8 @@ public interface EngineScheduler extends AutoCloseable
     void launch(
         EngineConfiguration configuration,
         ErrorHandler errorHandler,
+        AtomicCounter errorCounter,
+        ErrorHandler countedErrorHandler,
         Agent framer,
         Agent indexingAgent,
         Agent monitoringAgent,

@@ -77,7 +77,7 @@ public final class CodecValidationInspector
 
         System.out.println("Compiling " + files);
 
-        compileOnDisk(codecName, files);
+        compileOnDisk(files);
 
         System.out.println("CODEC_VALIDATION_ENABLED = " + Validation.CODEC_VALIDATION_ENABLED);
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{outputDir.toURI().toURL()});
@@ -131,7 +131,7 @@ public final class CodecValidationInspector
         }
     }
 
-    public static void compileOnDisk(final String className, final Collection<File> files)
+    public static void compileOnDisk(final Collection<File> files)
         throws IOException
     {
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
