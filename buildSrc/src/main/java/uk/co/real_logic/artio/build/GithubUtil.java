@@ -12,6 +12,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import java.io.File;
 import java.io.IOException;
 
+// Only used from build.gradle, which CodeQL doesn't analyse.
+// codeql[java/unused-reference-type]
 final class GithubUtil
 {
     private GithubUtil()
