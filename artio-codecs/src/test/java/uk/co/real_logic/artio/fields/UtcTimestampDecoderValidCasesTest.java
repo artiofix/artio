@@ -16,7 +16,6 @@
 package uk.co.real_logic.artio.fields;
 
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
@@ -31,7 +30,6 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.params.provider.Arguments.of;
 import static uk.co.real_logic.artio.fields.CalendricalUtil.*;
 import static uk.co.real_logic.artio.fields.UtcTimestampDecoder.*;
 
@@ -53,20 +51,32 @@ public class UtcTimestampDecoderValidCasesTest
     private MutableAsciiBuffer buffer;
     private String timestamp;
 
-    public static Stream<Arguments> data()
+    public static Stream<String> timestamps()
     {
         return Stream.of(
-            of("20150225-17:51:32.000", true),
-            of("20150225-17:51:32.123", true),
-            of("20600225-17:51:32.123", true),
-            of("19700101-00:00:00.000", true),
-            of("00010101-00:00:00.000", false),
-            of("00010101-00:00:00.001", false),
-            of("99991231-23:59:59.999", false)
+            "20150225-17:51:32.000",
+            "20150225-17:51:32.123",
+            "20600225-17:51:32.123",
+            "19700101-00:00:00.000",
+            "00010101-00:00:00.000",
+            "00010101-00:00:00.001",
+            "99991231-23:59:59.999"
         );
     }
 
-    private void encodeBuffer(final String timestamp, final boolean validNanoSecondTestCase)
+    public static Stream<String> nanosecondTimestamps()
+    {
+        return timestamps().filter(UtcTimestampDecoderValidCasesTest::fitsInEpochNanos);
+    }
+
+    // Epoch nanoseconds in a long only cover roughly 1677 to 2262, so e.g. years 0001 and 9999 can't be encoded.
+    public static boolean fitsInEpochNanos(final String timestamp)
+    {
+        final long epochMillis = toEpochMillis(timestamp);
+        return epochMillis <= Long.MAX_VALUE / NANOS_IN_MILLIS && epochMillis >= Long.MIN_VALUE / NANOS_IN_MILLIS;
+    }
+
+    private void encodeBuffer(final String timestamp)
     {
         this.timestamp = timestamp;
 
@@ -82,18 +92,18 @@ public class UtcTimestampDecoderValidCasesTest
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampMillis(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void shouldParseTimestampMillis(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
+        encodeBuffer(timestamp);
         assertDecodeMillis(length);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampMillisLong(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void shouldParseTimestampMillisLong(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
+        encodeBuffer(timestamp);
         putMicros();
 
         assertDecodeMillis(LENGTH_WITH_MICROSECONDS);
@@ -106,10 +116,10 @@ public class UtcTimestampDecoderValidCasesTest
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampMicros(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void shouldParseTimestampMicros(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
+        encodeBuffer(timestamp);
         expectedEpochMicros++;
         putMicros();
 
@@ -117,18 +127,18 @@ public class UtcTimestampDecoderValidCasesTest
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampMicrosShort(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void shouldParseTimestampMicrosShort(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
+        encodeBuffer(timestamp);
         assertDecodesMicros(length);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampMicrosLong(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "timestamps")
+    public void shouldParseTimestampMicrosLong(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
+        encodeBuffer(timestamp);
         putNanos();
 
         assertDecodesMicros(LENGTH_WITH_NANOSECONDS);
@@ -142,33 +152,27 @@ public class UtcTimestampDecoderValidCasesTest
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampNanos(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "nanosecondTimestamps")
+    public void shouldParseTimestampNanos(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
-        if (validNanoSecondTestCase)
-        {
-            // If they've got the suffix field, then test microseconds, add 1 to the value
-            expectedEpochNanos++;
-            putNanos();
+        encodeBuffer(timestamp);
+        // If they've got the suffix field, then test microseconds, add 1 to the value
+        expectedEpochNanos++;
+        putNanos();
 
-            assertDecodesNanos(LENGTH_WITH_NANOSECONDS);
-        }
+        assertDecodesNanos(LENGTH_WITH_NANOSECONDS);
     }
 
     @ParameterizedTest
-    @MethodSource(value = "data")
-    public void shouldParseTimestampNanosShort(final String timestamp, final boolean validNanoSecondTestCase)
+    @MethodSource(value = "nanosecondTimestamps")
+    public void shouldParseTimestampNanosShort(final String timestamp)
     {
-        encodeBuffer(timestamp, validNanoSecondTestCase);
-        if (validNanoSecondTestCase)
-        {
-            expectedEpochNanos += NANOS_IN_MICROS;
+        encodeBuffer(timestamp);
+        expectedEpochNanos += NANOS_IN_MICROS;
 
-            putMicros();
+        putMicros();
 
-            assertDecodesNanos(LENGTH_WITH_MICROSECONDS);
-        }
+        assertDecodesNanos(LENGTH_WITH_MICROSECONDS);
     }
 
     private void assertDecodesNanos(final int length)
