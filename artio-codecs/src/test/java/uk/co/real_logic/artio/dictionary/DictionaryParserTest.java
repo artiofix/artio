@@ -308,6 +308,14 @@ public class DictionaryParserTest
             " but MultipleAnyFieldsEntriesTest contains multiple: [PrecedingAnyFields, TrailingAnyFields]");
     }
 
+    @Test
+    public void shouldNameTheAttributeWhenANumberIsInvalid()
+    {
+        shouldThrow(() -> parseDictionary("example_invalid_dictionary_non_numeric_field_number.xml"),
+            IllegalStateException.class,
+            "Invalid integer for: number in {name=MemberID,number=abc,type=STRING}");
+    }
+
     private Component component(final String name)
     {
         return dictionary.components().get(name);

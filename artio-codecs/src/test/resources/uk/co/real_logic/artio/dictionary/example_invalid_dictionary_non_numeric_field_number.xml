@@ -1,0 +1,29 @@
+<!-- Simple Data Dictionary for testing purposes -->
+<fix type="FIXR" major="7" minor="2">
+    <header>
+        <field name="BeginString" required="Y"/>
+        <field name="BodyLength" required="Y"/>
+        <field name="MsgType" required="Y"/>
+    </header>
+    <trailer>
+        <field name="CheckSum" required="Y"/>
+    </trailer>
+    <messages>
+        <message name="NonNumericFieldNumberMessage" msgtype="U2" msgcat="app">
+            <field name="MemberID" required="N"/>
+        </message>
+    </messages>
+    <components>
+    </components>
+    <fields>
+        <field number="8" name="BeginString" type="STRING"/>
+        <field number="9" name="BodyLength" type="INT"/>
+        <field number="35" name="MsgType" type="STRING">
+            <value enum="0" description="HEARTBEAT"/>
+            <value enum="8" description="EXECUTION_REPORT"/>
+            <value enum="D" description="ORDER_SINGLE"/>
+        </field>
+        <field number="10" name="CheckSum" type="STRING"/>
+        <field number="abc" name="MemberID" type="STRING"/>
+    </fields>
+</fix>
