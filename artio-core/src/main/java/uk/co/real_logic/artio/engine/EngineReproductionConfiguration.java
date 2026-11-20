@@ -45,4 +45,13 @@ public class EngineReproductionConfiguration
     {
         return clock;
     }
+
+    @Override
+    public String toString()
+    {
+        return "EngineReproductionConfiguration{" +
+            "startInNs=" + startInNs +
+            ", endInNs=" + endInNs +
+            '}';
+    }
 }
