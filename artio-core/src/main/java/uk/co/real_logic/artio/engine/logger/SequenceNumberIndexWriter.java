@@ -266,8 +266,7 @@ public class SequenceNumberIndexWriter implements Index
         final int length,
         final Header header)
     {
-        final int streamId = header.streamId();
-        if (streamId == this.streamId)
+        if (header.streamId() == streamId)
         {
             onFragment(buffer, srcOffset, length, header, NULL_RECORDING_ID);
         }

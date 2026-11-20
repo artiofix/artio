@@ -89,7 +89,6 @@ public class ReproductionProtocolHandler implements ReproductionFixProtocolConsu
         validateLibraryId(message.libraryId());
 
         final int initialOffset = message.offset() - MessageHeaderDecoder.ENCODED_LENGTH;
-        final int fullLength = (offset + length) - initialOffset;
         final int messageOffset = offset - initialOffset;
         final long connectionId = message.connection();
         if (!tcpChannelSupplier.enqueueMessage(
