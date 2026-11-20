@@ -338,7 +338,7 @@ public class FixGatewaySessions extends GatewaySessions
                     "Persistence Strategy specified INDEXED but " +
                     "EngineConfiguration has disabled required logging of messages"));
 
-                reject(DisconnectReason.INVALID_CONFIGURATION_NOT_LOGGING_MESSAGES);
+                rejectWithoutReply(DisconnectReason.INVALID_CONFIGURATION_NOT_LOGGING_MESSAGES);
                 return;
             }
 
@@ -409,7 +409,7 @@ public class FixGatewaySessions extends GatewaySessions
             }
             catch (final IllegalArgumentException e)
             {
-                reject(DisconnectReason.MISSING_LOGON_COMP_ID);
+                rejectWithoutReply(DisconnectReason.MISSING_LOGON_COMP_ID);
                 return;
             }
 
@@ -417,7 +417,7 @@ public class FixGatewaySessions extends GatewaySessions
 
             if (sessionContext == DUPLICATE_SESSION)
             {
-                reject(DisconnectReason.DUPLICATE_SESSION);
+                rejectWithoutReply(DisconnectReason.DUPLICATE_SESSION);
                 return;
             }
 
@@ -525,7 +525,7 @@ public class FixGatewaySessions extends GatewaySessions
         {
             validateState();
 
-            reject(DisconnectReason.FAILED_AUTHENTICATION);
+            rejectWithoutReply(DisconnectReason.FAILED_AUTHENTICATION);
         }
 
         @Override

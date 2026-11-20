@@ -201,7 +201,7 @@ public class GapFiller extends AbstractReplayer
         return agentNamePrefix + "GapFiller";
     }
 
-    class GapFillerChannel
+    static class GapFillerChannel
     {
         private GapFillerSession currentSession;
         private ArrayDeque<GapFillerSession> enqueued;

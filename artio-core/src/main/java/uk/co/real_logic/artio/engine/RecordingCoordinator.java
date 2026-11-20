@@ -507,8 +507,8 @@ public class RecordingCoordinator implements AutoCloseable, RecordingDescriptorC
 
         try
         {
-            final String channel = ChannelUri.addSessionId(this.channel, sessionId);
-            registrationId.set(archive.startRecording(channel, streamId, local));
+            final String recordingChannel = ChannelUri.addSessionId(channel, sessionId);
+            registrationId.set(archive.startRecording(recordingChannel, streamId, local));
 
             return true;
         }
