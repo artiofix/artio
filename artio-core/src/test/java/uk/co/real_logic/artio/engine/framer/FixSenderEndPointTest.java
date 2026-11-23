@@ -43,19 +43,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_SLOW_CONSUMER_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.engine.framer.FixSenderEndPoint.*;
-import static uk.co.real_logic.artio.engine.logger.ArchiveDescriptor.alignTerm;
 import static uk.co.real_logic.artio.messages.DisconnectReason.SLOW_CONSUMER;
-import static uk.co.real_logic.artio.protocol.GatewayPublication.FRAME_SIZE;
 
 public class FixSenderEndPointTest
 {
     private static final long CONNECTION_ID = 1;
     private static final int LIBRARY_ID = 2;
-    private static final int HEADER_LENGTH = MessageHeaderDecoder.ENCODED_LENGTH;
 
-    private static final long POSITION = 8 * 1024;
     private static final int BODY_LENGTH = 84;
-    private static final int FRAGMENT_LENGTH = alignTerm(HEADER_LENGTH + FRAME_SIZE + BODY_LENGTH);
     private static final int MAX_BYTES_IN_BUFFER = 3 * BODY_LENGTH;
     public static final int INBOUND_BUFFER_LEN = 128;
     public static final int REPLAY_CORRELATION_ID = 2;
@@ -135,12 +130,10 @@ public class FixSenderEndPointTest
     public void shouldDisconnectSlowConsumerAfterTimeout()
     {
         long timeInMs = 100;
-        long position = POSITION;
         channelWillWrite(BODY_LENGTH);
         onOutboundMessage(timeInMs);
 
         timeInMs += 100;
-        position += FRAGMENT_LENGTH;
 
         channelWillWrite(0);
         onOutboundMessage(timeInMs);
@@ -207,14 +200,9 @@ public class FixSenderEndPointTest
     {
         startValidReplay();
 
-        long position = 0;
         channelWillWrite(0);
         onReplayMessage(0);
-
-        position += FRAGMENT_LENGTH;
         onReplayMessage(0);
-
-        position += FRAGMENT_LENGTH;
         onReplayMessage(0);
 
         verifySlowConsumerDisconnect(times(1));

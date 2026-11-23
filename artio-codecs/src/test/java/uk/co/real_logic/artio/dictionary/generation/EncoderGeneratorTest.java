@@ -1011,7 +1011,7 @@ public class EncoderGeneratorTest
         setRequiredFields(encoder);
 
         assertTrue(hasOnBehalfOfCompID(encoder));
-        assertFalse(hasTestReqID(encoder));
+        assertFalse(hasTestReqId(encoder));
     }
 
     @Test
@@ -1069,11 +1069,6 @@ public class EncoderGeneratorTest
     private boolean hasOnBehalfOfCompID(final Encoder encoder) throws Exception
     {
         return (boolean)get(encoder, "hasOnBehalfOfCompID");
-    }
-
-    private boolean hasTestReqID(final Encoder encoder) throws Exception
-    {
-        return (boolean)get(encoder, "hasTestReqID");
     }
 
     private void setupComponent(final Encoder encoder) throws Exception
