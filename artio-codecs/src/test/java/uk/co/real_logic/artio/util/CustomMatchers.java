@@ -18,7 +18,6 @@ package uk.co.real_logic.artio.util;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
 import java.lang.reflect.InvocationTargetException;
@@ -156,11 +155,6 @@ public final class CustomMatchers
                 valueMatcher.describeTo(description);
             }
         };
-    }
-
-    public static <T> Matcher<T> hasFluentProperty(final String name, final Object value)
-    {
-        return hasFluentProperty(name, Matchers.equalTo(value));
     }
 
     public interface ExceptionThrowingCommand
