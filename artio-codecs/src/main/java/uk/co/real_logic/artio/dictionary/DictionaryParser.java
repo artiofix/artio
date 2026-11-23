@@ -307,7 +307,15 @@ public final class DictionaryParser
 
     private int getInt(final NamedNodeMap attributes, final String attributeName)
     {
-        return Integer.parseInt(getValue(attributes, attributeName));
+        try
+        {
+            return Integer.parseInt(getValue(attributes, attributeName));
+        }
+        catch (final NumberFormatException ex)
+        {
+            throw new IllegalStateException(
+                "Invalid integer for: " + attributeName + " in " + toString(attributes), ex);
+        }
     }
 
     private void extractEnumValues(final List<Value> values, final NodeList childNodes)

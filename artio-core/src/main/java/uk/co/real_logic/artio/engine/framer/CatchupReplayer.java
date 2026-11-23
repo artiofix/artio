@@ -268,7 +268,6 @@ public class CatchupReplayer implements ControlledFragmentHandler, Continuation
     {
         messageHeaderDecoder.wrap(srcBuffer, srcOffset);
 
-        final int schemaId = messageHeaderDecoder.schemaId();
         final int templateId = messageHeaderDecoder.templateId();
         final int blockLength = messageHeaderDecoder.blockLength();
         final int version = messageHeaderDecoder.version();

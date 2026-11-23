@@ -789,7 +789,7 @@ public class Session
     {
         // If someone attempts to send a message during a logon / logout or offline then we should archive the message
         // but not send it.
-        final long connectionId = this.state == ACTIVE ? this.connectionId : NO_CONNECTION_ID;
+        final long messageConnectionId = state == ACTIVE ? connectionId : NO_CONNECTION_ID;
         final long sessionId = id();
         final int sequenceIndex1 = sequenceIndex();
         final long position = outboundPublication.saveMessage(
@@ -800,7 +800,7 @@ public class Session
             messageType,
             sessionId,
             sequenceIndex1,
-            connectionId,
+            messageConnectionId,
             OK,
             seqNum,
             timestamp,

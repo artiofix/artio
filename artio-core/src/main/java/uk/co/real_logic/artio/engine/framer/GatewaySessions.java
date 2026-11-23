@@ -460,7 +460,7 @@ abstract class GatewaySessions
         @Override
         public abstract void reject();
 
-        protected void reject(final DisconnectReason reason)
+        protected void rejectWithoutReply(final DisconnectReason reason)
         {
             validateState();
 

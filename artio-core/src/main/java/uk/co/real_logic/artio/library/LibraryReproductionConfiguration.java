@@ -44,4 +44,13 @@ public class LibraryReproductionConfiguration
     {
         return clock;
     }
+
+    @Override
+    public String toString()
+    {
+        return "LibraryReproductionConfiguration{" +
+            "startInNs=" + startInNs +
+            ", endInNs=" + endInNs +
+            '}';
+    }
 }
