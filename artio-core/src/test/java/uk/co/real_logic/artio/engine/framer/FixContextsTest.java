@@ -304,10 +304,12 @@ public class FixContextsTest
     @Test
     public void shouldReloadOldFileFormat() throws IOException
     {
-        final InputStream oldFile = FixContexts.class.getResourceAsStream("v2-session_id_buffer");
         final int size = EngineConfiguration.DEFAULT_SESSION_ID_BUFFER_SIZE;
-        final byte[] data = new byte[size];
-        oldFile.read(data);
+        final byte[] data;
+        try (InputStream oldFile = FixContexts.class.getResourceAsStream("v2-session_id_buffer"))
+        {
+            data = oldFile.readNBytes(size);
+        }
         final UnsafeBuffer oldBuffer = new UnsafeBuffer(BufferUtil.allocateDirectAligned(size, ALIGNMENT));
         oldBuffer.putBytes(0, data);
 
