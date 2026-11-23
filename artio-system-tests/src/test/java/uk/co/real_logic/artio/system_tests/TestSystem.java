@@ -408,7 +408,6 @@ public class TestSystem
         return "TestSystem{" +
             "libraries=" + libraries +
             ", operations=" + operations +
-            ", scheduler=" + scheduler +
             ", awaitTimeoutInMs=" + awaitTimeoutInMs +
             '}';
     }
