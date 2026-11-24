@@ -1084,11 +1084,14 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         testSystem.resetSequenceNumber(acceptingEngine, acceptingSession.id());
     }
 
+    // Tests the deprecated resetSessionIds on purpose, since it's still in use.
     @SuppressWarnings("deprecation")
     private void resetSessions()
     {
         testSystem.awaitCompletedReplies(
+            // codeql[java/deprecated-call]
             acceptingEngine.resetSessionIds(backupLocation),
+            // codeql[java/deprecated-call]
             initiatingEngine.resetSessionIds(backupLocation));
     }
 
