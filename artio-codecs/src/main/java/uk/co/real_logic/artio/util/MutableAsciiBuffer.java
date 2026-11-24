@@ -274,7 +274,8 @@ public final class MutableAsciiBuffer extends UnsafeBuffer implements AsciiBuffe
             total += getByte(index);
         }
 
-        return total % 256;
+        // getByte() is signed, so mask to get the sum of the unsigned bytes modulo 256
+        return total & 0xFF;
     }
 
     public int putAscii(final int index, final String string)
