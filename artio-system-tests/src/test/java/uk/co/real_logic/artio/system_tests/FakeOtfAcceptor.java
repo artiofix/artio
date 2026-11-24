@@ -124,6 +124,8 @@ public class FakeOtfAcceptor implements OtfMessageAcceptor
         return false;
     }
 
+    // Tests clear the received messages through this, so it returns the real list on purpose.
+    // codeql[java/internal-representation-exposure]
     public List<FixMessage> messages()
     {
         return receivedMessages;
