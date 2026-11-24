@@ -325,7 +325,9 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
 
         writeMetaDataThenDisconnect();
 
+        // Tests the deprecated resetSessionIds on purpose, since it's still in use.
         @SuppressWarnings("deprecation")
+        // codeql[java/deprecated-call]
         final Reply<?> reply = acceptingEngine.resetSessionIds(null);
         testSystem.awaitCompletedReplies(reply);
 
