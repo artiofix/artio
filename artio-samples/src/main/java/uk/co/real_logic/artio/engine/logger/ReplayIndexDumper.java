@@ -15,6 +15,7 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
+import uk.co.real_logic.artio.CommandLineUtil;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.logger.ReplayIndexExtractor.ReplayIndexHandler;
 import uk.co.real_logic.artio.engine.logger.ReplayIndexExtractor.StartPositionExtractor;
@@ -30,11 +31,19 @@ import java.util.function.Consumer;
  */
 public final class ReplayIndexDumper
 {
+    private static final String USAGE =
+        "Usage: ReplayIndexDumper <replay index header file> <fix session id> <stream id>";
+
     public static void main(final String[] args) throws IOException
     {
+        if (args.length != 3)
+        {
+            throw new IllegalArgumentException(USAGE);
+        }
+
         final File headerFile = new File(args[0]);
-        final long fixSessionId = Long.parseLong(args[1]);
-        final int streamId = Integer.parseInt(args[2]);
+        final long fixSessionId = CommandLineUtil.parseLong(args[1], "fix session id");
+        final int streamId = CommandLineUtil.parseInt(args[2], "stream id");
         final String logFileDir = headerFile.getParent();
 
         final Consumer<ReplayIndexHandler> extract = handler ->
