@@ -437,6 +437,9 @@ public class ReplayIndexTest extends AbstractLogTest
     public void shouldQueryStartPositionsIgnoringAFileThatOnlyLooksLikeAReplayIndex() throws IOException
     {
         final long position = indexExampleMessage(SESSION_ID, SEQUENCE_NUMBER, SEQUENCE_INDEX);
+
+        // Starts with "replay-index-" and ends with "-<stream id>-header" like a real header file,
+        // but where Artio would put the numeric session id it has "old", which isn't a number.
         assertTrue(new File(DEFAULT_LOG_FILE_DIR, "replay-index-old-" + STREAM_ID + "-header").createNewFile());
 
         final Long2LongHashMap startPositions = new Long2LongHashMap(NULL_VALUE);
