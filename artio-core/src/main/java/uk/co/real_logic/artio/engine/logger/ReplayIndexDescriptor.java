@@ -49,22 +49,29 @@ public final class ReplayIndexDescriptor
 
     public static final int MAX_FILE_SEGMENT_CAPACITY = Integer.MAX_VALUE / RECORD_LENGTH;
 
+    static final String FILE_NAME_PREFIX = "replay-index-";
+
+    static String headerFileNameSuffix(final int streamId)
+    {
+        return "-" + streamId + "-header";
+    }
+
     static File replayIndexHeaderFile(final String logFileDir, final long fixSessionId, final int streamId)
     {
-        return new File(logFileDir + File.separator + "replay-index-" + fixSessionId + "-" + streamId + "-header");
+        return new File(logFileDir + File.separator + FILE_NAME_PREFIX + fixSessionId + headerFileNameSuffix(streamId));
     }
 
     static File replayIndexSegmentFile(
         final String logFileDir, final long fixSessionId, final int streamId, final int segmentIndex)
     {
         return new File(
-            logFileDir + File.separator + "replay-index-" + fixSessionId + "-" + streamId + "-" + segmentIndex);
+            logFileDir + File.separator + FILE_NAME_PREFIX + fixSessionId + "-" + streamId + "-" + segmentIndex);
     }
 
     static LongHashSet listReplayIndexSessionIds(final File logFileDir, final int streamId)
     {
-        final String prefix = "replay-index-";
-        final String suffix = "-" + streamId + "-header";
+        final String prefix = FILE_NAME_PREFIX;
+        final String suffix = headerFileNameSuffix(streamId);
         final LongHashSet sessionIds = new LongHashSet();
         for (final File file : Objects.requireNonNull(logFileDir.listFiles()))
         {
