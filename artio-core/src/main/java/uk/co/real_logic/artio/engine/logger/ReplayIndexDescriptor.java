@@ -75,8 +75,14 @@ public final class ReplayIndexDescriptor
                 {
                     final int suffixIndex = fileName.length() - suffix.length();
                     final String sessionIdString = fileName.substring(prefix.length(), suffixIndex);
-                    final long sessionId = Long.parseLong(sessionIdString);
-                    sessionIds.add(sessionId);
+                    try
+                    {
+                        sessionIds.add(Long.parseLong(sessionIdString));
+                    }
+                    catch (final NumberFormatException ignore)
+                    {
+                        // Not a file Artio wrote, such as a renamed copy, so it isn't a session's index.
+                    }
                 }
             }
         }
