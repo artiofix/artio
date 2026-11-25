@@ -50,6 +50,7 @@ import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.stream.IntStream;
 
@@ -429,6 +430,27 @@ public class ReplayIndexTest extends AbstractLogTest
         captureRecordingId();
 
         assertEquals(position3, startPositions.get(recordingId));
+    }
+
+    @Test
+    @Timeout(20_000L)
+    public void shouldQueryStartPositionsIgnoringAFileThatOnlyLooksLikeAReplayIndex() throws IOException
+    {
+        final long position = indexExampleMessage(SESSION_ID, SEQUENCE_NUMBER, SEQUENCE_INDEX);
+
+        // Starts with "replay-index-" and ends with "-<stream id>-header" like a real header file,
+        // but where Artio would put the numeric session id it has "old", which isn't a number.
+        final String fileName =
+            ReplayIndexDescriptor.FILE_NAME_PREFIX + "old" + ReplayIndexDescriptor.headerFileNameSuffix(STREAM_ID);
+        assertTrue(new File(DEFAULT_LOG_FILE_DIR, fileName).createNewFile());
+
+        final Long2LongHashMap startPositions = new Long2LongHashMap(NULL_VALUE);
+        query.queryStartPositions(startPositions);
+
+        captureRecordingId();
+
+        assertThat(startPositions, aMapWithSize(1));
+        assertEquals(position, startPositions.get(recordingId));
     }
 
     @Test
