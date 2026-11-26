@@ -45,6 +45,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.agrona.CloseHelper.close;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -71,6 +72,11 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 {
     private static final DateTimeFormatter UTC_TIMESTAMP_FORMATTER =
         DateTimeFormatter.ofPattern("uuuuMMdd-HH:mm:ss.SSS").withZone(ZoneOffset.UTC);
+
+    // "Order quantity is not a multiple of the trading unit" in Japanese, 60 bytes >= 0x80 when UTF-8 encoded
+    private static final String JAPANESE_TEXT =
+        "\u6ce8\u6587\u6570\u91cf\u304c\u58f2\u8cb7\u5358\u4f4d\u306e" +
+        "\u6574\u6570\u500d\u3067\u306f\u3042\u308a\u307e\u305b\u3093";
 
     private final int timeoutDisconnectHeartBtIntInS = 1;
     private final long timeoutDisconnectHeartBtIntInMs = TimeUnit.SECONDS.toMillis(timeoutDisconnectHeartBtIntInS);
@@ -1110,6 +1116,48 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         asciiBuffer.putByte(index++, START_OF_HEADER);
 
         return Arrays.copyOfRange(buffer, startIndex, index);
+    }
+
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
+    public void shouldAcceptMessageWithNonAsciiEncodedText() throws IOException
+    {
+        setup(true, true);
+
+        setupLibrary();
+
+        try (FixConnection connection = FixConnection.initiate(port))
+        {
+            logon(connection);
+            acquireSession();
+
+            final int msgSeqNum = connection.acquireMsgSeqNum();
+            connection.sendBytes(executionReportWithEncodedText(msgSeqNum, JAPANESE_TEXT.repeat(3)));
+            testSystem.awaitMessageOf(otfAcceptor, EXECUTION_REPORT_MESSAGE_AS_STR,
+                msg -> msg.messageSequenceNumber() == msgSeqNum);
+
+            connection.sendTestRequest("afterEncodedText");
+            testSystem.awaitBlocking(() -> connection.readHeartbeat("afterEncodedText"));
+        }
+    }
+
+    private static byte[] executionReportWithEncodedText(final int msgSeqNum, final String encodedText)
+    {
+        final String body =
+            "35=8\u000149=" + INITIATOR_ID + "\u000156=" + ACCEPTOR_ID + "\u000134=" + msgSeqNum +
+            "\u000152=" + UTC_TIMESTAMP_FORMATTER.format(Instant.now()) + "\u0001347=UTF-8" +
+            "\u000137=1\u000117=1\u0001150=8\u000139=8\u000155=7203\u000154=1\u0001151=0\u000114=0\u00016=0" +
+            "\u0001354=" + encodedText.getBytes(UTF_8).length + "\u0001355=" + encodedText + "\u0001";
+        final String message = "8=FIX.4.4\u00019=" + body.getBytes(UTF_8).length + "\u0001" + body;
+
+        // CheckSum(10) is the sum of the message's bytes, as unsigned values, modulo 256
+        int sum = 0;
+        for (final byte value : message.getBytes(UTF_8))
+        {
+            sum += Byte.toUnsignedInt(value);
+        }
+
+        return (message + String.format("10=%03d\u0001", sum % 256)).getBytes(UTF_8);
     }
 
     @Test

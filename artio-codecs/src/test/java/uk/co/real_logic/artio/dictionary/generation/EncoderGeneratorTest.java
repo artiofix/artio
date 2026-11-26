@@ -466,6 +466,37 @@ public class EncoderGeneratorTest
     }
 
     @Test
+    public void encodesChecksumOfDataFieldWithNonAsciiBytes() throws Exception
+    {
+        final byte[] data = new byte[128];
+        for (int i = 0; i < data.length; i++)
+        {
+            data[i] = (byte)(0x80 + i);
+        }
+
+        final Encoder encoder = newHeartbeat();
+        setRequiredFields(encoder);
+        setupHeader(encoder);
+        setupTrailer(encoder);
+        setByteArray(encoder, DATA_FIELD, data);
+        setInt(encoder, DATA_LENGTH_FIELD, data.length);
+
+        final long result = encoder.encode(buffer, 1);
+        final int offset = Encoder.offset(result);
+        final int checksumFieldLength = "10=000\001".length();
+        final int checksumFieldOffset = offset + Encoder.length(result) - checksumFieldLength;
+
+        int sum = 0;
+        for (int i = offset; i < checksumFieldOffset; i++)
+        {
+            sum += buffer.getByte(i) & 0xFF;
+        }
+
+        final String expectedChecksumField = String.format("10=%03d\001", sum % 256);
+        assertEquals(expectedChecksumField, buffer.getAscii(checksumFieldOffset, checksumFieldLength));
+    }
+
+    @Test
     public void encodeDecimalFloatUsingRawValueAndScale() throws Exception
     {
         final Encoder encoder = newHeartbeat();
