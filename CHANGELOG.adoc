@@ -2,6 +2,8 @@
 
 == Unreleased
 
+== 0.188.1 (2026-11-25)
+
 * Fix handover of initiated connection disconnected before session active. (https://github.com/artiofix/artio/pull/599[#599])
 * Upgrade to https://github.com/aeron-io/aeron/releases/tag/1.54.3[Aeron 1.54.3].
 * Upgrade to https://github.com/aeron-io/agrona/releases/tag/2.7.2[Agrona 2.7.2].
