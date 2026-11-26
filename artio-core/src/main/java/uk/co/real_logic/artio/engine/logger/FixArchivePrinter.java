@@ -23,6 +23,7 @@ import org.agrona.CloseHelper;
 import org.agrona.DirectBuffer;
 import org.agrona.collections.IntHashSet;
 import uk.co.real_logic.artio.ArtioLogHeader;
+import uk.co.real_logic.artio.CommandLineUtil;
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.decoder.SessionHeaderDecoder;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
@@ -33,7 +34,6 @@ import uk.co.real_logic.artio.messages.MessageStatus;
 import java.io.PrintStream;
 import java.util.function.Predicate;
 
-import static java.lang.Long.parseLong;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_INBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_OUTBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_ARCHIVE_SCANNER_STREAM;
@@ -83,7 +83,16 @@ public final class FixArchivePrinter
 
     public void scan(final String[] args)
     {
-        parseArgs(args);
+        try
+        {
+            parseArgs(args);
+        }
+        catch (final IllegalArgumentException ex)
+        {
+            err.println(ex.getMessage());
+            printHelp();
+            System.exit(-1);
+        }
         validateArgs();
 
         final ArchivingMediaDriver archivingMediaDriver = startArchiverIfNeeded();
@@ -157,10 +166,10 @@ public final class FixArchivePrinter
             switch (optionName)
             {
                 case "from":
-                    predicate = from(parseLong(optionValue)).and(predicate);
+                    predicate = from(CommandLineUtil.parseLong(optionValue, "--" + optionName)).and(predicate);
                     break;
                 case "to":
-                    predicate = to(parseLong(optionValue)).and(predicate);
+                    predicate = to(CommandLineUtil.parseLong(optionValue, "--" + optionName)).and(predicate);
                     break;
                 case "message-types":
                     final String[] messageTypes = optionValue.split(",");
@@ -185,10 +194,10 @@ public final class FixArchivePrinter
                     headerPredicate = safeAnd(headerPredicate, targetLocationIdOf(optionValue));
                     break;
                 case "query-stream-id":
-                    queryStreamIds.add(Integer.parseInt(optionValue));
+                    queryStreamIds.add(CommandLineUtil.parseInt(optionValue, "--" + optionName));
                     break;
                 case "archive-scanner-stream-id":
-                    archiveScannerStreamId = Integer.parseInt(optionValue);
+                    archiveScannerStreamId = CommandLineUtil.parseInt(optionValue, "--" + optionName);
                     break;
                 case "aeron-dir-name":
                     aeronDirectoryName = optionValue;
@@ -212,10 +221,10 @@ public final class FixArchivePrinter
                     delimiter = optionValue.charAt(0);
                     break;
                 case "compaction-size":
-                    compactionSize = Integer.parseInt(optionValue);
+                    compactionSize = CommandLineUtil.parseInt(optionValue, "--" + optionName);
                     break;
                 case "maximum-buffer-size":
-                    maximumBufferSize = Integer.parseInt(optionValue);
+                    maximumBufferSize = CommandLineUtil.parseInt(optionValue, "--" + optionName);
                     break;
             }
         }

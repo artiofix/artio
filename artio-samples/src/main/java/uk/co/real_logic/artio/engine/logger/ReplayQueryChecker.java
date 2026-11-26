@@ -16,6 +16,7 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import org.agrona.CloseHelper;
+import uk.co.real_logic.artio.CommandLineUtil;
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.LogTag;
 
@@ -28,12 +29,20 @@ import static uk.co.real_logic.artio.engine.EngineConfiguration.*;
  */
 public final class ReplayQueryChecker
 {
+    private static final String USAGE =
+        "Usage: ReplayQueryChecker <log file dir> <session id> <stream id> <end sequence number>";
+
     public static void main(final String[] args) throws IOException
     {
+        if (args.length != 4)
+        {
+            throw new IllegalArgumentException(USAGE);
+        }
+
         final String logFileDir = args[0];
-        final long sessionId = Long.parseLong(args[1]);
-        final int requiredStreamId = Integer.parseInt(args[2]);
-        final int endSequenceNumber = Integer.parseInt(args[3]);
+        final long sessionId = CommandLineUtil.parseLong(args[1], "session id");
+        final int requiredStreamId = CommandLineUtil.parseInt(args[2], "stream id");
+        final int endSequenceNumber = CommandLineUtil.parseInt(args[3], "end sequence number");
 
         final ReplayQuery query = new ReplayQuery(
             logFileDir,

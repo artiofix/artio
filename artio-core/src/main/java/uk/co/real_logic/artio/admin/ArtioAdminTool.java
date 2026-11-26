@@ -15,6 +15,8 @@
  */
 package uk.co.real_logic.artio.admin;
 
+import uk.co.real_logic.artio.CommandLineUtil;
+
 import java.util.Scanner;
 
 /**
@@ -67,6 +69,11 @@ public final class ArtioAdminTool
                         printUnknownCommand(inputLine);
                     }
                 }
+                catch (final IllegalArgumentException ex)
+                {
+                    System.out.println(ex.getMessage());
+                    printHelp();
+                }
                 catch (final Throwable t)
                 {
                     t.printStackTrace();
@@ -77,14 +84,15 @@ public final class ArtioAdminTool
 
     private static void disconnectSession(final ArtioAdmin artioAdmin, final String inputLine)
     {
-        final int sessionId = Integer.parseInt(inputLine.substring(DISCONNECT.length()));
+        final long sessionId = CommandLineUtil.parseLong(inputLine.substring(DISCONNECT.length()), "session id");
         artioAdmin.disconnectSession(sessionId);
         System.out.println("Disconnected " + sessionId);
     }
 
     private static void resetSequenceNumbers(final ArtioAdmin artioAdmin, final String inputLine)
     {
-        final int sessionId = Integer.parseInt(inputLine.substring(RESET_SEQUENCE_NUMBERS.length()));
+        final long sessionId = CommandLineUtil.parseLong(
+            inputLine.substring(RESET_SEQUENCE_NUMBERS.length()), "session id");
         artioAdmin.resetSequenceNumbers(sessionId);
         System.out.println("Reset sequence numbers for " + sessionId);
     }
