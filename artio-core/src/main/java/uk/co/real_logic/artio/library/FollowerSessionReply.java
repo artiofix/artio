@@ -41,8 +41,10 @@ class FollowerSessionReply extends LibraryReply<SessionWriter>
             .msgType(LOGON_MESSAGE_TYPE_STR)
             .sendingTime(new byte[1]);
         final long result = headerEncoder.startMessage(buffer, 0);
-        length = Encoder.length(result);
-        offset = Encoder.offset(result);
+        final int bodyStart = Encoder.offset(result);
+        final int bodyLength = Encoder.length(result);
+        offset = headerEncoder.finishHeader(buffer, bodyStart, bodyLength);
+        length = bodyStart + bodyLength - offset;
 
         if (libraryPoller.isConnected())
         {

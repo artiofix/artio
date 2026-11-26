@@ -171,6 +171,8 @@ public interface SessionHeaderEncoder
 
     long startMessage(MutableAsciiBuffer buffer, int offset);
 
+    int finishHeader(MutableAsciiBuffer buffer, int bodyStart, int bodyLength);
+
     SessionHeaderEncoder msgType(CharSequence value);
 
     SessionHeaderEncoder msgType(DirectBuffer value);

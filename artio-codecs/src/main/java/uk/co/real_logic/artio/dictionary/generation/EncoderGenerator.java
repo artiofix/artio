@@ -87,7 +87,7 @@ class EncoderGenerator extends Generator
 
     // returns offset where message starts
     private static final String HEADER_ENCODE_PREFIX =
-        "    int finishHeader(final MutableAsciiBuffer buffer, final int bodyStart, final int bodyLength)\n" +
+        "    public int finishHeader(final MutableAsciiBuffer buffer, final int bodyStart, final int bodyLength)\n" +
         "    {\n" +
         "        int position = bodyStart - 1;\n" +
         "\n" +

@@ -38,6 +38,7 @@ import uk.co.real_logic.artio.messages.MessageStatus;
 import uk.co.real_logic.artio.other.Constants;
 import uk.co.real_logic.artio.session.Session;
 import uk.co.real_logic.artio.session.SessionCustomisationStrategy;
+import uk.co.real_logic.artio.session.SessionWriter;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static java.util.Collections.singletonList;
@@ -197,6 +198,26 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
 
         // test field is added to messages with the specified fix dictionary
         initiatingOtfAcceptor.messages().forEach(this::assertHasTestField);
+    }
+
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
+    public void shouldResolveOverrideFixDictionaryForFollowerSession()
+    {
+        launchArtio();
+
+        final SessionHeaderEncoder headerEncoder = new HeaderEncoder()
+            .senderCompID(INITIATOR_ID)
+            .targetCompID(FIXT_ACCEPTOR_ID);
+
+        final Reply<SessionWriter> reply = testSystem.awaitCompletedReply(
+            acceptingLibrary.followerSession(headerEncoder, TEST_TIMEOUT_IN_MS));
+        final SessionWriter sessionWriter = reply.resultIfPresent();
+        final long sessionId = sessionWriter.id();
+
+        fixtAcceptingSession = acquireSession(acceptingHandler, acceptingLibrary, sessionId, testSystem);
+        assertEquals(FIXT_DICTIONARY, fixtAcceptingSession.fixDictionary().getClass());
+        assertEquals("FIXT.1.1", fixtAcceptingSession.beginString());
     }
 
     @Test
