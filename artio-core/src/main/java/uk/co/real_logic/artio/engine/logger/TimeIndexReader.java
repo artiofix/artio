@@ -44,7 +44,7 @@ class TimeIndexReader
         final IndexQuery indexQuery, final Long2ObjectHashMap<PositionRange> recordingIdToPositionRange)
     {
         final File logDir = new File(logFileDir);
-        final String fileNamePrefix = FILE_NAME + streamid;
+        final String fileNamePrefix = FILE_NAME + streamid + "-";
         if (!logDir.exists() || !logDir.isDirectory())
         {
             return false;
@@ -52,9 +52,18 @@ class TimeIndexReader
 
         for (final String file : logDir.list())
         {
-            if (file.contains(fileNamePrefix))
+            if (file.startsWith(fileNamePrefix))
             {
-                final long recordingId = Long.parseLong(file.substring(file.lastIndexOf('-') + 1));
+                final long recordingId;
+                try
+                {
+                    recordingId = Long.parseLong(file.substring(fileNamePrefix.length()));
+                }
+                catch (final NumberFormatException ignore)
+                {
+                    // Not a file Artio wrote, such as a renamed copy, so it isn't a recording's index.
+                    continue;
+                }
 
                 recordingIdToPositionRange.put(recordingId, findPositionRange(indexQuery, new File(logDir, file)));
             }
