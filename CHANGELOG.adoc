@@ -2,6 +2,9 @@
 
 == Unreleased
 
+* Fix handover of initiated connection disconnected before session active. (https://github.com/artiofix/artio/pull/599[#599])
+* Upgrade to `Gradle` 9.9.2.
+
 == 0.188.0 (2026-11-16)
 
 === New & Noteworthy
