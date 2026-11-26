@@ -18,6 +18,7 @@ package uk.co.real_logic.artio.dictionary.generation;
 import org.agrona.generation.OutputManager;
 import org.agrona.generation.PackageOutputManager;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.function.BiFunction;
 
@@ -75,6 +76,7 @@ public final class CodecConfiguration
     private String outputPath;
 
     private BiFunction<String, String, OutputManager> outputManagerFactory = PackageOutputManager::new;
+    private GeneratorDictionaryConfiguration.FileOpener fileOpener = FileInputStream::new;
     private final GeneratorDictionaryConfiguration nonSharedDictionary =
         new GeneratorDictionaryConfiguration(null, null, null,
         Boolean.getBoolean(FIX_CODECS_ALLOW_DUPLICATE_FIELDS_PROPERTY));
@@ -226,6 +228,12 @@ public final class CodecConfiguration
         return this;
     }
 
+    CodecConfiguration fileOpener(final GeneratorDictionaryConfiguration.FileOpener fileOpener)
+    {
+        this.fileOpener = fileOpener;
+        return this;
+    }
+
     /**
      * String representing a Java expressions that evaluates to a boolean within the codec that states whether
      * an unknown enum value within a codec should be rejected or not. Evaluation to true rejects. This could be
@@ -309,6 +317,11 @@ public final class CodecConfiguration
     BiFunction<String, String, OutputManager> outputManagerFactory()
     {
         return outputManagerFactory;
+    }
+
+    GeneratorDictionaryConfiguration.FileOpener fileOpener()
+    {
+        return fileOpener;
     }
 
     public boolean fixTagsInJavadoc()
