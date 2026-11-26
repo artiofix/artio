@@ -134,7 +134,7 @@ public class TimeIndexTest
     @Test
     public void shouldIgnoreACopyOfAnIndexFile() throws IOException
     {
-        copyIndexFileTo(TimeIndexWriter.FILE_NAME + DEFAULT_OUTBOUND_LIBRARY_STREAM + "-" + REC_ID + ".bak");
+        copyIndexFileTo(TimeIndexWriter.fileNamePrefix(DEFAULT_OUTBOUND_LIBRARY_STREAM) + REC_ID + ".bak");
 
         readWrittenTimestampsStartAndEnd();
     }
@@ -142,7 +142,7 @@ public class TimeIndexTest
     @Test
     public void shouldIgnoreAnIndexFileWithAPrefix() throws IOException
     {
-        copyIndexFileTo("old-" + TimeIndexWriter.FILE_NAME + DEFAULT_OUTBOUND_LIBRARY_STREAM + "-3");
+        copyIndexFileTo("old-" + TimeIndexWriter.fileNamePrefix(DEFAULT_OUTBOUND_LIBRARY_STREAM) + "3");
 
         readWrittenTimestampsStartAndEnd();
     }

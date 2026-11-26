@@ -24,7 +24,7 @@ import uk.co.real_logic.artio.storage.messages.TimeIndexRecordDecoder;
 import java.io.File;
 import java.nio.MappedByteBuffer;
 
-import static uk.co.real_logic.artio.engine.logger.TimeIndexWriter.FILE_NAME;
+import static uk.co.real_logic.artio.engine.logger.TimeIndexWriter.fileNamePrefix;
 
 class TimeIndexReader
 {
@@ -44,7 +44,7 @@ class TimeIndexReader
         final IndexQuery indexQuery, final Long2ObjectHashMap<PositionRange> recordingIdToPositionRange)
     {
         final File logDir = new File(logFileDir);
-        final String fileNamePrefix = FILE_NAME + streamid + "-";
+        final String fileNamePrefix = fileNamePrefix(streamid);
         if (!logDir.exists() || !logDir.isDirectory())
         {
             return false;
