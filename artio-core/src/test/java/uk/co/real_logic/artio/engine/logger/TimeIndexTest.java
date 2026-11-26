@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,10 +100,7 @@ public class TimeIndexTest
     @Test
     public void shouldReadWrittenTimestampsStartAndEnd()
     {
-        query.from(timestampsInNs[2]);
-        query.to(timestampsInNs[3]);
-
-        shouldReadWrittenTimestamps(positions[1], positions[3]);
+        readWrittenTimestampsStartAndEnd();
     }
 
     @Test
@@ -113,10 +112,7 @@ public class TimeIndexTest
         writer.onRecord(REC_ID, positions[4] + 1, timestampsInNs[4] + GUARANTEED_FLUSH_IN_NS);
         writer.doWork();
 
-        query.from(timestampsInNs[2]);
-        query.to(timestampsInNs[3]);
-
-        shouldReadWrittenTimestamps(positions[1], positions[3]);
+        readWrittenTimestampsStartAndEnd();
     }
 
     @Test
@@ -133,6 +129,45 @@ public class TimeIndexTest
         query.from(timestampsInNs[2]);
 
         shouldReadWrittenTimestamps(positions[1], Long.MAX_VALUE);
+    }
+
+    @Test
+    public void shouldIgnoreACopyOfAnIndexFile() throws IOException
+    {
+        copyIndexFileTo(TimeIndexWriter.fileNamePrefix(DEFAULT_OUTBOUND_LIBRARY_STREAM) + REC_ID + ".bak");
+
+        readWrittenTimestampsStartAndEnd();
+    }
+
+    @Test
+    public void shouldIgnoreAnIndexFileWithAPrefix() throws IOException
+    {
+        copyIndexFileTo("old-" + TimeIndexWriter.fileNamePrefix(DEFAULT_OUTBOUND_LIBRARY_STREAM) + "3");
+
+        readWrittenTimestampsStartAndEnd();
+    }
+
+    @Test
+    public void shouldIgnoreAnIndexFileOfAStreamWhoseIdStartsWithTheSameDigits() throws IOException
+    {
+        copyIndexFileTo(TimeIndexWriter.FILE_NAME + DEFAULT_OUTBOUND_LIBRARY_STREAM + "0-3");
+
+        readWrittenTimestampsStartAndEnd();
+    }
+
+    private void readWrittenTimestampsStartAndEnd()
+    {
+        query.from(timestampsInNs[2]);
+        query.to(timestampsInNs[3]);
+
+        shouldReadWrittenTimestamps(positions[1], positions[3]);
+    }
+
+    private void copyIndexFileTo(final String fileName) throws IOException
+    {
+        Files.copy(
+            TimeIndexWriter.fileLocation(DEFAULT_LOG_FILE_DIR, DEFAULT_OUTBOUND_LIBRARY_STREAM, REC_ID).toPath(),
+            new File(DEFAULT_LOG_FILE_DIR, fileName).toPath());
     }
 
     private void shouldReadWrittenTimestamps(final long startPosition, final long endPosition)

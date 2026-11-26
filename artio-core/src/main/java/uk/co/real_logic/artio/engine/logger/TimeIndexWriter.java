@@ -30,9 +30,14 @@ class TimeIndexWriter implements AutoCloseable
 {
     static final String FILE_NAME = "time-index-";
 
+    static String fileNamePrefix(final int streamid)
+    {
+        return FILE_NAME + streamid + "-";
+    }
+
     static File fileLocation(final String logFileDir, final int streamid, final long recordingId)
     {
-        return new File(logFileDir + File.separator + FILE_NAME + streamid + "-" + recordingId);
+        return new File(logFileDir + File.separator + fileNamePrefix(streamid) + recordingId);
     }
 
     private static final int BUFFER_SIZE = Math.max(
