@@ -38,7 +38,17 @@ public class ParsedAddress
         final int split = address.lastIndexOf(':');
         final int start = address.startsWith("/") ? 1 : 0;
         final String host = address.substring(start, split);
-        final int port = Integer.parseInt(address.substring(split + 1));
+
+        int port;
+        try
+        {
+            port = Integer.parseInt(address.substring(split + 1));
+        }
+        catch (final NumberFormatException ignore)
+        {
+            // A bad port shouldn't stop the session being used, so report it as unknown, like NO_ADDRESS does.
+            port = Session.UNKNOWN;
+        }
 
         return new ParsedAddress(host, port);
     }
