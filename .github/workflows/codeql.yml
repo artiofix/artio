@@ -72,11 +72,11 @@ jobs:
       - name: filter-sarif
         uses: advanced-security/filter-sarif@2da736ff05ef065cb2894ac6892e47b5eac2c3c0 # v1.1
         with:
-          # Filter out generated code, and unchecked number parsing in tests.
           patterns: |
             -**/generated/**
             -**/generated-src/**
             -**/src/test/**:java/uncaught-number-format-exception
+            -artio-codecs/src/main/java/uk/co/real_logic/artio/builder/**:java/confusing-method-signature
           input: sarif-results/${{ matrix.language }}.sarif
           output: sarif-results/${{ matrix.language }}.sarif
 
